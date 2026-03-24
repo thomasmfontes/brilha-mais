@@ -41,7 +41,7 @@ export default function LandingPage() {
                             transition={{ delay: 0.1 }}
                             className="text-sm sm:text-lg md:text-2xl text-slate-500 max-w-2xl mx-auto mb-12 leading-relaxed font-medium"
                         >
-                            Acesse gratuitamente a maior plataforma de vídeo-aulas premium. Aprenda com os maiores especialistas do mercado, sem assinaturas.
+                            Ilumine o seu futuro com conhecimento de ponta. Vídeo-aulas exclusivas para você brilhar em qualquer área.
                         </motion.p>
 
                         <motion.div
