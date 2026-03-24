@@ -1,0 +1,17 @@
+{
+  "name": "brilha-mais-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix apps/api\" \"npm run dev --prefix apps/web\"",
+    "build": "npm run build --prefix apps/api && npm run build --prefix apps/web",
+    "test": "npm run test --prefix apps/api && npm run test --prefix apps/web",
+    "db:migrate": "npm run db:migrate --prefix apps/api",
+    "db:seed": "npm run db:seed --prefix apps/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "pg": "^8.19.0"
+  }
+}
