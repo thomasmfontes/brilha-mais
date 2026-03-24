@@ -100,16 +100,9 @@ export default function LoginPage() {
                         </div>
                     </div>
 
-                    <div className="mt-10 text-center">
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
-                            Acesso seguro via provedores oficiais
-                        </p>
-                        <div className="flex gap-4 justify-center text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                            <Link to="/terms" className="hover:text-primary transition-colors">Termos de Uso</Link>
-                            <span className="text-slate-200">|</span>
-                            <Link to="/privacy" className="hover:text-primary transition-colors">Privacidade</Link>
-                        </div>
-                    </div>
+                    <p className="text-center text-xs font-bold text-muted-foreground mt-10 uppercase tracking-widest">
+                        Acesso seguro via provedores oficiais
+                    </p>
                 </div>
             </motion.div>
         </div>

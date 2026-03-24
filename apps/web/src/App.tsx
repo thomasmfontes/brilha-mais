@@ -11,8 +11,8 @@ import InstructorSyllabus from "./pages/InstructorSyllabus";
 import InstructorCourseProgress from "./pages/InstructorCourseProgress";
 import MyCoursesPage from "./pages/MyCoursesPage";
 import ResourcesPage from "./pages/ResourcesPage";
-import TermsPage from "./pages/TermsPage";
-import PrivacyPage from "./pages/PrivacyPage";
+import TermosPage from "./pages/TermosPage";
+import PrivacidadePage from "./pages/PrivacidadePage";
 import { AppLayout } from "./layouts/AppLayout";
 import { Toaster } from "react-hot-toast";
 import logo from "./assets/logo.png";
@@ -30,8 +30,8 @@ function Home() {
                     <div className="flex flex-col gap-2">
                         <p className="text-sm text-muted-foreground">&copy; 2026 Brilha Mais. Experiência de aprendizado premium.</p>
                         <div className="flex gap-4 justify-center md:justify-start text-xs text-muted-foreground">
-                            <Link to="/terms" className="hover:text-primary transition-colors">Termos de Uso</Link>
-                            <Link to="/privacy" className="hover:text-primary transition-colors">Privacidade</Link>
+                            <Link to="/termos" className="hover:text-primary transition-colors">Termos de Uso</Link>
+                            <Link to="/privacidade" className="hover:text-primary transition-colors">Privacidade</Link>
                         </div>
                     </div>
                 </div>
@@ -57,8 +57,8 @@ function App() {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/termos" element={<TermosPage />} />
+                <Route path="/privacidade" element={<PrivacidadePage />} />
 
                 {/* Persistent Layout for Authenticated Routes */}
                 <Route element={<AppLayout />}>
