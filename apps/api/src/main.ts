@@ -1,33 +1,37 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
-import * as express from 'express';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express from 'express';
 import * as path from 'path';
 
+let cachedServer: any;
+
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
-
-  // Create application
-  const app = await NestFactory.create(AppModule);
-  // Enable CORS
-  app.enableCors();
-
-  // Serve static files from public directory
-  // Use process.cwd() for reliable public folder resolution in different environments
-  app.use('/public', express.static(path.join(process.cwd(), 'public')));
-
-  const port = process.env.PORT ?? 3000;
-
-  // Global Exception Handlers for Process
-  process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  });
-
-  process.on('uncaughtException', (err) => {
-    logger.error('Uncaught Exception thrown:', err);
-  });
-
-  await app.listen(port);
-  logger.log(`🚀 API is running on: http://localhost:${port}`);
+  if (!cachedServer) {
+    const expressApp = express();
+    const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
+    
+    app.enableCors();
+    app.use('/public', express.static(path.join(process.cwd(), 'public')));
+    
+    await app.init();
+    cachedServer = expressApp;
+  }
+  return cachedServer;
 }
-bootstrap();
+
+// Handler para a Vercel
+export default async (req: any, res: any) => {
+  const server = await bootstrap();
+  return server(req, res);
+};
+
+// Manter o bootstrap tradicional para rodar localmente caso necessário (npm run start:dev)
+if (process.env.NODE_ENV !== 'production') {
+  bootstrap().then((server) => {
+    const port = process.env.PORT ?? 3000;
+    server.listen(port, () => {
+      console.log(`🚀 API is running on: http://localhost:${port}`);
+    });
+  });
+}
