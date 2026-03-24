@@ -1,26 +1,16 @@
 import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage, memoryStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-// O Vercel possui um filesystem somente leitura. Não podemos usar diskStorage nela.
-const isVercel = process.env.VERCEL === '1';
-
+// Forçamos o uso de memória (Buffer) para evitar erros de permissão de escrita no disco (Vercel)
 @Controller('upload')
 @UseGuards(JwtAuthGuard)
 export class UploadController {
     @Post()
     @UseInterceptors(
         FileInterceptor('file', {
-            storage: isVercel ? memoryStorage() : diskStorage({
-                destination: './public/uploads',
-                filename: (req, file, callback) => {
-                    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                    const ext = extname(file.originalname);
-                    callback(null, `${uniqueSuffix}${ext}`);
-                },
-            }),
+            storage: memoryStorage(),
             limits: {
                 fileSize: 50 * 1024 * 1024, // 50MB limit
             },
@@ -31,14 +21,17 @@ export class UploadController {
             throw new HttpException('Arquivo não enviado ou inválido', HttpStatus.BAD_REQUEST);
         }
 
-        // Se estiver na Vercel, o arquivo está na memória (buffer). 
-        // Você precisaria enviar para o S3/Supabase aqui para ter uma URL real.
-        const filename = file.filename || `memory-${Date.now()}-${file.originalname}`;
-        const url = isVercel ? `/api/upload/fake-url/${filename}` : `/public/uploads/${filename}`;
+        // Em ambientes serverless (Vercel), o arquivo não é salvo localmente.
+        // O buffer do arquivo está disponível em file.buffer para envio posterior ao S3/Supabase.
+        const timestamp = Date.now();
+        const filename = `upload-${timestamp}-${file.originalname}`;
+        
+        // Retornamos uma URL temporária/placeholder para não quebrar o frontend.
+        const url = `/api/upload/temp/${filename}`;
         
         return { 
             url,
-            message: isVercel ? 'Upload em memória (Vercel detectada). Configure S3 para produção.' : 'Upload em disco local.'
+            message: 'Upload realizado com sucesso (Em Memória). Observação: Para persistência em produção, é necessário configurar o Amazon S3 ou Supabase Storage.'
         };
     }
 }
