@@ -8,13 +8,12 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
   constructor(private authService: AuthService) {
     console.log('--- Microsoft Strategy Init ---');
     console.log('MICROSOFT_CLIENT_ID:', process.env.MICROSOFT_CLIENT_ID);
-    console.log('API_URL:', process.env.API_URL);
-    console.log('Callback URL:', `${process.env.API_URL || 'http://localhost:3000'}/auth/microsoft/callback`);
+    const apiUrl = (process.env.API_URL || 'http://localhost:3000').replace(/\/$/, '');
 
     super({
       clientID: process.env.MICROSOFT_CLIENT_ID || 'dummy',
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET || 'dummy',
-      callbackURL: `${process.env.API_URL || 'http://localhost:3000'}/auth/microsoft/callback`,
+      callbackURL: `${apiUrl}/auth/microsoft/callback`,
       scope: ['user.read', 'profile', 'email', 'openid', 'offline_access'],
       tenant: process.env.MICROSOFT_TENANT_ID || 'common',
     } as any);
