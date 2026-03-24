@@ -88,6 +88,7 @@ export function WelcomeVideoModal({ isOpen, onClose }: WelcomeVideoModalProps) {
                                 src={VIDEO_SRC}
                                 className={`absolute inset-0 w-full h-full object-contain z-10 transition-opacity duration-700 ${hasStarted ? 'opacity-100' : 'opacity-40'}`}
                                 playsInline
+                                preload="auto"
                                 disablePictureInPicture
                                 disableRemotePlayback
                                 onContextMenu={(e) => e.preventDefault()}
