@@ -11,7 +11,11 @@ async function bootstrap() {
     const expressApp = express();
     const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
     
-    app.enableCors();
+    app.enableCors({
+      origin: ['https://aguarasa.brilhamais.org.br', 'http://localhost:5173'],
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      credentials: true,
+    });
     app.use('/public', express.static(path.join(process.cwd(), 'public')));
     
     await app.init();

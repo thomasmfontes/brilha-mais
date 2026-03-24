@@ -7,10 +7,15 @@ import { createClient } from '@supabase/supabase-js';
 @Controller('upload')
 @UseGuards(JwtAuthGuard)
 export class UploadController {
-    private supabase = createClient(
-        process.env.SUPABASE_URL || '',
-        process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
+    private supabase: any;
+
+    constructor() {
+        const url = process.env.SUPABASE_URL;
+        const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (url && key) {
+            this.supabase = createClient(url, key);
+        }
+    }
 
     @Post()
     @UseInterceptors(
