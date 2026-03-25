@@ -166,7 +166,7 @@ export default function InstructorCourseProgress() {
             )}
 
             {/* Content Area */}
-            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 p-5 md:p-12 shadow-sm min-h-[60vh] flex flex-col">
+            <div className="bg-white rounded-[1.25rem] md:rounded-[2.5rem] border border-slate-200 p-2 md:p-12 shadow-sm min-h-[60vh] flex flex-col overflow-hidden">
                 {viewMode === 'byStudent' ? (
                     selectedStudent ? (
                         <div className="space-y-10 md:space-y-12">
@@ -190,11 +190,11 @@ export default function InstructorCourseProgress() {
                                             <div className="h-2 w-2 rounded-full bg-primary" />
                                             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{mod.title}</h4>
                                         </div>
-                                        <div className="grid gap-4">
+                                        <div className="grid gap-3 md:gap-4">
                                             {mod.lessons.map((lesson: any) => (
-                                                <div key={lesson.id} className="flex items-center justify-between p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-slate-50 border border-slate-100/50 group/lesson transition-all hover:bg-white hover:border-slate-200 hover:shadow-xl hover:shadow-slate-200/40">
-                                                    <div className="flex items-center gap-4 md:gap-6 min-w-0">
-                                                        <div className={`h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 transition-all ${lesson.isCompleted ? 'bg-emerald-50 text-emerald-500 border border-emerald-100 shadow-sm shadow-emerald-200/20' : 'bg-white text-amber-500 border border-slate-200 shadow-sm'}`}>
+                                                <div key={lesson.id} className="flex items-center justify-between p-4 md:p-5 rounded-2xl md:rounded-3xl bg-slate-50 border border-slate-100/50 group/lesson transition-all hover:bg-white hover:border-slate-200 hover:shadow-xl hover:shadow-slate-200/40">
+                                                    <div className="flex items-center gap-4 md:gap-5 min-w-0">
+                                                        <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 transition-all ${lesson.isCompleted ? 'bg-emerald-50 text-emerald-500 border border-emerald-100 shadow-sm shadow-emerald-200/20' : 'bg-white text-amber-500 border border-slate-200 shadow-sm'}`}>
                                                             {lesson.isCompleted ? <LucideCheck className="h-5 w-5 md:h-7 md:w-7" /> : <LucideClock className="h-5 w-5 md:h-7 md:w-7" />}
                                                         </div>
                                                         <div className="min-w-0">
@@ -260,10 +260,10 @@ export default function InstructorCourseProgress() {
                                         <button
                                             key={student.id}
                                             onClick={() => fetchStudentProgress(student)}
-                                            className="w-full flex items-center justify-between p-4 md:p-8 rounded-2xl md:rounded-[2rem] bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-200 hover:shadow-2xl hover:shadow-slate-200/50 transition-all group text-left"
+                                            className="w-full flex items-center justify-between p-4 md:p-5 rounded-2xl md:rounded-3xl bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-200 hover:shadow-2xl hover:shadow-slate-200/50 transition-all group text-left"
                                         >
                                             <div className="flex items-center gap-4 md:gap-6 min-w-0">
-                                                <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-[1.25rem] bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                                                <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm group-hover:scale-110 transition-transform">
                                                     {student.avatarUrl ? (
                                                         <img src={student.avatarUrl} alt="" className="w-full h-full object-cover" />
                                                     ) : (
@@ -308,39 +308,39 @@ export default function InstructorCourseProgress() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="grid gap-4">
+                                <div className="grid gap-2.5 md:gap-4">
                                     {lessonStudents.map((student) => (
                                         <div
                                             key={student.id}
-                                            className="flex items-center justify-between p-5 md:p-8 rounded-2xl md:rounded-[2rem] bg-slate-50/50 border border-slate-100/50 hover:bg-white hover:border-slate-200 hover:shadow-xl hover:shadow-slate-200/40 transition-all group"
+                                            className="flex items-center justify-between p-3 md:p-6 rounded-xl md:rounded-3xl bg-slate-50/50 border border-slate-100/50 hover:bg-white hover:border-slate-200 hover:shadow-xl hover:shadow-slate-200/40 transition-all group"
                                         >
-                                            <div className="flex items-center gap-4 md:gap-6 min-w-0">
-                                                <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-[1.25rem] bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                                            <div className="flex items-center gap-3 md:gap-6 flex-1 min-w-0">
+                                                <div className="h-10 w-10 md:h-16 md:w-16 rounded-lg md:rounded-2xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm transition-transform group-hover:scale-105">
                                                     {student.avatarUrl ? (
                                                         <img src={student.avatarUrl} alt="" className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <span className="text-base md:text-lg font-black text-primary uppercase">{student.name?.substring(0, 2)}</span>
+                                                        <span className="text-base md:text-xl font-black text-primary uppercase">{student.name?.substring(0, 2)}</span>
                                                     )}
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
-                                                    <span className="text-base md:text-xl font-black text-slate-900 leading-none truncate uppercase tracking-tight">{student.name}</span>
-                                                    <span className="text-[10px] md:text-xs font-bold text-slate-400 mt-1.5 md:mt-2 truncate">{student.email}</span>
+                                                    <span className="text-base md:text-lg font-black text-slate-900 leading-none truncate uppercase tracking-tight group-hover:text-primary transition-colors">{student.name}</span>
+                                                    <span className="text-[10px] md:text-xs font-bold text-slate-400 mt-1 md:mt-2 truncate">{student.email}</span>
                                                 </div>
                                             </div>
-                                            <div className="shrink-0 ml-3 md:ml-4">
+                                            <div className="shrink-0 ml-3">
                                                 {student.status === 'COMPLETED' ? (
                                                     <div className="flex flex-col items-end">
-                                                        <span className="hidden md:block text-[9px] font-black uppercase tracking-[0.2em] text-emerald-600/50 mb-1.5">Status</span>
-                                                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl border border-emerald-100 shadow-sm">
-                                                            OK
-                                                        </span>
+                                                        <span className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600/50 mb-2">Status</span>
+                                                        <div className="h-8 w-8 md:h-12 md:w-16 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-lg md:rounded-2xl border border-emerald-100 shadow-sm">
+                                                            <span className="text-[9px] md:text-xs font-black uppercase tracking-widest">OK</span>
+                                                        </div>
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-col items-end">
-                                                        <span className="hidden md:block text-[9px] font-black uppercase tracking-[0.2em] text-amber-600/50 mb-1.5">Status</span>
-                                                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl border border-amber-100 shadow-sm italic">
-                                                            ...
-                                                        </span>
+                                                        <span className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em] text-amber-600/50 mb-2">Status</span>
+                                                        <div className="h-8 w-8 md:h-12 md:w-16 flex items-center justify-center bg-amber-50 text-amber-600 rounded-lg md:rounded-2xl border border-amber-100 shadow-sm italic">
+                                                            <span className="text-[9px] md:text-xs font-black uppercase tracking-widest">...</span>
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
