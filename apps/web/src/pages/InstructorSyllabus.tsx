@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { LucideChevronLeft, LucidePlus, LucideTrash2, LucideLayout, LucidePlay, LucideClock, LucideSave, LucideLink, LucideChevronDown, LucideMoreVertical, LucideFileText, LucideDownload, LucideGlobe, LucideFileJson, LucideUploadCloud, LucideX, LucideCheck, LucideCircle, LucideHelpCircle } from "lucide-react";
+import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import api from "../utils/api";
@@ -62,7 +63,9 @@ export default function InstructorSyllabus() {
     const [localModules, setLocalModules] = useState<DraftModule[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [uploadingFor, setUploadingFor] = useState<{ mIdx: number, lIdx: number } | null>(null);
+    const [uploadingFor, setUploadingFor] = useState<string | null>(null); // "mIdx-lIdx"
+    const [pendingUploadTarget, setPendingUploadTarget] = useState<string | null>(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -273,33 +276,66 @@ export default function InstructorSyllabus() {
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file || !uploadingFor) return;
+        if (!file || !pendingUploadTarget) return;
 
-        const { mIdx, lIdx } = uploadingFor;
-        const formData = new FormData();
-        formData.append('file', file);
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
+            toast.error("Configuração do Supabase ausente no frontend!");
+            return;
+        }
+
+        const [mIdxStr, lIdxStr] = (pendingUploadTarget as string).split('-');
+        const mIdx = parseInt(mIdxStr);
+        const lIdx = parseInt(lIdxStr);
+        
+        setUploadingFor(pendingUploadTarget as string);
+        setUploadProgress(0);
 
         try {
-            const response = await api.post('/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+            const filePath = `courses/${fileName}`;
+            const uploadUrl = `${supabaseUrl}/storage/v1/object/course-images/${filePath}`;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            await axios.post(uploadUrl, formData, {
+                headers: {
+                    'Authorization': `Bearer ${supabaseKey}`,
+                    'apikey': supabaseKey,
+                    'x-upsert': 'true'
+                },
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || progressEvent.loaded));
+                    setUploadProgress(percentCompleted);
+                }
             });
+
+            const publicUrl = `${supabaseUrl}/storage/v1/object/public/course-images/${filePath}`;
 
             const newMaterial: Material = {
                 name: file.name,
-                url: response.data.url,
+                url: publicUrl,
                 type: getFileType(file.name),
                 size: formatFileSize(file.size)
             };
 
             const next = [...localModules];
-            const materials = next[uploadingFor.mIdx].lessons[uploadingFor.lIdx].materials || [];
-            next[uploadingFor.mIdx].lessons[uploadingFor.lIdx].materials = [...materials, newMaterial];
+            const materials = next[mIdx].lessons[lIdx].materials || [];
+            next[mIdx].lessons[lIdx].materials = [...materials, newMaterial];
             setLocalModules(next);
-        } catch (error) {
-            console.error("Upload error:", error);
-            toast.error("Erro ao enviar arquivo.");
+            toast.success("Arquivo enviado!");
+        } catch (error: any) {
+            console.error("Upload error details:", error.response?.data);
+            const errMsg = error.response?.data?.message || error.message || "Erro ao enviar arquivo";
+            toast.error(`Falha no upload: ${errMsg}`);
         } finally {
             setUploadingFor(null);
+            setPendingUploadTarget(null);
+            setUploadProgress(0);
             if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
@@ -588,12 +624,17 @@ export default function InstructorSyllabus() {
                                             </div>
                                             <button
                                                 onClick={() => {
-                                                    setUploadingFor({ mIdx, lIdx });
+                                                    setPendingUploadTarget(`${mIdx}-${lIdx}`);
                                                     fileInputRef.current?.click();
                                                 }}
-                                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-primary transition-all text-[8px] font-black uppercase tracking-[0.2em] shadow-md"
+                                                disabled={!!uploadingFor}
+                                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-primary transition-all text-[8px] font-black uppercase tracking-[0.2em] shadow-md disabled:opacity-50"
                                             >
-                                                <LucideUploadCloud className="h-3 w-3" /> Anexar
+                                                {uploadingFor === `${mIdx}-${lIdx}` ? (
+                                                    <><LoadingSpinner size="xs" variant="white" /> {uploadProgress === 100 ? 'Processando...' : `${uploadProgress}%`}</>
+                                                ) : (
+                                                    <><LucideUploadCloud className="h-3 w-3" /> {uploadingFor ? 'Aguarde...' : 'Anexar'}</>
+                                                )}
                                             </button>
                                         </div>
 

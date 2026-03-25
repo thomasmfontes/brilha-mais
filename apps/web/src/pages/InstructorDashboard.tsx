@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEye, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideSearch, LucideX } from "lucide-react";
 import toast from "react-hot-toast";
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCourseStore } from "../store/courseStore";
@@ -20,6 +21,8 @@ export default function InstructorDashboard() {
     const [isLoadingStats, setIsLoadingStats] = useState(true);
     const [isLoadingCourses, setIsLoadingCourses] = useState(true);
     const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadPreview, setUploadPreview] = useState<string | null>(null);
     const [confirmModal, setConfirmModal] = useState<{ message: string; subtext?: string; onConfirm: () => void } | null>(null);
 
     const courses = useCourseStore(state => state.instructorCourses);
@@ -124,29 +127,107 @@ export default function InstructorDashboard() {
         }
     };
 
+    const compressImage = (file: File): Promise<File | Blob> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1280;
+                    const MAX_HEIGHT = 720;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => {
+                        if (blob) resolve(blob);
+                        else reject(new Error("Canvas toBlob failed"));
+                    }, 'image/jpeg', 0.8);
+                };
+            };
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setIsUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+        if (!supabaseUrl || !supabaseKey) {
+            toast.error("Configuração do Supabase ausente no frontend!");
+            return;
+        }
+
+        setIsUploading(true);
+        setUploadProgress(0);
+        
         try {
-            const response = await api.post('/upload', formData, {
+            const fileToUpload = await compressImage(file);
+            
+            // Gerar preview local imediato
+            if (file.type.startsWith('image/')) {
+                const preview = URL.createObjectURL(fileToUpload);
+                setUploadPreview(preview);
+            }
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+            const filePath = `courses/${fileName}`;
+
+            // Modern direct upload using Axios to Supabase REST API
+            const uploadUrl = `${supabaseUrl}/storage/v1/object/course-images/${filePath}`;
+
+            const formData = new FormData();
+            formData.append('file', fileToUpload);
+
+            const response = await axios.post(uploadUrl, formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${supabaseKey}`,
+                    'apikey': supabaseKey,
+                    'x-upsert': 'true'
                 },
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || progressEvent.loaded));
+                    setUploadProgress(percentCompleted);
+                }
             });
 
-            // Backend returns /public/uploads/filename
-            // Prepend BASE_URL if needed, but local relative path often works if same domain
-            setNewCourse(prev => ({ ...prev, thumbnail: response.data.url }));
+            if (response.status !== 200) {
+                throw new Error("Upload failed");
+            }
+
+            // Public URL
+            const publicUrl = `${supabaseUrl}/storage/v1/object/public/course-images/${filePath}`;
+
+            setNewCourse(prev => ({ ...prev, thumbnail: publicUrl }));
+            toast.success("Imagem enviada diretamente!");
         } catch (error: any) {
-            console.error("Upload error:", error);
-            toast.error("Erro ao fazer upload da imagem.");
+            console.error("Upload error details:", error.response?.data);
+            const errMsg = error.response?.data?.message || error.message || "Erro ao fazer upload";
+            toast.error(`Falha no upload: ${errMsg}`);
         } finally {
             setIsUploading(false);
+            setUploadProgress(0);
         }
     };
 
@@ -179,6 +260,7 @@ export default function InstructorDashboard() {
         setIsCreateModalOpen(false);
         setEditingCourse(null);
         setNewCourse({ title: "", category: assignedCategories[0]?.id || "", thumbnail: "", youtubeUrl: "" });
+        setUploadPreview(null);
     };
 
 
@@ -503,17 +585,33 @@ export default function InstructorDashboard() {
                             <div className="space-y-3">
                                 <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Capa do Curso</label>
                                 <div className="w-full h-40 bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center gap-3 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden text-center group shadow-sm">
-                                    {newCourse.thumbnail ? (
-                                        <>
-                                            <img src={resolveThumbnail(newCourse.thumbnail)} alt="Thumbnail" className="absolute inset-0 w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm">
-                                                <LucideImage className="h-6 w-6 text-white" />
-                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Trocar Imagem</span>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        isUploading ? (
+                                    {isUploading ? (
+                                        <div className="flex flex-col items-center gap-3 w-full px-10">
                                             <LoadingSpinner size="md" />
+                                            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                                <motion.div 
+                                                    className="bg-primary h-full" 
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${uploadProgress}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-[10px] font-black text-primary uppercase">
+                                                {uploadProgress === 100 ? 'Processando...' : `${uploadProgress}%`}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        newCourse.thumbnail || uploadPreview ? (
+                                            <>
+                                                <img 
+                                                    src={uploadPreview || resolveThumbnail(newCourse.thumbnail!)} 
+                                                    alt="Thumbnail" 
+                                                    className="absolute inset-0 w-full h-full object-cover" 
+                                                />
+                                                <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm rounded-[2rem]">
+                                                    <LucideImage className="h-6 w-6 text-white" />
+                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Trocar Imagem</span>
+                                                </div>
+                                            </>
                                         ) : (
                                             <>
                                                 <div className="p-4 rounded-2xl bg-white border border-slate-100 text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all shadow-sm">
