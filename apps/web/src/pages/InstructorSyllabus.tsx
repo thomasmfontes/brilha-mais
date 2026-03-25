@@ -61,7 +61,6 @@ export default function InstructorSyllabus() {
     const [courseTitle, setCourseTitle] = useState("");
     const [localModules, setLocalModules] = useState<DraftModule[]>([]);
     const [isSaving, setIsSaving] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [uploadingFor, setUploadingFor] = useState<{ mIdx: number, lIdx: number } | null>(null);
 
@@ -386,19 +385,6 @@ export default function InstructorSyllabus() {
 
             <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
 
-            {/* Success Notification */}
-            <AnimatePresence>
-                {showSuccess && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="bg-green-500 text-white p-6 rounded-[2rem] font-black uppercase tracking-widest text-center shadow-2xl shadow-green-500/20"
-                    >
-                        Grade atualizada com sucesso! 🚀
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             {/* Syllabus Editor */}
             <div className="space-y-6 md:space-y-12">

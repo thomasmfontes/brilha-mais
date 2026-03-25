@@ -15,7 +15,6 @@ export default function InstructorDashboard() {
     const [isSaving, setIsSaving] = useState(false);
     const navigate = useNavigate();
     const [isUploading, setIsUploading] = useState(false);
-    const [successMessage, setSuccessMessage] = useState(false); // This will be removed as toast replaces it
     const [editingCourse, setEditingCourse] = useState<any>(null);
     const [stats, setStats] = useState<any>(null);
     const [isLoadingStats, setIsLoadingStats] = useState(true);

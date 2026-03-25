@@ -271,6 +271,16 @@ export default function CoursePage() {
     const currentModule = course?.modules?.[currentModuleIdx];
     const currentLesson = (currentModule as any)?.lessons?.[currentLessonIdx];
 
+    const markAsCompleted = () => {
+        if (currentLesson?.id) toggleLessonCompletion(currentLesson.id, true);
+    };
+
+    useEffect(() => {
+        if (currentLesson?.contentType === 'PDF' && !currentLesson.completed) {
+            markAsCompleted();
+        }
+    }, [currentLesson?.id, currentLesson?.contentType]);
+
     // ─── Loading Screen (Bloqueante por pedido do usuário) ──────────
     if (isFetching || !indicesInitialized || !course) return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-10 overflow-hidden">
@@ -316,9 +326,6 @@ export default function CoursePage() {
         try { await enrollInCourse(id); } finally { setIsEnrolling(false); }
     };
 
-    const markAsCompleted = () => {
-        if (currentLesson?.id) toggleLessonCompletion(currentLesson.id, true);
-    };
 
     const handleQuizSubmit = async () => {
         setIsSubmittingQuiz(true);
@@ -545,12 +552,6 @@ export default function CoursePage() {
                                             <h2 className="text-xl font-black uppercase tracking-tighter text-foreground">Material para Estudo</h2>
                                             <p className="text-muted-foreground text-sm mt-2 max-w-xs mx-auto">Esta aula contém arquivos para download. Clique nos links abaixo para baixar o material.</p>
                                         </div>
-                                        <button 
-                                            onClick={markAsCompleted}
-                                            className="px-6 py-2.5 bg-primary/20 text-primary border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5"
-                                        >
-                                            Marcar como Lida
-                                        </button>
                                     </div>
                                 )}
 
