@@ -29,16 +29,18 @@ export function PortalModal({ isOpen, onClose, children, preventCloseOnOverlayCl
     return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
+                >
+                    <div
                         onClick={() => !preventCloseOnOverlayClick && onClose()}
                         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                     />
                     {children}
-                </div>
+                </motion.div>
             )}
         </AnimatePresence>,
         document.body

@@ -701,7 +701,6 @@ export default function InstructorSyllabus() {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
                     className="relative z-10 bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl space-y-8 border border-slate-100"
                 >
                     <div className="h-20 w-20 bg-destructive/10 text-destructive rounded-[2rem] flex items-center justify-center mx-auto shadow-inner">

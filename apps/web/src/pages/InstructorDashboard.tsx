@@ -644,6 +644,45 @@ export default function InstructorDashboard() {
                     </form>
                 </motion.div>
             </PortalModal>
+            
+            {/* Modal de Confirmação de Exclusão */}
+            <PortalModal isOpen={!!confirmModal} onClose={() => setConfirmModal(null)}>
+                {confirmModal && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        className="relative z-10 bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl space-y-8 border border-slate-100"
+                    >
+                        <div className="h-20 w-20 bg-destructive/10 text-destructive rounded-[2rem] flex items-center justify-center mx-auto shadow-inner">
+                            <LucideTrash2 className="h-10 w-10" />
+                        </div>
+
+                        <div className="text-center space-y-3">
+                            <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900 leading-none">
+                                {confirmModal.message}
+                            </h2>
+                            <p className="text-sm text-slate-500 font-medium leading-relaxed px-2">
+                                {confirmModal.subtext || "Esta ação não pode ser desfeita."}
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={confirmModal.onConfirm}
+                                className="w-full bg-destructive text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-destructive/20"
+                            >
+                                Sim, Remover Permanentemente
+                            </button>
+                            <button
+                                onClick={() => setConfirmModal(null)}
+                                className="w-full bg-slate-100 text-slate-500 py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:bg-slate-200 active:scale-[0.98] transition-all"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </PortalModal>
 
         </div>
     );
