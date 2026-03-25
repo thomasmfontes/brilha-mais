@@ -106,9 +106,9 @@ const SyllabusList = ({
                                                     {lesson.title}
                                                 </p>
                                             </div>
-                                            <span className="shrink-0 text-[10px] text-muted-foreground">
+                                            <span className="shrink-0 text-[10px] text-muted-foreground uppercase font-black tracking-widest">
                                                 {lesson.contentType === 'VIDEO'
-                                                    ? formatDuration(lesson.duration)
+                                                    ? (lesson.duration && lesson.duration !== '0:00' ? formatDuration(lesson.duration) : 'Vídeo')
                                                     : lesson.contentType === 'PDF' ? 'PDF' : 'Quiz'}
                                             </span>
                                         </button>
@@ -537,8 +537,20 @@ export default function CoursePage() {
                                 )}
 
                                 {currentLesson.contentType === 'PDF' && (
-                                    <div className="w-full bg-card" style={{ height: '56vw', minHeight: 380 }}>
-                                        <iframe src={`${currentLesson.pdfUrl?.startsWith('http') ? currentLesson.pdfUrl : `${API_URL}${currentLesson.pdfUrl}`}#toolbar=0`} className="w-full h-full" onLoad={() => setTimeout(markAsCompleted, 5000)} />
+                                    <div className="w-full aspect-video bg-card flex flex-col items-center justify-center gap-6 text-center p-8 border border-border/50 rounded-2xl">
+                                        <div className="h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                                            <LucideDownload className="h-10 w-10" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-black uppercase tracking-tighter text-foreground">Material para Estudo</h2>
+                                            <p className="text-muted-foreground text-sm mt-2 max-w-xs mx-auto">Esta aula contém arquivos para download. Clique nos links abaixo para baixar o material.</p>
+                                        </div>
+                                        <button 
+                                            onClick={markAsCompleted}
+                                            className="px-6 py-2.5 bg-primary/20 text-primary border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5"
+                                        >
+                                            Marcar como Lida
+                                        </button>
                                     </div>
                                 )}
 
