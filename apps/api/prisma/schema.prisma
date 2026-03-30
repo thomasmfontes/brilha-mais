@@ -31,6 +31,7 @@ model User {
   studentAreas  StudentArea[]
   turmas        Turma[]          @relation("UserTurmas")
   studentMaterials StudentMaterial[]
+  essaySubmissions EssaySubmission[]
   hasSeenWelcomeVideo Boolean    @default(false)
 }
 
@@ -136,6 +137,7 @@ model Lesson {
   progress     Progress[]
   quizzes     Quiz[]
   materials   Material[]
+  essaySubmissions EssaySubmission[]
 
   @@index([moduleId])
 }
@@ -239,6 +241,33 @@ model AuditLog {
   @@index([createdAt(sort: Desc)])
 }
 
+model EssaySubmission {
+  id        String           @id @default(uuid())
+  content   String?          // Resposta em texto
+  fileUrl   String?          // URL do anexo no Supabase
+  fileName  String?          // Nome do arquivo original
+  userId    String
+  lessonId  String
+  status    SubmissionStatus @default(PENDING)
+  grade             Float?
+  feedback          String?
+  feedbackFileUrl  String?          // URL do anexo de feedback no Supabase
+  feedbackFileName String?          // Nome do arquivo de feedback
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+}
+
+enum SubmissionStatus {
+  PENDING
+  REVIEWED
+}
+
 enum Role {
   STUDENT
   INSTRUCTOR
@@ -249,4 +278,5 @@ enum ContentType {
   VIDEO
   PDF
   QUIZ
+  ESSAY
 }

@@ -13,6 +13,7 @@ import { EnrollmentModule } from './enrollment/enrollment.module';
 import { UploadModule } from './upload/upload.module';
 import { AuditModule } from './audit/audit.module';
 import { TurmaModule } from './turma/turma.module';
+import { EssaySubmissionModule } from './essay-submission/essay-submission.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { TurmaModule } from './turma/turma.module';
     UploadModule,
     AuditModule,
     TurmaModule,
+    EssaySubmissionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

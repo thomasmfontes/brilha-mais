@@ -9,6 +9,7 @@ import ExplorePage from "./pages/ExplorePage";
 import CertificatesPage from "./pages/CertificatesPage";
 import InstructorSyllabus from "./pages/InstructorSyllabus";
 import InstructorCourseProgress from "./pages/InstructorCourseProgress";
+import InstructorSubmissions from "./pages/InstructorSubmissions";
 import MyCoursesPage from "./pages/MyCoursesPage";
 import ResourcesPage from "./pages/ResourcesPage";
 import TermosPage from "./pages/TermosPage";
@@ -28,7 +29,7 @@ function Home() {
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
                     <img src={logo} alt="Brilha Mais" className="h-10 w-auto" />
                     <div className="flex flex-col gap-2">
-                        <p className="text-sm text-muted-foreground">&copy; 2026 Brilha Mais. Experiência de aprendizado premium.</p>
+                        <p className="text-sm text-muted-foreground">&copy; 2026 Brilha Mais</p>
                         <div className="flex gap-4 justify-center md:justify-start text-xs text-muted-foreground">
                             <Link to="/termos" className="hover:text-primary transition-colors">Termos de Uso</Link>
                             <Link to="/privacidade" className="hover:text-primary transition-colors">Privacidade</Link>
@@ -67,6 +68,7 @@ function App() {
                     <Route path="/instructor" element={<InstructorDashboard />} />
                     <Route path="/instructor/course/:id/syllabus" element={<InstructorSyllabus />} />
                     <Route path="/instructor/course/:id/progress" element={<InstructorCourseProgress />} />
+                    <Route path="/instructor/submissions" element={<InstructorSubmissions />} />
                     <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/my-courses" element={<MyCoursesPage />} />
                     <Route path="/explore" element={<ExplorePage />} />

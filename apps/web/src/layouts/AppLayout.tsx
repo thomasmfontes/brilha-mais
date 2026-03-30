@@ -9,7 +9,8 @@ import {
     LucideSettings2,
     LucideMonitorPlay,
     LucideBookOpen,
-    LucideArrowRight
+    LucideArrowRight,
+    LucideCheckCircle
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
@@ -29,6 +30,7 @@ const menuItems = [
 
 const adminItems = [
     { icon: <LucideMonitorPlay className="h-5 w-5" />, label: "Instrutor", path: "/instructor", roles: ['instructor', 'admin'] },
+    { icon: <LucideCheckCircle className="h-5 w-5" />, label: "Correções", path: "/instructor/submissions", roles: ['instructor', 'admin'] },
     { icon: <LucideSettings2 className="h-5 w-5" />, label: "Administração", path: "/admin", roles: ['admin'] },
 ];
 

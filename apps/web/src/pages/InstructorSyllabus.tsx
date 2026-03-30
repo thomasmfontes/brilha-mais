@@ -40,9 +40,10 @@ interface DraftLesson {
     title: string;
     duration: string;
     completed: boolean;
-    contentType: 'VIDEO' | 'PDF' | 'QUIZ';
+    contentType: 'VIDEO' | 'PDF' | 'QUIZ' | 'ESSAY';
     youtubeId?: string;
     pdfUrl?: string;
+    content?: string; // For ESSAY instructions
     quiz?: Quiz;
     order?: number;
     materials?: Material[];
@@ -494,13 +495,19 @@ export default function InstructorSyllabus() {
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-red-500">
                                                             <LucidePlay className="h-3 w-3 fill-current" />
                                                         </div>
-                                                        <input
-                                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 outline-none focus:border-primary focus:bg-white transition-all font-mono text-xs text-slate-700"
-                                                            value={lesson.youtubeId || ''}
-                                                            onChange={(e) => handleYoutubeIdChange(mIdx, lIdx, e.target.value)}
-                                                            placeholder="ID do vídeo"
-                                                        />
+                                                        </div>
                                                     </div>
+                                                )}
+
+                                            {lesson.contentType === 'ESSAY' && (
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block pl-2 border-l-2 border-amber-500 italic">Instruções do Desafio</label>
+                                                    <textarea
+                                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 min-h-[120px] text-sm"
+                                                        value={lesson.content || ''}
+                                                        onChange={(e) => updateLesson(mIdx, lIdx, { content: e.target.value })}
+                                                        placeholder="Descreva o que o aluno deve fazer neste desafio..."
+                                                    />
                                                 </div>
                                             )}
 
@@ -610,6 +617,7 @@ export default function InstructorSyllabus() {
                                                     <option value="VIDEO">Vídeo YouTube</option>
                                                     <option value="PDF">Arquivo PDF</option>
                                                     <option value="QUIZ">Mini Teste</option>
+                                                    <option value="ESSAY">Desafio Dissertativo</option>
                                                 </select>
                                             </div>
                                         </div>
