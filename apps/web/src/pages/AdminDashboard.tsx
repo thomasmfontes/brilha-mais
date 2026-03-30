@@ -1,4 +1,4 @@
-import { LucideShield, LucideUsers, LucideBookOpen, LucideAlertTriangle, LucideShieldCheck, LucidePlus, LucideLayoutGrid, LucideSearch, LucideUserCog, LucideCheck, LucideTrash2, LucideEdit2, LucidePencil, LucideFolder } from "lucide-react";
+import { LucideShield, LucideUsers, LucideBookOpen, LucideAlertTriangle, LucideShieldCheck, LucidePlus, LucideLayoutGrid, LucideSearch, LucideUserCog, LucideCheck, LucideTrash2, LucideEdit2, LucidePencil, LucideFolder, LucideChevronDown, LucideXCircle, LucideUserCircle } from "lucide-react";
 import { getIconComponent } from "../utils/icons";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -175,6 +175,9 @@ export default function AdminDashboard() {
     const [isFetchingTurmas, setIsFetchingTurmas] = useState(false);
     const [isFetchingCategories, setIsFetchingCategories] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [filterRole, setFilterRole] = useState<'ALL' | 'STUDENT' | 'INSTRUCTOR' | 'ADMIN'>('ALL');
+    const [filterTurma, setFilterTurma] = useState<string>("ALL");
+    const [filterArea, setFilterArea] = useState<string>("ALL");
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isAreaModalOpen, setIsAreaModalOpen] = useState(false);
     const [isTurmaAssignmentModalOpen, setIsTurmaAssignmentModalOpen] = useState(false);
@@ -534,24 +537,31 @@ export default function AdminDashboard() {
         });
     };
 
-    const filteredUsers = users.filter(u =>
-        u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredUsers = users.filter(u => {
+        const matchesSearch = u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            u.email?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesRole = filterRole === 'ALL' || u.role === filterRole;
+        const matchesTurma = filterTurma === 'ALL' || u.turmas?.some(t => t.id === filterTurma);
+        const matchesArea = filterArea === 'ALL' ||
+            u.assignedAreas?.some(a => a.category.id === filterArea) ||
+            u.studentAreas?.some(a => a.category.id === filterArea);
+
+        return matchesSearch && matchesRole && matchesTurma && matchesArea;
+    });
 
     return (
         <div className="space-y-8 md:space-y-10">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:px-0">
                 <div>
-                    <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2 uppercase">Administração</h1>
-                    <p className="text-muted-foreground text-xs md:text-lg">Gestão central do ecossistema Brilha Mais.</p>
+                    <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2 uppercase text-slate-900">Administração</h1>
+                    <p className="text-slate-900 text-xs md:text-lg font-bold">Gestão central do ecossistema Brilha Mais.</p>
                 </div>
 
                 <div className="flex bg-slate-100 p-1.5 rounded-[2rem] border border-slate-200/50 w-full shadow-inner">
                     <div className="flex w-full gap-1">
                         <button
                             onClick={() => handleTabChange('overview')}
-                            className={`flex-1 px-2 md:px-6 py-3 rounded-[1.5rem] text-[9px] md:text-[10px] font-black uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeTab === 'overview' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
+                            className={`flex-1 px-2 md:px-6 py-3 rounded-[1.5rem] text-[9px] md:text-[10px] font-black uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeTab === 'overview' ? 'bg-primary text-white shadow-md' : 'text-slate-900 hover:text-primary hover:bg-white/50'}`}
                         >
                             Visão Geral
                         </button>
@@ -809,20 +819,77 @@ export default function AdminDashboard() {
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-6"
                 >
-                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                        <div className="relative w-full md:w-96">
-                            <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Pesquisar por nome ou e-mail..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-card border border-border rounded-2xl pl-12 pr-6 py-3 outline-none focus:ring-2 focus:ring-primary/20 transition-colors shadow-sm"
-                            />
-                        </div>
-                    </div>
+
 
                     <div className="hidden md:block bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-sm">
+                        {/* Header Interno com Filtros */}
+                        <div className="px-8 py-5 border-b border-border bg-slate-50/20">
+                            <div className="flex items-center justify-between gap-6">
+                                <div className="flex flex-col md:flex-row gap-3 items-center">
+                                    <div className="relative w-full md:w-72 group">
+                                        <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                                        <input
+                                            type="text"
+                                            placeholder="Busca rápida..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-[11px] font-black outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50 transition-all placeholder:text-slate-400 text-slate-950"
+                                        />
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 items-center">
+                                        <FilterSelect
+                                            icon={LucideUserCircle}
+                                            value={filterRole}
+                                            onChange={(val) => setFilterRole(val as any)}
+                                            placeholder="Função"
+                                            options={[
+                                                { id: 'STUDENT', name: 'Alunos' },
+                                                { id: 'INSTRUCTOR', name: 'Instrutores' },
+                                                { id: 'ADMIN', name: 'Administradores' },
+                                            ]}
+                                        />
+
+                                        <FilterSelect
+                                            icon={LucideUsers}
+                                            value={filterTurma}
+                                            onChange={setFilterTurma}
+                                            placeholder="Turma"
+                                            options={turmas.map(t => ({ id: t.id, name: t.name }))}
+                                        />
+
+                                        <FilterSelect
+                                            icon={LucideLayoutGrid}
+                                            value={filterArea}
+                                            onChange={setFilterArea}
+                                            placeholder="Área"
+                                            options={categories.map(c => ({ id: c.id, name: c.name }))}
+                                        />
+
+                                        {(searchQuery || filterRole !== 'ALL' || filterTurma !== 'ALL' || filterArea !== 'ALL') && (
+                                            <button
+                                                onClick={() => {
+                                                    setSearchQuery("");
+                                                    setFilterRole('ALL');
+                                                    setFilterTurma('ALL');
+                                                    setFilterArea('ALL');
+                                                }}
+                                                className="flex items-center gap-1.5 px-3 py-2 text-slate-950 hover:bg-slate-50 rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors border border-transparent hover:border-slate-200 shrink-0"
+                                            >
+                                                <LucideXCircle className="h-3 w-3" />
+                                                Limpar Filtros
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="hidden md:flex items-center shrink-0">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-900 bg-slate-100/50 px-4 py-2 rounded-xl border border-slate-100 whitespace-nowrap">
+                                        TOTAL: <span className="text-primary ml-1">{filteredUsers.length}</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="border-b border-border text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground bg-muted/20">
@@ -988,6 +1055,63 @@ export default function AdminDashboard() {
 
                     {/* Mobile Card List */}
                     <div className="md:hidden space-y-4">
+                        <div className="bg-card border border-border rounded-[2rem] p-4 shadow-sm space-y-3">
+                            <div className="relative group">
+                                <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar usuários..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-black outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 text-slate-950"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <div className="grid grid-cols-1 gap-2">
+                                    <FilterSelect
+                                        icon={LucideUserCircle}
+                                        value={filterRole}
+                                        onChange={(val) => setFilterRole(val as any)}
+                                        placeholder="Filtrar por Função"
+                                        options={[
+                                            { id: 'STUDENT', name: 'Alunos' },
+                                            { id: 'INSTRUCTOR', name: 'Instrutores' },
+                                            { id: 'ADMIN', name: 'Administradores' },
+                                        ]}
+                                    />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <FilterSelect
+                                            icon={LucideUsers}
+                                            value={filterTurma}
+                                            onChange={setFilterTurma}
+                                            placeholder="Turma"
+                                            options={turmas.map(t => ({ id: t.id, name: t.name }))}
+                                        />
+                                        <FilterSelect
+                                            icon={LucideLayoutGrid}
+                                            value={filterArea}
+                                            onChange={setFilterArea}
+                                            placeholder="Área"
+                                            options={categories.map(c => ({ id: c.id, name: c.name }))}
+                                        />
+                                    </div>
+                                </div>
+                                {(searchQuery || filterRole !== 'ALL' || filterTurma !== 'ALL' || filterArea !== 'ALL') && (
+                                    <button
+                                        onClick={() => {
+                                            setSearchQuery("");
+                                            setFilterRole('ALL');
+                                            setFilterTurma('ALL');
+                                            setFilterArea('ALL');
+                                        }}
+                                        className="w-full py-3 text-slate-900 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2 active:scale-95"
+                                    >
+                                        <LucideXCircle className="h-3.5 w-3.5" /> Limpar Filtros
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                         {isLoading ? (
                             <>
                                 <UserCardSkeleton />
@@ -1592,4 +1716,47 @@ function timeAgo(dateString: string) {
     interval = seconds / 60;
     if (interval > 1) return Math.floor(interval) + " min atrás";
     return "agora mesmo";
+}
+
+function FilterSelect({
+    icon: Icon,
+    value,
+    onChange,
+    options,
+    placeholder
+}: {
+    icon: React.ElementType,
+    value: string,
+    onChange: (val: string) => void,
+    options: { id: string, name: string }[],
+    placeholder: string
+}) {
+    const isActive = value !== 'ALL';
+
+    return (
+        <div className={`relative flex items-center group transition-all duration-300`}>
+            <div className={`absolute left-3.5 z-10 transition-colors duration-300 ${isActive ? 'text-primary' : 'text-slate-400 group-hover:text-black'}`}>
+                <Icon className="h-3.5 w-3.5" />
+            </div>
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className={`
+                    appearance-none pl-10 pr-9 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest outline-none transition-all duration-300 cursor-pointer min-w-[130px] w-full lg:w-auto
+                    ${isActive
+                        ? `bg-white border border-primary shadow-lg shadow-primary/5 text-slate-900`
+                        : 'bg-transparent border border-transparent text-slate-900 hover:bg-slate-50 hover:border-slate-200'
+                    }
+                `}
+            >
+                <option value="ALL" className="text-slate-500">{placeholder}</option>
+                {options.map(opt => (
+                    <option key={opt.id} value={opt.id} className="text-slate-900 font-bold">{opt.name}</option>
+                ))}
+            </select>
+            <div className={`absolute right-3.5 pointer-events-none transition-colors duration-300 ${isActive ? 'text-primary' : 'text-slate-300'}`}>
+                <LucideChevronDown className="h-3 w-3" />
+            </div>
+        </div>
+    );
 }

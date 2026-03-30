@@ -20,6 +20,7 @@ export default function InstructorDashboard() {
     const [stats, setStats] = useState<any>(null);
     const [isLoadingStats, setIsLoadingStats] = useState(true);
     const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+    const [userRole, setUserRole] = useState<string | null>(null);
     const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadPreview, setUploadPreview] = useState<string | null>(null);
@@ -77,11 +78,14 @@ export default function InstructorDashboard() {
     const fetchUser = async () => {
         try {
             const response = await api.get('/users/me');
-            if (response.data && response.data.assignedAreas) {
-                const categories = response.data.assignedAreas.map((area: any) => area.category);
-                setAssignedCategories(categories);
-                if (categories.length > 0) {
-                    setNewCourse(prev => ({ ...prev, category: categories[0].id }));
+            if (response.data) {
+                setUserRole(response.data.role);
+                if (response.data.assignedAreas) {
+                    const categories = response.data.assignedAreas.map((area: any) => area.category);
+                    setAssignedCategories(categories);
+                    if (categories.length > 0) {
+                        setNewCourse(prev => ({ ...prev, category: categories[0].id }));
+                    }
                 }
             }
         } catch (error) {
@@ -316,6 +320,7 @@ export default function InstructorDashboard() {
                         <thead>
                             <tr className="border-b border-slate-100 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 bg-slate-50/50">
                                 <th className="px-8 py-4">Informações do Curso</th>
+                                {userRole === 'ADMIN' && <th className="px-8 py-4 text-center">Instrutor</th>}
                                 <th className="px-8 py-4">Status</th>
                                 <th className="px-8 py-4 text-center">Alunos</th>
                                 <th className="px-8 py-4 text-right">Gerenciamento</th>
@@ -368,6 +373,11 @@ export default function InstructorDashboard() {
                                                 </div>
                                             </div>
                                         </td>
+                                        {userRole === 'ADMIN' && (
+                                            <td className="px-8 py-5 text-center">
+                                                <span className="text-xs font-bold text-slate-600 uppercase tracking-tight">{(course as any).instructorName}</span>
+                                            </td>
+                                        )}
                                         <td className="px-8 py-5">
                                             <button
                                                 onClick={() => toggleStatus(course)}
@@ -474,6 +484,11 @@ export default function InstructorDashboard() {
                                         <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">
                                             {typeof course.category === 'object' ? (course.category as any)?.name : (course.category || 'Sem categoria')}
                                         </span>
+                                        {userRole === 'ADMIN' && (
+                                            <span className="text-[8px] font-black text-primary uppercase tracking-[0.15em] mt-1 bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10 w-fit">
+                                                {(course as any).instructorName}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 

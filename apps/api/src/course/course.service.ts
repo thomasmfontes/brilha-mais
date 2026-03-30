@@ -91,11 +91,17 @@ export class CourseService {
         }));
     }
 
-    async findByInstructor(instructorId: string) {
+    async findByInstructor(instructorId: string, role?: string) {
+        const isAdmin = role === 'ADMIN';
+        const where = isAdmin ? {} : { instructorId };
+
         const courses = await this.prisma.course.findMany({
-            where: { instructorId },
+            where,
             include: {
                 category: true,
+                instructor: {
+                    select: { name: true }
+                },
                 _count: {
                     select: { enrollments: true }
                 }
@@ -107,7 +113,8 @@ export class CourseService {
             ...course,
             status: course.isPublished ? 'Publicado' : 'Privado',
             students: course._count?.enrollments || 0,
-            category: course.category?.name || 'Sem categoria'
+            category: course.category?.name || 'Sem categoria',
+            instructorName: course.instructor?.name || 'Instrutor'
         }));
     }
 
@@ -449,13 +456,14 @@ export class CourseService {
         return this.findOne(id);
     }
 
-    async getCourseStudentProgress(courseId: string, studentId: string, instructorId: string) {
+    async getCourseStudentProgress(courseId: string, studentId: string, instructorId: string, role?: string) {
+        const isAdmin = role === 'ADMIN';
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
             select: { instructorId: true }
         });
 
-        if (!course || course.instructorId !== instructorId) {
+        if (!course || (!isAdmin && course.instructorId !== instructorId)) {
             throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
         }
 
@@ -489,13 +497,14 @@ export class CourseService {
         }));
     }
 
-    async findStudentsByCourse(courseId: string, instructorId: string) {
+    async findStudentsByCourse(courseId: string, instructorId: string, role?: string) {
+        const isAdmin = role === 'ADMIN';
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
             select: { instructorId: true }
         });
 
-        if (!course || course.instructorId !== instructorId) {
+        if (!course || (!isAdmin && course.instructorId !== instructorId)) {
             throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
         }
 
@@ -516,13 +525,14 @@ export class CourseService {
         }));
     }
 
-    async getLessonStudentsProgress(courseId: string, lessonId: string, instructorId: string) {
+    async getLessonStudentsProgress(courseId: string, lessonId: string, instructorId: string, role?: string) {
+        const isAdmin = role === 'ADMIN';
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
             select: { instructorId: true }
         });
 
-        if (!course || course.instructorId !== instructorId) {
+        if (!course || (!isAdmin && course.instructorId !== instructorId)) {
             throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
         }
 

@@ -37,13 +37,13 @@ export class CourseController {
   @UseGuards(JwtAuthGuard)
   @Get('instructor')
   getInstructorCourses(@Req() req: any) {
-    return this.courseService.findByInstructor(req.user.id);
+    return this.courseService.findByInstructor(req.user.id, req.user.role);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/students')
   getCourseStudents(@Param('id') id: string, @Req() req: any) {
-    return this.courseService.findStudentsByCourse(id, req.user.id);
+    return this.courseService.findStudentsByCourse(id, req.user.id, req.user.role);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -53,7 +53,7 @@ export class CourseController {
     @Param('studentId') studentId: string,
     @Req() req: any
   ) {
-    return this.courseService.getCourseStudentProgress(id, studentId, req.user.id);
+    return this.courseService.getCourseStudentProgress(id, studentId, req.user.id, req.user.role);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -63,7 +63,7 @@ export class CourseController {
     @Param('lessonId') lessonId: string,
     @Req() req: any
   ) {
-    return this.courseService.getLessonStudentsProgress(id, lessonId, req.user.id);
+    return this.courseService.getLessonStudentsProgress(id, lessonId, req.user.id, req.user.role);
   }
 
   @UseGuards(JwtAuthGuard)
