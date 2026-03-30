@@ -6,6 +6,13 @@ import {
 } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
 
+declare global {
+    interface Window {
+        YT: any;
+        onYouTubeIframeAPIReady?: () => void;
+    }
+}
+
 interface YouTubePlayerProps {
     videoId: string;
     onProgress?: (progress: { playedSeconds: number; played: number }) => void;
