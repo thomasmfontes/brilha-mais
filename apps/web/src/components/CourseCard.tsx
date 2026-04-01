@@ -48,9 +48,7 @@ export function CourseCard({ id, title, instructor, thumbnail, category, rating 
             <h3 className="font-black text-slate-900 text-base leading-tight group-hover:text-primary transition-colors line-clamp-2 uppercase tracking-tight">
               {title}
             </h3>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-              Expert: {instructorName}
-            </p>
+
           </div>
 
           {/* Progress (if enrolled) */}
