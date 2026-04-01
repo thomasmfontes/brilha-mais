@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { LucideChevronLeft, LucideUsers, LucideFileText, LucideCheck, LucideClock, LucidePlus, LucideDownload, LucideX } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { LucideChevronLeft, LucideUsers, LucideFileText, LucideCheck, LucideClock, LucidePlus, LucideDownload, LucideX, LucideMaximize2, LucideXCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -28,6 +28,7 @@ export default function InstructorCourseProgress() {
     const [downloadModal, setDownloadModal] = useState<{ open: boolean; materialUrl: string; materialName: string; list: any[]; loading: boolean }>({
         open: false, materialUrl: '', materialName: '', list: [], loading: false
     });
+    const [previewAvatar, setPreviewAvatar] = useState<{ url: string; name: string } | null>(null);
 
     useEffect(() => {
         if (courseId) {
@@ -522,7 +523,15 @@ export default function InstructorCourseProgress() {
                                 downloadModal.list.map((item, idx) => (
                                     <div key={idx} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50/50 border border-slate-100 group">
                                         <div className="flex items-center gap-4 min-w-0">
-                                            <div className="h-11 w-11 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                                            <button 
+                                                onClick={() => setPreviewAvatar({ 
+                                                    url: item.user.avatarUrl || '', 
+                                                    name: item.user.name || '' 
+                                                })}
+                                                disabled={!item.user.avatarUrl}
+                                                className="h-11 w-11 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 shadow-sm transition-all hover:scale-110 active:scale-95 group/student-avatar relative"
+                                                title="Clique para expandir"
+                                            >
                                                 {item.user.avatarUrl ? (
                                                     <img src={item.user.avatarUrl} alt="" className="w-full h-full object-cover" />
                                                 ) : (
@@ -530,7 +539,7 @@ export default function InstructorCourseProgress() {
                                                         {item.user.name?.substring(0, 2).toUpperCase()}
                                                     </div>
                                                 )}
-                                            </div>
+                                            </button>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-black text-slate-800 uppercase tracking-tight truncate group-hover:text-primary transition-colors">{item.user.name}</p>
                                                 <p className="text-[10px] font-medium text-slate-400 truncate">{item.user.email}</p>
@@ -554,6 +563,43 @@ export default function InstructorCourseProgress() {
                     </motion.div>
                 </div>
             )}
+            {/* Lightbox for Avatars */}
+            <AnimatePresence>
+                {previewAvatar && (
+                    <div className="fixed inset-0 z-[20000] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setPreviewAvatar(null)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative z-[20001] w-full max-w-lg aspect-square bg-white rounded-[2.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white animate-in zoom-in duration-300"
+                        >
+                            {previewAvatar.url ? (
+                                <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-300 font-black text-6xl uppercase">
+                                    {previewAvatar.name.charAt(0)}
+                                </div>
+                            )}
+                            <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-8 md:p-10">
+                                <p className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter shadow-sm">{previewAvatar.name}</p>
+                            </div>
+                            <button
+                                onClick={() => setPreviewAvatar(null)}
+                                className="absolute top-6 right-6 h-10 w-10 md:h-12 md:w-12 bg-black/20 hover:bg-black/40 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all hover:scale-110 active:scale-95"
+                            >
+                                <LucideXCircle className="h-5 w-5 md:h-6 md:w-6" />
+                            </button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

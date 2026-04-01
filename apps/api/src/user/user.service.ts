@@ -221,6 +221,23 @@ export class UserService {
     return user;
   }
 
+  async updateProfile(userId: string, data: { name?: string; avatarUrl?: string }, actorId?: string) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data,
+    });
+
+    await this.audit.log(
+      'Atualização de Perfil',
+      user.name ?? 'Usuário',
+      userId,
+      actorId || userId,
+      { ...data, userName: user.name }
+    );
+
+    return user;
+  }
+
   async markWelcomeVideoAsSeen(userId: string) {
     return this.prisma.user.update({
       where: { id: userId },

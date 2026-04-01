@@ -10,10 +10,27 @@ export class UploadController {
     private supabase: any;
 
     constructor() {
-        const url = process.env.SUPABASE_URL;
-        const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (url && key) {
+        // Initial initialization attempt
+        this.getSupabase();
+    }
+
+    private getSupabase() {
+        if (this.supabase) return this.supabase;
+
+        const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+        const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+        if (!url || !key) {
+            console.error('Supabase URL ou Key não encontrados no process.env');
+            return null;
+        }
+
+        try {
             this.supabase = createClient(url, key);
+            return this.supabase;
+        } catch (e) {
+            console.error('Erro ao criar cliente Supabase:', e);
+            return null;
         }
     }
 
@@ -27,43 +44,48 @@ export class UploadController {
         }),
     )
     async uploadFile(@UploadedFile() file: Express.Multer.File) {
-        if (!file) {
-            throw new HttpException('Arquivo não enviado ou inválido', HttpStatus.BAD_REQUEST);
+        try {
+            if (!file) {
+                throw new HttpException('Arquivo não enviado ou inválido', HttpStatus.BAD_REQUEST);
+            }
+
+            const supabase = this.getSupabase();
+            if (!supabase) {
+                console.error('Falha ao inicializar Supabase - verifique SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY');
+                throw new HttpException('Configuração de storage ausente no servidor', HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            const timestamp = Date.now();
+            const originalName = file.originalname || 'upload.jpg';
+            const fileExt = originalName.split('.').pop() || 'jpg';
+            const fileName = `${timestamp}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `courses/${fileName}`;
+
+            const { data, error } = await supabase.storage
+                .from('course-images')
+                .upload(filePath, file.buffer, {
+                    contentType: file.mimetype,
+                    upsert: true
+                });
+
+            if (error) {
+                console.error('Erro no Supabase Storage:', error);
+                throw new HttpException(`Erro ao salvar arquivo no storage: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+            // Pegar a URL pública
+            const { data: { publicUrl } } = supabase.storage
+                .from('course-images')
+                .getPublicUrl(filePath);
+
+            return {
+                url: publicUrl,
+                message: 'Upload realizado com sucesso no Supabase Storage'
+            };
+        } catch (error) {
+            console.error('Erro geral no uploadFile:', error);
+            if (error instanceof HttpException) throw error;
+            throw new HttpException(`Erro interno no servidor de upload: ${error.message || 'Desconhecido'}`, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        const supabaseUrl = process.env.SUPABASE_URL;
-        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-        if (!supabaseUrl || !supabaseKey) {
-            console.error('SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY não configurados');
-            throw new HttpException('Configuração de storage ausente no servidor', HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        const timestamp = Date.now();
-        const fileExt = file.originalname.split('.').pop();
-        const fileName = `${timestamp}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `courses/${fileName}`;
-
-        const { data, error } = await this.supabase.storage
-            .from('course-images')
-            .upload(filePath, file.buffer, {
-                contentType: file.mimetype,
-                upsert: true
-            });
-
-        if (error) {
-            console.error('Erro no Supabase Storage:', error);
-            throw new HttpException(`Erro ao salvar arquivo: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        // Pegar a URL pública
-        const { data: { publicUrl } } = this.supabase.storage
-            .from('course-images')
-            .getPublicUrl(filePath);
-
-        return {
-            url: publicUrl,
-            message: 'Upload realizado com sucesso no Supabase Storage'
-        };
     }
 }

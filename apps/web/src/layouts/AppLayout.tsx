@@ -10,7 +10,9 @@ import {
     LucideMonitorPlay,
     LucideBookOpen,
     LucideArrowRight,
-    LucideCheckCircle
+    LucideCheckCircle,
+    LucideCamera,
+    LucideLoader2
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
@@ -19,6 +21,7 @@ import logo from "../assets/logo.png";
 import icon from "../assets/icon.png";
 import { WelcomeVideoModal } from "../components/WelcomeVideoModal";
 import api from "../utils/api";
+import { toast } from "react-hot-toast";
 
 const menuItems = [
     { icon: <LucideLayoutDashboard className="h-5 w-5" />, label: "Dashboard", path: "/dashboard" },
@@ -44,6 +47,8 @@ export function AppLayout() {
     const location = useLocation();
     const navigate = useNavigate();
     const scrollRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
 
     useEffect(() => {
         // Reset internal scroll on route change
@@ -98,6 +103,46 @@ export function AppLayout() {
     const visibleAdminItems = useMemo(() => adminItems.filter(item => item.roles.includes(userRole)), [userRole]);
 
     const activeIndex = useMemo(() => menuItems.findIndex(item => item.path === location.pathname), [location.pathname]);
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Basic validation
+        if (!file.type.startsWith('image/')) {
+            toast.error("Por favor, selecione uma imagem válida.");
+            return;
+        }
+
+        setIsUpdatingAvatar(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            // 1. Upload to storage
+            const uploadRes = await api.post('/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            const newAvatarUrl = uploadRes.data.url;
+
+            // 2. Update user profile
+            await api.patch('/users/me', { avatarUrl: newAvatarUrl });
+
+            // 3. Update local state
+            setUserAvatar(newAvatarUrl);
+            toast.success("Foto de perfil atualizada!");
+        } catch (error) {
+            console.error("Error updating avatar:", error);
+            toast.error("Erro ao atualizar foto de perfil.");
+        } finally {
+            setIsUpdatingAvatar(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     return (
         <div className="h-[100dvh] w-full bg-background text-foreground flex overflow-hidden">
@@ -196,21 +241,47 @@ export function AppLayout() {
                                     {userRole === 'admin' ? 'Administrador' : userRole === 'instructor' ? 'Instrutor' : 'Aluno'}
                                 </p>
                             </div>
-                            <div className="h-10 w-10 md:h-9 md:w-9 bg-slate-100 rounded-xl md:rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm uppercase font-black text-slate-400 text-xs shrink-0">
+                            
+                            {/* Hidden File Input */}
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                onChange={handleFileChange} 
+                                className="hidden" 
+                                accept="image/*" 
+                            />
+
+                            <button 
+                                onClick={handleAvatarClick}
+                                disabled={isUpdatingAvatar}
+                                className="relative h-10 w-10 md:h-9 md:w-9 bg-slate-100 rounded-xl md:rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm uppercase font-black text-slate-400 text-xs shrink-0 group/avatar transition-all hover:border-primary/30 active:scale-95"
+                                title="Alterar foto de perfil"
+                            >
                                 {userAvatar ? (
                                     <img 
                                         src={userAvatar.startsWith('http') ? userAvatar : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${userAvatar}`} 
                                         alt={userName} 
-                                        className="h-full w-full object-cover" 
+                                        className={`h-full w-full object-cover transition-all ${isUpdatingAvatar ? 'opacity-30 blur-[2px]' : 'group-hover/avatar:scale-110 group-hover/avatar:opacity-40'}`} 
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).style.display = 'none';
                                             (e.target as HTMLImageElement).parentElement!.innerHTML = userName ? userName.charAt(0) : '';
                                         }}
                                     />
                                 ) : (
-                                    userName ? userName.charAt(0) : <LucideSettings2 className="h-4 w-4" />
+                                    <span className={isUpdatingAvatar ? 'opacity-0' : ''}>
+                                        {userName ? userName.charAt(0) : <LucideSettings2 className="h-4 w-4" />}
+                                    </span>
                                 )}
-                            </div>
+
+                                {/* Hover Overlay / Loading Indicator */}
+                                <div className={`absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 group-hover/avatar:opacity-100 transition-opacity ${isUpdatingAvatar ? 'opacity-100' : ''}`}>
+                                    {isUpdatingAvatar ? (
+                                        <LucideLoader2 className="h-4 w-4 text-primary animate-spin" />
+                                    ) : (
+                                        <LucideCamera className="h-4 w-4 text-primary" />
+                                    )}
+                                </div>
+                            </button>
                         </div>
 
                         {/* Mobile Menu Toggle */}
@@ -311,11 +382,15 @@ export function AppLayout() {
 
                                 <div className="p-8 border-t border-slate-50 bg-slate-50/30">
                                     <div className="flex items-center gap-4 p-4 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm">
-                                        <div className="h-12 w-12 bg-slate-50 rounded-2xl border-2 border-slate-100 flex items-center justify-center overflow-hidden font-black text-slate-400 text-lg shadow-inner">
+                                        <button 
+                                            onClick={handleAvatarClick}
+                                            disabled={isUpdatingAvatar}
+                                            className="h-12 w-12 bg-slate-50 rounded-2xl border-2 border-slate-100 flex items-center justify-center overflow-hidden font-black text-slate-400 text-lg shadow-inner relative group/avatar-mobile"
+                                        >
                                             {userAvatar ? (
                                                 <img 
                                                     src={userAvatar} 
-                                                    className="h-full w-full object-cover" 
+                                                    className={`h-full w-full object-cover transition-all ${isUpdatingAvatar ? 'opacity-30' : ''}`}
                                                     onError={(e) => {
                                                         (e.target as HTMLImageElement).style.display = 'none';
                                                         (e.target as HTMLImageElement).parentElement!.innerText = userName ? userName.charAt(0) : '';
@@ -324,7 +399,12 @@ export function AppLayout() {
                                             ) : (
                                                 userName.charAt(0)
                                             )}
-                                        </div>
+                                            {isUpdatingAvatar && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+                                                    <LucideLoader2 className="h-5 w-5 text-primary animate-spin" />
+                                                </div>
+                                            )}
+                                        </button>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-black uppercase tracking-tight text-slate-900 truncate leading-none mb-1">{userName || 'Usuário'}</p>
                                             <div className="flex items-center gap-1.5">

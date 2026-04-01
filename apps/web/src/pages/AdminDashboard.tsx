@@ -1,6 +1,6 @@
-import { LucideShield, LucideUsers, LucideBookOpen, LucideAlertTriangle, LucideShieldCheck, LucidePlus, LucideLayoutGrid, LucideSearch, LucideUserCog, LucideCheck, LucideTrash2, LucideEdit2, LucidePencil, LucideFolder, LucideChevronDown, LucideXCircle, LucideUserCircle } from "lucide-react";
+import { LucideShield, LucideUsers, LucideBookOpen, LucideAlertTriangle, LucideShieldCheck, LucidePlus, LucideLayoutGrid, LucideSearch, LucideUserCog, LucideCheck, LucideTrash2, LucideEdit2, LucidePencil, LucideFolder, LucideChevronDown, LucideXCircle, LucideUserCircle, LucideMaximize2, LucideLoader2, LucideCamera } from "lucide-react";
 import { getIconComponent } from "../utils/icons";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import toast from "react-hot-toast";
@@ -192,11 +192,53 @@ export default function AdminDashboard() {
     const [editingNameFor, setEditingNameFor] = useState<string | null>(null);
     const [editingNameValue, setEditingNameValue] = useState('');
     const [isMaterialsModalOpen, setIsMaterialsModalOpen] = useState(false);
+    const [previewAvatar, setPreviewAvatar] = useState<{ id: string; url: string; name: string } | null>(null);
+    const [isUpdatingAvatarFor, setIsUpdatingAvatarFor] = useState<string | null>(null);
+    const [targetUserIdForAvatar, setTargetUserIdForAvatar] = useState<string | null>(null);
+    const listFileInputRef = useRef<HTMLInputElement>(null);
 
     const handleTabChange = (tab: typeof activeTab) => {
         if (tab !== activeTab) {
             setIsLoading(true);
             setActiveTab(tab);
+        }
+    };
+
+    const handleListAvatarEditClick = (userId: string) => {
+        setTargetUserIdForAvatar(userId);
+        listFileInputRef.current?.click();
+    };
+
+    const handleListAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        const userId = targetUserIdForAvatar;
+        if (!file || !userId) return;
+
+        if (!file.type.startsWith('image/')) {
+            toast.error("Por favor, selecione uma imagem válida.");
+            return;
+        }
+
+        setIsUpdatingAvatarFor(userId);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const uploadRes = await api.post('/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            const newAvatarUrl = uploadRes.data.url;
+            await api.patch(`/users/${userId}`, { avatarUrl: newAvatarUrl });
+
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, avatarUrl: newAvatarUrl } : u));
+            toast.success("Foto de perfil atualizada!");
+        } catch (error) {
+            console.error("Error updating user avatar:", error);
+            toast.error("Erro ao atualizar foto.");
+        } finally {
+            setIsUpdatingAvatarFor(null);
+            setTargetUserIdForAvatar(null);
+            if (listFileInputRef.current) listFileInputRef.current.value = '';
         }
     };
 
@@ -911,13 +953,26 @@ export default function AdminDashboard() {
                                     <tr key={user.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition-colors">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4">
-                                                {/* Avatar — photo from Google login or letter fallback */}
-                                                <div className="h-10 w-10 rounded-full flex items-center justify-center font-black text-primary border border-primary/20 bg-primary/10 shrink-0 overflow-hidden">
+                                                <button 
+                                                    onClick={() => setPreviewAvatar({ 
+                                                        id: user.id,
+                                                        url: user.avatarUrl?.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`, 
+                                                        name: user.name || '' 
+                                                    })}
+                                                    className="relative h-10 w-10 rounded-full flex items-center justify-center font-black text-primary border border-primary/20 bg-primary/10 shrink-0 overflow-hidden group/avatar shadow-sm hover:border-primary/50 transition-all hover:scale-105 active:scale-95"
+                                                    title="Clique para expandir"
+                                                >
                                                     {user.avatarUrl
-                                                        ? <img src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`} alt={user.name || ''} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
-                                                        : user.name?.charAt(0) || '?'
+                                                        ? <img src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`} alt={user.name || ''} className={`h-full w-full object-cover transition-all ${isUpdatingAvatarFor === user.id ? 'opacity-30 blur-[2px]' : 'group-hover/avatar:scale-110'}`} referrerPolicy="no-referrer" />
+                                                        : <span className={isUpdatingAvatarFor === user.id ? 'opacity-0' : ''}>{user.name?.charAt(0) || '?'}</span>
                                                     }
-                                                </div>
+                                                    
+                                                    {isUpdatingAvatarFor === user.id && (
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/5">
+                                                            <LucideLoader2 className="h-4 w-4 text-primary animate-spin" />
+                                                        </div>
+                                                    )}
+                                                </button>
                                                 <div>
                                                     {editingNameFor === user.id ? (
                                                         <input
@@ -1124,13 +1179,25 @@ export default function AdminDashboard() {
                                 </div>
 
                                 <div className="flex items-center gap-5">
-                                    <div className="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-primary border-2 border-slate-100 bg-slate-50 shrink-0 overflow-hidden shadow-sm relative group/avatar">
+                                    <button 
+                                        onClick={() => setPreviewAvatar({ 
+                                            id: user.id,
+                                            url: user.avatarUrl?.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`, 
+                                            name: user.name || '' 
+                                        })}
+                                        className="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-primary border-2 border-slate-100 bg-slate-50 shrink-0 overflow-hidden shadow-sm relative group/avatar hover:border-primary/50 transition-all hover:scale-105"
+                                    >
                                         {user.avatarUrl
-                                            ? <img src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`} alt={user.name || ''} className="h-full w-full object-cover group-hover/avatar:scale-110 transition-transform" referrerPolicy="no-referrer" />
-                                            : <span className="text-xl uppercase">{user.name?.charAt(0) || '?'}</span>
+                                            ? <img src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`} alt={user.name || ''} className={`h-full w-full object-cover transition-all ${isUpdatingAvatarFor === user.id ? 'opacity-30 blur-[2px]' : 'group-hover/avatar:scale-110'}`} referrerPolicy="no-referrer" />
+                                            : <span className={`text-xl uppercase ${isUpdatingAvatarFor === user.id ? 'opacity-0' : ''}`}>{user.name?.charAt(0) || '?'}</span>
                                         }
-                                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover/avatar:opacity-100 transition-opacity" />
-                                    </div>
+                                        
+                                        {isUpdatingAvatarFor === user.id && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/5">
+                                                <LucideLoader2 className="h-5 w-5 text-primary animate-spin" />
+                                            </div>
+                                        )}
+                                    </button>
                                     <div className="min-w-0 flex-1">
                                         {editingNameFor === user.id ? (
                                             <input
@@ -1684,6 +1751,70 @@ export default function AdminDashboard() {
                     userName={selectedUser.name || 'Aluno'}
                 />
             )}
+
+            {/* Hidden File Input for List Avatars */}
+            <input 
+                type="file" 
+                ref={listFileInputRef} 
+                onChange={handleListAvatarFileChange} 
+                className="hidden" 
+                accept="image/*" 
+            />
+
+            {/* Lightbox for Avatars */}
+            <AnimatePresence>
+                {previewAvatar && (
+                    <div className="fixed inset-0 z-[20000] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setPreviewAvatar(null)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative z-[20001] w-full max-w-lg aspect-square bg-white rounded-[2.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white animate-in zoom-in duration-300 group"
+                        >
+                            {previewAvatar.url ? (
+                                <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-300 font-black text-6xl uppercase">
+                                    {previewAvatar.name.charAt(0)}
+                                </div>
+                            )}
+
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 transition-opacity" />
+
+                            <div className="absolute bottom-0 left-0 w-full p-8 md:p-10 flex items-end justify-between gap-4">
+                                <div className="min-w-0">
+                                    <p className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter shadow-sm truncate">{previewAvatar.name}</p>
+                                    <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white/50 mt-1">Foto de Perfil</p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        handleListAvatarEditClick(previewAvatar.id);
+                                        setPreviewAvatar(null);
+                                    }}
+                                    className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 shrink-0"
+                                >
+                                    <LucideCamera className="h-4 w-4" />
+                                    Trocar Foto
+                                </button>
+                            </div>
+                            
+                            <button
+                                onClick={() => setPreviewAvatar(null)}
+                                className="absolute top-6 right-6 h-10 w-10 md:h-12 md:w-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110 active:scale-95 border border-white/10"
+                            >
+                                <LucideXCircle className="h-5 w-5 md:h-6 md:w-6" />
+                            </button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

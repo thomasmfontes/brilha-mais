@@ -113,9 +113,20 @@ export class UserController {
     return this.userService.remove(id, req.user.id);
   }
 
+  @Patch(':id')
+  @Roles(Role.ADMIN)
+  updateAnyUser(@Param('id') id: string, @Body() data: { name?: string; avatarUrl?: string }, @Req() req: any) {
+    return this.userService.updateProfile(id, data, req.user.id);
+  }
+
   @Patch('me/welcome-video')
   markWelcomeVideoAsSeen(@Req() req: any) {
     return this.userService.markWelcomeVideoAsSeen(req.user.id);
+  }
+
+  @Patch('me')
+  updateMe(@Req() req: any, @Body() data: { name?: string; avatarUrl?: string }) {
+    return this.userService.updateProfile(req.user.id, data);
   }
 
   // --- Student Materials ---
