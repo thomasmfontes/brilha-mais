@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LucidePlay, LucideVideo, LucideX } from "lucide-react";
+import api from "../utils/api";
 
 const RESOURCES = [
     {
@@ -17,19 +18,46 @@ const RESOURCES = [
 export default function ResourcesPage() {
     const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
+    const [userRole, setUserRole] = useState<string>('student');
+    const [userTurmas, setUserTurmas] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         setIsMounted(true);
-        console.log("ResourcesPage mounted");
+        fetchUserProfile();
     }, []);
 
+    const fetchUserProfile = async () => {
+        try {
+            const { data } = await api.get('/users/me');
+            setUserRole(data.role?.toLowerCase() || 'student');
+            setUserTurmas(data.turmas || []);
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const visibleResources = useMemo(() => {
+        return RESOURCES.filter(item => {
+            if (item.id === 'welcome') {
+                const isStudent = userRole === 'student' || userRole === 'user';
+                const hasTurma = userTurmas.length > 0;
+                if (isStudent) {
+                    return hasTurma;
+                }
+                return true;
+            }
+            return true;
+        });
+    }, [userRole, userTurmas]);
+
     const handleSelectVideo = (src: string) => {
-        console.log("Selecting video:", src);
         setSelectedVideo(src);
     };
 
     const handleClose = () => {
-        console.log("Closing video");
         setSelectedVideo(null);
     };
 
@@ -43,44 +71,57 @@ export default function ResourcesPage() {
 
             {/* Grid for 9:16 Vertical Content */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {RESOURCES.map((item) => (
-                    <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        whileHover={{ y: -8 }}
-                        className="flex flex-col gap-4 group cursor-pointer relative z-0"
-                        onClick={() => handleSelectVideo(item.videoSrc!)}
-                    >
-                        <div className="relative aspect-[9/16] rounded-[2rem] overflow-hidden bg-slate-100 shadow-md border-4 border-white group-hover:border-primary transition-[border-color,transform] duration-500 shadow-slate-200/30">
-                            <div className="absolute inset-0 bg-slate-100" />
-                            <video
-                                src={item.videoSrc}
-                                className="absolute inset-0 w-full h-full object-contain scale-[1.1] z-10 pointer-events-none"
-                                muted
-                                playsInline
-                            />
+                {isLoading ? (
+                    // Skeleton Loading
+                    [...Array(4)].map((_, i) => (
+                        <div key={i} className="flex flex-col gap-4 animate-pulse">
+                            <div className="aspect-[9/16] rounded-[2rem] bg-slate-100 border-4 border-white shadow-sm" />
+                            <div className="px-2 space-y-2">
+                                <div className="h-4 bg-slate-100 rounded-md w-3/4" />
+                                <div className="h-3 bg-slate-50 rounded-md w-1/2" />
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    visibleResources.map((item) => (
+                        <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            whileHover={{ y: -8 }}
+                            className="flex flex-col gap-4 group cursor-pointer relative z-0"
+                            onClick={() => handleSelectVideo(item.videoSrc!)}
+                        >
+                            <div className="relative aspect-[9/16] rounded-[2rem] overflow-hidden bg-slate-100 shadow-md border-4 border-white group-hover:border-primary transition-[border-color,transform] duration-500 shadow-slate-200/30">
+                                <div className="absolute inset-0 bg-slate-100" />
+                                <video
+                                    src={item.videoSrc}
+                                    className="absolute inset-0 w-full h-full object-contain scale-[1.1] z-10 pointer-events-none"
+                                    muted
+                                    playsInline
+                                />
 
-                            {/* Play Overlay */}
-                            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] pointer-events-none">
-                                <div className="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl transform scale-75 group-hover:scale-100 transition-transform duration-500">
-                                    <LucidePlay className="h-6 w-6 fill-current ml-1" />
+                                {/* Play Overlay */}
+                                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] pointer-events-none">
+                                    <div className="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl transform scale-75 group-hover:scale-100 transition-transform duration-500">
+                                        <LucidePlay className="h-6 w-6 fill-current ml-1" />
+                                    </div>
+                                </div>
+
+                                <div className="absolute top-4 left-4 z-30 pointer-events-none">
+                                    <span className="bg-primary text-white px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-lg">
+                                        {item.badge}
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="absolute top-4 left-4 z-30 pointer-events-none">
-                                <span className="bg-primary text-white px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-lg">
-                                    {item.badge}
-                                </span>
+                            <div className="px-2">
+                                <h3 className="text-sm md:text-base font-black uppercase italic tracking-tighter text-slate-900 group-hover:text-primary transition-colors">{item.title}</h3>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 italic">{item.description}</p>
                             </div>
-                        </div>
-
-                        <div className="px-2">
-                            <h3 className="text-sm md:text-base font-black uppercase italic tracking-tighter text-slate-900 group-hover:text-primary transition-colors">{item.title}</h3>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 italic">{item.description}</p>
-                        </div>
-                    </motion.div>
-                ))}
+                        </motion.div>
+                    ))
+                )}
             </div>
 
             {/* Immersive Video Modal */}
