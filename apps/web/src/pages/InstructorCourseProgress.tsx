@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { LucideChevronLeft, LucideUsers, LucideFileText, LucideCheck, LucideClock, LucidePlus } from "lucide-react";
+import { LucideChevronLeft, LucideUsers, LucideFileText, LucideCheck, LucideClock, LucidePlus, LucideDownload, LucideX } from "lucide-react";
 import toast from "react-hot-toast";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -23,6 +23,11 @@ export default function InstructorCourseProgress() {
     const [isLoadingModules, setIsLoadingModules] = useState(false);
     const [isLoadingLessonStudents, setIsLoadingLessonStudents] = useState(false);
     const [isLoadingCourse, setIsLoadingCourse] = useState(true);
+    const [downloadCounts, setDownloadCounts] = useState<any[]>([]);
+    const [isLoadingCounts, setIsLoadingCounts] = useState(false);
+    const [downloadModal, setDownloadModal] = useState<{ open: boolean; materialUrl: string; materialName: string; list: any[]; loading: boolean }>({
+        open: false, materialUrl: '', materialName: '', list: [], loading: false
+    });
 
     useEffect(() => {
         if (courseId) {
@@ -75,6 +80,7 @@ export default function InstructorCourseProgress() {
     const fetchLessonStudents = async (lesson: any) => {
         setSelectedLesson(lesson);
         setIsLoadingLessonStudents(true);
+        setDownloadCounts([]);
         try {
             const { data } = await api.get(`/courses/${courseId}/lessons/${lesson.id}/students`);
             setLessonStudents(data);
@@ -83,6 +89,24 @@ export default function InstructorCourseProgress() {
             toast.error("Erro ao carregar lista de alunos da aula.");
         } finally {
             setIsLoadingLessonStudents(false);
+        }
+        // Load download counts in parallel (don't block)
+        if (lesson.materials?.length > 0) {
+            setIsLoadingCounts(true);
+            api.get(`/material-downloads/counts?lessonId=${lesson.id}`)
+                .then(({ data }) => setDownloadCounts(data))
+                .catch(() => {})
+                .finally(() => setIsLoadingCounts(false));
+        }
+    };
+
+    const openDownloadModal = async (materialUrl: string, materialName: string, lessonId: string) => {
+        setDownloadModal({ open: true, materialUrl, materialName, list: [], loading: true });
+        try {
+            const { data } = await api.get(`/material-downloads?lessonId=${lessonId}&materialUrl=${encodeURIComponent(materialUrl)}`);
+            setDownloadModal(prev => ({ ...prev, list: data, loading: false }));
+        } catch {
+            setDownloadModal(prev => ({ ...prev, loading: false }));
         }
     };
 
@@ -348,6 +372,48 @@ export default function InstructorCourseProgress() {
                                     ))}
                                 </div>
                             )}
+                            
+                            {/* Materials Download Section */}
+                            {selectedLesson?.materials?.length > 0 && (
+                                <div className="mt-8 pt-8 border-t border-slate-100">
+                                    <div className="flex items-center gap-3 mb-6 ml-2">
+                                        <div className="h-2 w-2 rounded-full bg-primary" />
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Materiais de Apoio</h4>
+                                    </div>
+                                    <div className="grid gap-3">
+                                        {selectedLesson.materials.map((mat: any, idx: number) => {
+                                            const count = downloadCounts.find(d => d.materialUrl === mat.url)?.downloadCount ?? 0;
+                                            return (
+                                                <div key={idx} className="flex items-center justify-between p-4 md:p-5 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-white hover:border-slate-200 hover:shadow-xl hover:shadow-slate-200/40 transition-all group">
+                                                    <div className="flex items-center gap-4 min-w-0">
+                                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0 shadow-sm transition-transform group-hover:scale-105">
+                                                            <LucideFileText className="h-5 w-5 md:h-6 md:w-6" />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm md:text-base font-bold text-slate-800 leading-tight truncate uppercase tracking-tight">{mat.name}</p>
+                                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1.5">{mat.type || 'Arquivo'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => openDownloadModal(mat.url, mat.name, selectedLesson.id)}
+                                                        disabled={isLoadingCounts}
+                                                        className={`ml-4 shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-[11px] font-black uppercase tracking-widest border shadow-sm ${isLoadingCounts ? 'bg-slate-100/50 text-slate-300 border-slate-100 animate-pulse cursor-wait' : 'bg-primary/5 hover:bg-primary text-primary hover:text-white border-primary/10 shadow-primary/5'}`}
+                                                    >
+                                                        <LucideUsers className="h-3.5 w-3.5" />
+                                                        {isLoadingCounts ? (
+                                                            <div className="h-3 w-8 bg-slate-200 rounded animate-shimmer" />
+                                                        ) : (
+                                                            <>
+                                                                {count} {count === 1 ? 'Download' : 'Downloads'}
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-12 focus-visible:outline-none">
@@ -409,6 +475,85 @@ export default function InstructorCourseProgress() {
                 )
                 }
             </div>
+
+            {/* Download Modal */}
+            {downloadModal.open && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-[2px]">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        className="bg-white w-full max-w-lg rounded-[2.5rem] border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+                    >
+                        {/* Modal Header */}
+                        <div className="pt-8 px-8 md:px-10 pb-6 border-b border-slate-50 shrink-0">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 bg-primary/5 text-primary rounded-2xl flex items-center justify-center">
+                                        <LucideDownload className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Registro de Downloads</h3>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{downloadModal.materialName}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setDownloadModal(prev => ({ ...prev, open: false }))}
+                                    className="h-10 w-10 rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all flex items-center justify-center"
+                                >
+                                    <LucideX className="h-5 w-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-3">
+                            {downloadModal.loading ? (
+                                <div className="flex items-center justify-center py-10">
+                                    <LoadingSpinner />
+                                </div>
+                            ) : downloadModal.list.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                                    <div className="h-16 w-16 bg-slate-50 rounded-[1.5rem] flex items-center justify-center border border-slate-100">
+                                        <LucideUsers className="h-6 w-6 text-slate-200" />
+                                    </div>
+                                    <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Nenhum download registrado</p>
+                                </div>
+                            ) : (
+                                downloadModal.list.map((item, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50/50 border border-slate-100 group">
+                                        <div className="flex items-center gap-4 min-w-0">
+                                            <div className="h-11 w-11 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                                                {item.user.avatarUrl ? (
+                                                    <img src={item.user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400 font-black text-xs">
+                                                        {item.user.name?.substring(0, 2).toUpperCase()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-black text-slate-800 uppercase tracking-tight truncate group-hover:text-primary transition-colors">{item.user.name}</p>
+                                                <p className="text-[10px] font-medium text-slate-400 truncate">{item.user.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="shrink-0 text-right">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Data</span>
+                                            <span className="text-[10px] font-black text-slate-600 bg-white px-2.5 py-1 rounded-lg border border-slate-100 shadow-sm">
+                                                {new Date(item.downloadedAt).toLocaleDateString('pt-BR')} {new Date(item.downloadedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-6 bg-slate-50 shrink-0 text-center">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Total de {downloadModal.list.length} downloads únicos</span>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </div>
     );
 }

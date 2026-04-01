@@ -14,6 +14,7 @@ import { UploadModule } from './upload/upload.module';
 import { AuditModule } from './audit/audit.module';
 import { TurmaModule } from './turma/turma.module';
 import { EssaySubmissionModule } from './essay-submission/essay-submission.module';
+import { MaterialDownloadModule } from './material-download/material-download.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { EssaySubmissionModule } from './essay-submission/essay-submission.modul
     AuditModule,
     TurmaModule,
     EssaySubmissionModule,
+    MaterialDownloadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

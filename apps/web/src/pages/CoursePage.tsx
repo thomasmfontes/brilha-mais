@@ -190,7 +190,7 @@ export default function CoursePage() {
         setIsSubmittingQuiz(false);
     };
 
-    const downloadMaterial = async (url: string, name: string) => {
+    const downloadMaterial = async (url: string, name: string, lessonId: string, originalUrl: string) => {
         try {
             const res = await fetch(url);
             const blob = await res.blob();
@@ -202,6 +202,8 @@ export default function CoursePage() {
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(blobUrl);
+            // Record download silently using the original DB URL for matching
+            api.post('/material-downloads', { lessonId, materialName: name, materialUrl: originalUrl }).catch(() => {});
         } catch {
             window.open(url, '_blank');
         }
@@ -355,7 +357,7 @@ export default function CoursePage() {
                                         <button
                                             key={idx}
                                             title={mat.name}
-                                            onClick={() => downloadMaterial(mat.url?.startsWith('http') ? mat.url : `${API_URL}${mat.url}`, mat.name)}
+                                            onClick={() => downloadMaterial(mat.url?.startsWith('http') ? mat.url : `${API_URL}${mat.url}`, mat.name, currentLesson.id, mat.url)}
                                             className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border hover:border-primary/20 transition-all group text-left"
                                         >
                                             <div className="flex items-center gap-3 min-w-0">

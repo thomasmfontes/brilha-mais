@@ -32,6 +32,7 @@ model User {
   turmas        Turma[]          @relation("UserTurmas")
   studentMaterials StudentMaterial[]
   essaySubmissions EssaySubmission[]
+  materialDownloads MaterialDownload[]
   hasSeenWelcomeVideo Boolean    @default(false)
 }
 
@@ -153,6 +154,21 @@ model Material {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model MaterialDownload {
+  id           String   @id @default(uuid())
+  userId       String
+  lessonId     String
+  materialName String
+  materialUrl  String
+  downloadedAt DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([lessonId])
+  @@index([lessonId, materialUrl])
+}
+
 
 model Quiz {
   id          String     @id @default(uuid())
