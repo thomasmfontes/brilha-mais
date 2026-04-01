@@ -190,6 +190,23 @@ export default function CoursePage() {
         setIsSubmittingQuiz(false);
     };
 
+    const downloadMaterial = async (url: string, name: string) => {
+        try {
+            const res = await fetch(url);
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+        } catch {
+            window.open(url, '_blank');
+        }
+    };
+
     const goToLesson = (mIdx: number, lIdx: number) => {
         setCurrentModuleIdx(mIdx);
         setCurrentLessonIdx(lIdx);
@@ -335,15 +352,20 @@ export default function CoursePage() {
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {currentLesson.materials.map((mat: any, idx: number) => (
-                                        <a key={idx} href={mat.url?.startsWith('http') ? mat.url : `${API_URL}${mat.url}`} download={mat.name} className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border hover:border-primary/20 transition-all group">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-9 w-9 bg-white border border-border group-hover:border-primary/20 rounded-lg flex items-center justify-center text-primary transition-all">
+                                        <button
+                                            key={idx}
+                                            title={mat.name}
+                                            onClick={() => downloadMaterial(mat.url?.startsWith('http') ? mat.url : `${API_URL}${mat.url}`, mat.name)}
+                                            className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border hover:border-primary/20 transition-all group text-left"
+                                        >
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="h-9 w-9 shrink-0 bg-white border border-border group-hover:border-primary/20 rounded-lg flex items-center justify-center text-primary transition-all">
                                                     <LucideDownload className="h-4 w-4" />
                                                 </div>
-                                                <span className="text-xs font-bold truncate max-w-[150px]">{mat.name}</span>
+                                                <span className="text-xs font-bold truncate">{mat.name}</span>
                                             </div>
-                                            <LucideChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-all" />
-                                        </a>
+                                            <LucideChevronRight className="h-4 w-4 shrink-0 ml-2 text-muted-foreground/30 group-hover:text-primary transition-all" />
+                                        </button>
                                     ))}
                                 </div>
                             </div>
