@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import {
     LucidePlay, LucidePause, LucideMaximize, LucideSettings,
     LucideVolume2, LucideVolume1, LucideVolumeX, LucideSkipBack,
-    LucideSkipForward, LucideCheckCircle, LucideChevronDown, LucideMinimize
+    LucideSkipForward, LucideCheckCircle, LucideChevronDown, LucideMinimize, LucideMonitor
 } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
 
@@ -49,6 +49,22 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     const [ended, setEnded] = useState(false);
     const [showSpeed, setShowSpeed] = useState(false);
     const [hoverTime, setHoverTime] = useState<number | null>(null);
+    const [availableQualities, setAvailableQualities] = useState<string[]>([]);
+    const [currentQuality, setCurrentQuality] = useState<string>("auto");
+    const [showQuality, setShowQuality] = useState(false);
+
+    const qualityLabels: Record<string, string> = {
+        highres: "4K+",
+        hd2160: "4K",
+        hd1440: "2K",
+        hd1080: "1080p HD",
+        hd720: "720p HD",
+        large: "480p",
+        medium: "360p",
+        small: "240p",
+        tiny: "144p",
+        auto: "Auto"
+    };
 
     const formatTime = (seconds: number) => {
         const h = Math.floor(seconds / 3600);
@@ -69,6 +85,14 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         setIsLoading(false);
         event.target.setVolume(volume);
         if (initialSeconds > 0) event.target.seekTo(initialSeconds, true);
+        
+        if (event.target.getAvailableQualityLevels) {
+            const levels = event.target.getAvailableQualityLevels();
+            setAvailableQualities(levels);
+        }
+        if (event.target.getPlaybackQuality) {
+            setCurrentQuality(event.target.getPlaybackQuality());
+        }
     };
 
     const onPlayerStateChange = (event: any) => {
@@ -78,6 +102,14 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         if (event.data === 1) {
             setIsPlaying(true);
             resetHideTimer();
+            
+            // Quality info usually populates better once playing
+            if (event.target.getAvailableQualityLevels) {
+                setAvailableQualities(event.target.getAvailableQualityLevels());
+            }
+            if (event.target.getPlaybackQuality) {
+                setCurrentQuality(event.target.getPlaybackQuality());
+            }
         } else if (event.data === 0) {
             setIsPlaying(false);
             setEnded(true);
@@ -93,6 +125,17 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         // state 3 (buffering), -1 (unstarted), 5 (cued): don't touch isPlaying to avoid flicker
     };
 
+    const onPlaybackQualityChange = (event: any) => {
+        if (event.data) {
+            setCurrentQuality(event.data);
+            
+            // Refresh qualities list just in case
+            if (playerRef.current?.getAvailableQualityLevels) {
+                setAvailableQualities(playerRef.current.getAvailableQualityLevels());
+            }
+        }
+    };
+
     const attachPlayer = () => {
         if (window.YT && window.YT.Player) {
             if (playerRef.current) {
@@ -103,6 +146,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
                 events: {
                     onReady: onPlayerReady,
                     onStateChange: onPlayerStateChange,
+                    onPlaybackQualityChange: onPlaybackQualityChange,
                 },
             });
         }
@@ -217,6 +261,22 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         setPlaybackRate(capped);
         playerRef.current?.setPlaybackRate(capped);
         setShowSpeed(false);
+    };
+
+    const changeQuality = (q: string) => {
+        if (!playerRef.current) return;
+        const currentTime = playerRef.current.getCurrentTime();
+        
+        // setPlaybackQuality is often ignored by the YouTube player on modern browsers.
+        // We use loadVideoById to force a reload with the requested quality.
+        playerRef.current.loadVideoById({
+            videoId: videoId,
+            startSeconds: currentTime,
+            suggestedQuality: q
+        });
+        
+        setCurrentQuality(q);
+        setShowQuality(false);
     };
 
     const toggleFullscreen = () => {
@@ -349,7 +409,38 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
                             <div className="flex items-center gap-3">
                                 <div className="relative">
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); setShowSpeed(!showSpeed); }}
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            setShowQuality(!showQuality); 
+                                            setShowSpeed(false);
+                                        }}
+                                        className={`flex items-center gap-1 font-black text-[10px] tracking-wider uppercase transition-colors ${showQuality ? 'text-primary' : 'text-white/60 hover:text-white'}`}
+                                    >
+                                        <LucideMonitor className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                                        <span>{currentQuality.startsWith('hd') ? 'HD' : 'SD'}</span>
+                                    </button>
+                                    {showQuality && availableQualities.length > 0 && (
+                                        <div className="absolute bottom-8 right-0 bg-black/95 border border-white/10 rounded-xl py-1 w-32 shadow-2xl overflow-hidden z-40">
+                                            <p className="text-[8px] font-black uppercase tracking-widest text-white/30 px-3 py-1">Resolução</p>
+                                            {availableQualities.map(q => (
+                                                <button
+                                                    key={q} onClick={(e) => { e.stopPropagation(); changeQuality(q); }}
+                                                    className={`w-full px-3 py-1.5 text-left text-[11px] font-bold hover:bg-white/10 transition-colors ${currentQuality === q ? 'text-primary' : 'text-white/60'}`}
+                                                >
+                                                    {qualityLabels[q] || q}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="relative">
+                                    <button
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            setShowSpeed(!showSpeed); 
+                                            setShowQuality(false);
+                                        }}
                                         className={`flex items-center gap-1 font-black text-[10px] tracking-wider uppercase transition-colors ${showSpeed ? 'text-primary' : 'text-white/60 hover:text-white'}`}
                                     >
                                         <LucideSettings className="h-3.5 w-3.5 md:h-4 md:w-4" />
