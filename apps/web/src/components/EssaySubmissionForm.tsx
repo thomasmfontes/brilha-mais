@@ -24,15 +24,15 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Sync state with prop when it changes (essential for async data)
     useEffect(() => {
         if (mySubmission) {
             setEssayResponse(mySubmission.content || "");
-            if (mySubmission.fileUrl) {
-                setEssayFile({ url: mySubmission.fileUrl, name: mySubmission.fileName || "arquivo-anexo" });
-            }
+            setEssayFile(mySubmission.fileUrl ? { url: mySubmission.fileUrl, name: mySubmission.fileName || "arquivo-anexo" } : null);
+        } else {
+            setEssayResponse("");
+            setEssayFile(null);
         }
-    }, [mySubmission]);
+    }, [mySubmission, lesson?.id]);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -115,8 +115,8 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                     <div className="h-16 w-16 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
                         <LucideFileText className="h-8 w-8" />
                     </div>
-                    <h2 className="text-2xl font-black uppercase tracking-tighter italic text-slate-900">Desafio Dissertativo</h2>
-                    <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed">
+                    <h2 className="text-lg font-black uppercase tracking-tighter italic text-slate-900">{lesson.title || "Desafio Dissertativo"}</h2>
+                    <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed text-left whitespace-pre-wrap">
                         {lesson.content || "Leia as instruções e envie sua resposta ou anexo abaixo."}
                     </p>
                 </div>
