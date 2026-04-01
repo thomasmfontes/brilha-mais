@@ -254,7 +254,7 @@ export default function CoursePage() {
                             <>
                                 {currentLesson.contentType === 'VIDEO' && (
                                     <div className="relative aspect-video w-full bg-black">
-                                        <YouTubePlayer key={currentLesson.id} videoId={currentLesson.youtubeId} isCompleted={!!currentLesson.completed} onEnded={markAsCompleted} />
+                                        <YouTubePlayer key={currentLesson.id} videoId={currentLesson.youtubeId} isCompleted={!!currentLesson.completed} isPrivileged={userRole === 'INSTRUCTOR' || userRole === 'ADMIN'} onEnded={markAsCompleted} />
                                     </div>
                                 )}
                                 {currentLesson.contentType === 'PDF' && (
