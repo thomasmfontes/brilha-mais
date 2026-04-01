@@ -495,7 +495,13 @@ export default function InstructorSyllabus() {
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-red-500">
                                                             <LucidePlay className="h-3 w-3 fill-current" />
                                                         </div>
-                                                        </div>
+                                                        <input
+                                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 outline-none focus:border-red-400 focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 text-sm"
+                                                            value={lesson.youtubeId || ''}
+                                                            onChange={(e) => handleYoutubeIdChange(mIdx, lIdx, e.target.value)}
+                                                            placeholder="Cole a URL do vídeo"
+                                                        />
+                                                    </div>
                                                     </div>
                                                 )}
 
