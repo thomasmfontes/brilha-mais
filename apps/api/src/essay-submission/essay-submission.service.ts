@@ -111,6 +111,7 @@ export class EssaySubmissionService {
           select: {
             id: true,
             title: true,
+            content: true,
             order: true,
             module: {
               select: {
