@@ -328,12 +328,42 @@ export default function CoursePage() {
                                     </div>
                                 )}
                                 {currentLesson.contentType === 'PDF' && (
-                                    <div className="w-full aspect-video bg-card flex flex-col items-center justify-center p-8 border-b border-border/10">
-                                        <div className="h-20 w-20 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mb-6">
-                                            <LucideDownload className="h-10 w-10" />
-                                        </div>
-                                        <h2 className="text-xl font-black uppercase italic tracking-tighter">Material para Estudo</h2>
-                                        <p className="text-muted-foreground text-sm mt-2">Clique nos materiais abaixo para baixar.</p>
+                                    <div className="w-full aspect-video bg-white relative group/pdfview overflow-hidden border-b border-border/10">
+                                        {currentLesson.pdfUrl ? (
+                                            <div className="w-full h-full flex flex-col">
+                                                {/* Overlay top-right to block Google Viewer's pop-out button */}
+                                                {currentLesson.allowPdfDownload === false && (
+                                                    <>
+                                                        <div className="absolute top-0 right-0 w-32 h-16 bg-white/0 z-50 cursor-not-allowed" />
+                                                        <div className="absolute top-6 right-6 bg-slate-900/90 backdrop-blur-md text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-2xl border border-white/10 select-none z-[60]">
+                                                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" /> Apenas Visualização
+                                                        </div>
+                                                    </>
+                                                )}
+                                                <iframe 
+                                                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(currentLesson.pdfUrl)}&embedded=true`} 
+                                                    className="w-full flex-1 border-none"
+                                                    title="PDF Viewer"
+                                                />
+                                                {currentLesson.allowPdfDownload !== false && (
+                                                    <div className="absolute bottom-6 right-6 flex gap-3">
+                                                        <button 
+                                                            onClick={() => downloadMaterial(currentLesson.pdfUrl, `${currentLesson.title}.pdf`, currentLesson.id, currentLesson.pdfUrl)}
+                                                            className="bg-primary text-white p-4 rounded-2xl shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all flex items-center gap-3 group/pdl"
+                                                        >
+                                                            <LucideDownload className="h-5 w-5" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest max-w-0 overflow-hidden group-hover/pdl:max-w-[200px] transition-all duration-500 whitespace-nowrap">Baixar Arquivo</span>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-slate-50">
+                                                <LucideFileText className="h-16 w-16 text-slate-200 mb-4" />
+                                                <h2 className="text-xl font-black uppercase italic tracking-tighter text-slate-400">Nenhum PDF disponível</h2>
+                                                <p className="text-slate-400 text-xs mt-2 uppercase font-bold tracking-widest leading-relaxed">O instrutor ainda não enviou o conteúdo principal desta aula.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                                 {currentLesson.contentType === 'QUIZ' && (
@@ -406,22 +436,28 @@ export default function CoursePage() {
                                     Materiais Complementares
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {currentLesson.materials.map((mat: any, idx: number) => (
-                                        <button
-                                            key={idx}
-                                            title={mat.name}
-                                            onClick={() => downloadMaterial(mat.url?.startsWith('http') ? mat.url : `${API_URL}${mat.url}`, mat.name, currentLesson.id, mat.url)}
-                                            className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border hover:border-primary/20 transition-all group text-left"
-                                        >
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className="h-9 w-9 shrink-0 bg-white border border-border group-hover:border-primary/20 rounded-lg flex items-center justify-center text-primary transition-all">
-                                                    <LucideDownload className="h-4 w-4" />
+                                    {currentLesson.materials.map((mat: any, idx: number) => {
+                                        // Skip if it is the main PDF and download is restricted
+                                        const isMainPdf = currentLesson.pdfUrl && (mat.url === currentLesson.pdfUrl || mat.url.includes(currentLesson.pdfUrl.split('/').pop() || '____'));
+                                        if (currentLesson.allowPdfDownload === false && isMainPdf) return null;
+                                        
+                                        return (
+                                            <button
+                                                key={idx}
+                                                title={mat.name}
+                                                onClick={() => downloadMaterial(mat.url?.startsWith('http') ? mat.url : `${API_URL}${mat.url}`, mat.name, currentLesson.id, mat.url)}
+                                                className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border hover:border-primary/20 transition-all group text-left"
+                                            >
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="h-9 w-9 shrink-0 bg-white border border-border group-hover:border-primary/20 rounded-lg flex items-center justify-center text-primary transition-all">
+                                                        <LucideDownload className="h-4 w-4" />
+                                                    </div>
+                                                    <span className="text-xs font-bold truncate">{mat.name}</span>
                                                 </div>
-                                                <span className="text-xs font-bold truncate">{mat.name}</span>
-                                            </div>
-                                            <LucideChevronRight className="h-4 w-4 shrink-0 ml-2 text-muted-foreground/30 group-hover:text-primary transition-all" />
-                                        </button>
-                                    ))}
+                                                <LucideChevronRight className="h-4 w-4 shrink-0 ml-2 text-muted-foreground/30 group-hover:text-primary transition-all" />
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}

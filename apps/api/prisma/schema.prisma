@@ -132,7 +132,8 @@ model Lesson {
   pdfUrl      String?
   duration     Int?
   order        Int
-  isFree       Boolean     @default(false)
+  isFree       Boolean      @default(false)
+  allowPdfDownload Boolean      @default(true)
   moduleId     String
   module       Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   progress     Progress[]

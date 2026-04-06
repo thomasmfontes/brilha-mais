@@ -284,6 +284,7 @@ export class CourseService {
                                 duration: typeof less.duration === 'number' ? less.duration : 0,
                                 order: lIdx,
                                 isFree: less.isFree || false,
+                                allowPdfDownload: less.allowPdfDownload !== false,
                                 quizzes: less.quiz ? {
                                     create: {
                                         title: less.quiz.title || "Mini Teste",
@@ -394,6 +395,7 @@ export class CourseService {
                         duration: typeof less.duration === 'number' ? less.duration : 0,
                         order: lIdx,
                         isFree: less.isFree || false,
+                        allowPdfDownload: less.allowPdfDownload !== false,
                     };
 
                     if (less.id) {

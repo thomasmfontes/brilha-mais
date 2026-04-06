@@ -47,6 +47,7 @@ interface DraftLesson {
     quiz?: Quiz;
     order?: number;
     materials?: Material[];
+    allowPdfDownload?: boolean;
 }
 
 interface DraftModule {
@@ -287,47 +288,50 @@ export default function InstructorSyllabus() {
             return;
         }
 
-        const [mIdxStr, lIdxStr] = (pendingUploadTarget as string).split('-');
-        const mIdx = parseInt(mIdxStr);
-        const lIdx = parseInt(lIdxStr);
-        
-        setUploadingFor(pendingUploadTarget as string);
-        setUploadProgress(0);
+            const [mIdxStr, lIdxStr, isPdfMain] = (pendingUploadTarget as string).split('-');
+            const mIdx = parseInt(mIdxStr);
+            const lIdx = parseInt(lIdxStr);
+            
+            setUploadingFor(pendingUploadTarget as string);
+            setUploadProgress(0);
 
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-            const filePath = `courses/${fileName}`;
-            const uploadUrl = `${supabaseUrl}/storage/v1/object/course-images/${filePath}`;
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+                const filePath = `courses/${fileName}`;
+                const uploadUrl = `${supabaseUrl}/storage/v1/object/course-images/${filePath}`;
 
-            const formData = new FormData();
-            formData.append('file', file);
+                const formData = new FormData();
+                formData.append('file', file);
 
-            await axios.post(uploadUrl, formData, {
-                headers: {
-                    'Authorization': `Bearer ${supabaseKey}`,
-                    'apikey': supabaseKey,
-                    'x-upsert': 'true'
-                },
-                onUploadProgress: (progressEvent) => {
-                    const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || progressEvent.loaded));
-                    setUploadProgress(percentCompleted);
+                await axios.post(uploadUrl, formData, {
+                    headers: {
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'apikey': supabaseKey,
+                        'x-upsert': 'true'
+                    },
+                    onUploadProgress: (progressEvent) => {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || progressEvent.loaded));
+                        setUploadProgress(percentCompleted);
+                    }
+                });
+
+                const publicUrl = `${supabaseUrl}/storage/v1/object/public/course-images/${filePath}`;
+
+                const next = [...localModules];
+                if (isPdfMain === 'pdfMain') {
+                    next[mIdx].lessons[lIdx].pdfUrl = publicUrl;
+                } else {
+                    const newMaterial: Material = {
+                        name: file.name,
+                        url: publicUrl,
+                        type: getFileType(file.name),
+                        size: formatFileSize(file.size)
+                    };
+                    const materials = next[mIdx].lessons[lIdx].materials || [];
+                    next[mIdx].lessons[lIdx].materials = [...materials, newMaterial];
                 }
-            });
-
-            const publicUrl = `${supabaseUrl}/storage/v1/object/public/course-images/${filePath}`;
-
-            const newMaterial: Material = {
-                name: file.name,
-                url: publicUrl,
-                type: getFileType(file.name),
-                size: formatFileSize(file.size)
-            };
-
-            const next = [...localModules];
-            const materials = next[mIdx].lessons[lIdx].materials || [];
-            next[mIdx].lessons[lIdx].materials = [...materials, newMaterial];
-            setLocalModules(next);
+                setLocalModules(next);
             toast.success("Arquivo enviado!");
         } catch (error: any) {
             console.error("Upload error details:", error.response?.data);
@@ -505,6 +509,55 @@ export default function InstructorSyllabus() {
                                                     </div>
                                                 )}
 
+                                            {lesson.contentType === 'PDF' && (
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block pl-2 border-l-2 border-primary italic">Arquivo PDF da Aula</label>
+                                                    
+                                                    {lesson.pdfUrl ? (
+                                                        <div className="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-2xl group/pdf">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="h-10 w-10 rounded-xl bg-white border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-sm">
+                                                                    <LucideFileText className="h-5 w-5" />
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-[10px] font-black uppercase text-emerald-900 truncate">PDF Carregado</p>
+                                                                    <p className="text-[9px] font-bold text-emerald-600/60 uppercase tracking-tight">Conteúdo protegido</p>
+                                                                </div>
+                                                            </div>
+                                                            <button 
+                                                                onClick={() => updateLesson(mIdx, lIdx, { pdfUrl: undefined })}
+                                                                className="h-8 w-8 rounded-lg flex items-center justify-center text-emerald-300 hover:text-destructive hover:bg-white transition-all"
+                                                            >
+                                                                <LucideTrash2 className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={() => {
+                                                                setPendingUploadTarget(`${mIdx}-${lIdx}-pdfMain`);
+                                                                fileInputRef.current?.click();
+                                                            }}
+                                                            disabled={!!uploadingFor}
+                                                            className="w-full py-8 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all group/upload"
+                                                        >
+                                                            {uploadingFor === `${mIdx}-${lIdx}-pdfMain` ? (
+                                                                <div className="flex flex-col items-center gap-2">
+                                                                    <LoadingSpinner size="sm" variant="primary" />
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary animate-pulse">{uploadProgress}%</span>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center group-hover/upload:bg-primary group-hover/upload:text-white transition-all">
+                                                                        <LucideUploadCloud className="h-5 w-5" />
+                                                                    </div>
+                                                                    <span className="text-[9px] font-black uppercase tracking-widest">Enviar PDF da Aula</span>
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+
                                             {lesson.contentType === 'ESSAY' && (
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block pl-2 border-l-2 border-amber-500 italic">Instruções do Desafio</label>
@@ -612,7 +665,7 @@ export default function InstructorSyllabus() {
                                         </div>
 
                                         {/* Type Selector (Desktop right-side) */}
-                                        <div className="lg:col-span-4 flex flex-col justify-start">
+                                        <div className="lg:col-span-4 space-y-4">
                                             <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
                                                 <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block text-left border-l-2 border-slate-200 pl-2 italic">Tipo de conteúdo</label>
                                                 <select
@@ -626,6 +679,29 @@ export default function InstructorSyllabus() {
                                                     <option value="ESSAY">Desafio Dissertativo</option>
                                                 </select>
                                             </div>
+
+                                            {lesson.contentType === 'PDF' && (
+                                                <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm group/toggle hover:border-primary/20 transition-all">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all ${lesson.allowPdfDownload !== false ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-slate-100 text-slate-400'}`}>
+                                                            <LucideDownload className="h-4 w-4" />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-800">Liberar Download</p>
+                                                            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-tight">Permitir salvar arquivo</p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => updateLesson(mIdx, lIdx, { allowPdfDownload: lesson.allowPdfDownload === false })}
+                                                        className={`w-10 h-5 rounded-full relative transition-all ${lesson.allowPdfDownload !== false ? 'bg-primary' : 'bg-slate-200'}`}
+                                                    >
+                                                        <motion.div
+                                                            animate={{ x: lesson.allowPdfDownload !== false ? 22 : 2 }}
+                                                            className="absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm"
+                                                        />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
