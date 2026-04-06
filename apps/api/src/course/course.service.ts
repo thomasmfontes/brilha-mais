@@ -77,7 +77,11 @@ export class CourseService {
             include: {
                 category: true,
                 _count: {
-                    select: { enrollments: true }
+                    select: { 
+                        enrollments: { 
+                            where: { user: { role: 'STUDENT' } } 
+                        } 
+                    }
                 }
             },
             orderBy: { createdAt: 'desc' }
@@ -103,7 +107,11 @@ export class CourseService {
                     select: { name: true }
                 },
                 _count: {
-                    select: { enrollments: true }
+                    select: { 
+                        enrollments: { 
+                            where: { user: { role: 'STUDENT' } } 
+                        } 
+                    }
                 }
             },
             orderBy: { createdAt: 'desc' }
@@ -127,7 +135,13 @@ export class CourseService {
                         category: true,
                         instructor: true,
                         enrollments: { where: { userId } },
-                        _count: { select: { enrollments: true } },
+                        _count: { 
+                            select: { 
+                                enrollments: { 
+                                    where: { user: { role: 'STUDENT' } } 
+                                } 
+                            } 
+                        },
                         modules: {
                             orderBy: { order: 'asc' },
                             include: {
@@ -170,7 +184,13 @@ export class CourseService {
                 category: true,
                 instructor: true,
                 enrollments: userId ? { where: { userId } } : undefined,
-                _count: { select: { enrollments: true } },
+                _count: { 
+                    select: { 
+                        enrollments: { 
+                            where: { user: { role: 'STUDENT' } } 
+                        } 
+                    } 
+                },
                 modules: {
                     orderBy: { order: 'asc' },
                     include: {
@@ -195,7 +215,13 @@ export class CourseService {
                 category: true,
                 instructor: true,
                 enrollments: userId ? { where: { userId } } : undefined,
-                _count: { select: { enrollments: true } }
+                _count: { 
+                    select: { 
+                        enrollments: { 
+                            where: { user: { role: 'STUDENT' } } 
+                        } 
+                    } 
+                }
             }
         });
 
@@ -509,7 +535,10 @@ export class CourseService {
         }
 
         const enrollments = await this.prisma.enrollment.findMany({
-            where: { courseId },
+            where: { 
+                courseId,
+                user: { role: 'STUDENT' }
+            },
             include: {
                 user: { select: { id: true, name: true, email: true, avatarUrl: true } }
             },
@@ -537,7 +566,10 @@ export class CourseService {
         }
 
         const enrollments = await this.prisma.enrollment.findMany({
-            where: { courseId },
+            where: { 
+                courseId,
+                user: { role: 'STUDENT' }
+            },
             include: {
                 user: { select: { id: true, name: true, email: true, avatarUrl: true } }
             }

@@ -20,7 +20,7 @@ export class StatsService {
       await Promise.all([
         this.prisma.user.count(),
         this.prisma.course.count(),
-        this.prisma.enrollment.count(),
+        this.prisma.enrollment.count({ where: { user: { role: 'STUDENT' } } }),
         this.prisma.auditLog.findMany({
           take: 5,
           orderBy: { createdAt: 'desc' },
@@ -67,17 +67,30 @@ export class StatsService {
         lastMonthProgress,
         prevMonthProgress
       ] = await Promise.all([
-        this.prisma.enrollment.count({ where: { course: { instructorId } } }),
+        this.prisma.enrollment.count({ 
+          where: { 
+            course: { instructorId },
+            user: { role: 'STUDENT' }
+          } 
+        }),
         this.prisma.progress.findMany({
           where: { isCompleted: true, lesson: { module: { course: { instructorId } } } },
           include: { lesson: { select: { duration: true } } }
         }),
         this.prisma.course.count({ where: { instructorId } }),
         this.prisma.enrollment.count({
-          where: { course: { instructorId }, enrolledAt: { gte: thirtyDaysAgo } }
+          where: { 
+            course: { instructorId }, 
+            enrolledAt: { gte: thirtyDaysAgo },
+            user: { role: 'STUDENT' }
+          }
         }),
         this.prisma.enrollment.count({
-          where: { course: { instructorId }, enrolledAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } }
+          where: { 
+            course: { instructorId }, 
+            enrolledAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+            user: { role: 'STUDENT' }
+          }
         }),
         this.prisma.progress.findMany({
           where: { isCompleted: true, updatedAt: { gte: thirtyDaysAgo }, lesson: { module: { course: { instructorId } } } },
