@@ -8,6 +8,7 @@ interface SyllabusListProps {
     currentModuleIdx: number;
     currentLessonIdx: number;
     isEnrolled: boolean;
+    userRole?: string;
     goToLesson: (mIdx: number, lIdx: number) => void;
     formatDuration: (val: any) => string;
     totalModuleDuration: (module: any) => string | null;
@@ -20,6 +21,7 @@ const SyllabusList = ({
     currentModuleIdx,
     currentLessonIdx,
     isEnrolled,
+    userRole = 'STUDENT',
     goToLesson,
     formatDuration,
     totalModuleDuration
@@ -63,7 +65,9 @@ const SyllabusList = ({
                                 {(module.lessons || []).map((lesson: any, lIdx: number) => {
                                     const isFirst = mIdx === 0 && lIdx === 0;
                                     const prevLesson = lIdx > 0 ? module.lessons[lIdx - 1] : mIdx > 0 ? modules[mIdx - 1]?.lessons?.[modules[mIdx - 1].lessons.length - 1] : null;
-                                    const isLocked = !isFirst && prevLesson && !prevLesson.completed;
+                                    
+                                    const isPrivileged = userRole === 'ADMIN' || userRole === 'INSTRUCTOR';
+                                    const isLocked = !isPrivileged && !isFirst && (!prevLesson || !prevLesson.completed);
                                     const isActive = mIdx === currentModuleIdx && lIdx === currentLessonIdx;
 
                                     return (

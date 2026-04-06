@@ -216,21 +216,29 @@ export default function CoursePage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const goNext = () => {
+    const isLessonLocked = (mIdx: number, lIdx: number) => {
+        if (userRole === 'ADMIN' || userRole === 'INSTRUCTOR') return false;
+        if (mIdx === 0 && lIdx === 0) return false;
+        
+        const targetModule = modules[mIdx];
+        const prevLesson = lIdx > 0 
+            ? targetModule?.lessons?.[lIdx - 1] 
+            : mIdx > 0 ? modules[mIdx - 1]?.lessons?.[modules[mIdx - 1].lessons.length - 1] : null;
+        
+        return !prevLesson || !prevLesson.completed;
+    };
+
+    const getNextLessonIndices = () => {
         const lessons = modules[currentModuleIdx]?.lessons || [];
-        if (currentLessonIdx + 1 < lessons.length) goToLesson(currentModuleIdx, currentLessonIdx + 1);
-        else if (currentModuleIdx + 1 < modules.length) goToLesson(currentModuleIdx + 1, 0);
+        if (currentLessonIdx + 1 < lessons.length) return { mIdx: currentModuleIdx, lIdx: currentLessonIdx + 1 };
+        else if (currentModuleIdx + 1 < modules.length) return { mIdx: currentModuleIdx + 1, lIdx: 0 };
+        return null;
     };
 
-    const goPrev = () => {
-        if (currentLessonIdx > 0) goToLesson(currentModuleIdx, currentLessonIdx - 1);
-        else if (currentModuleIdx > 0) {
-            const prevModule = modules[currentModuleIdx - 1];
-            goToLesson(currentModuleIdx - 1, (prevModule?.lessons?.length || 1) - 1);
-        }
-    };
+    const nextIndices = getNextLessonIndices();
+    const isNextLocked = nextIndices ? isLessonLocked(nextIndices.mIdx, nextIndices.lIdx) : false;
 
-    const hasNext = currentLessonIdx + 1 < (modules[currentModuleIdx]?.lessons?.length || 0) || currentModuleIdx + 1 < modules.length;
+    const hasNext = !!nextIndices;
     const hasPrev = currentLessonIdx > 0 || currentModuleIdx > 0;
 
     if (!isEnrolled) return (
@@ -339,8 +347,10 @@ export default function CoursePage() {
                     <div className="p-6 lg:p-10">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-sm font-black text-muted-foreground uppercase">{currentLesson?.title || 'Aula'}</h2>
-                            {currentLesson?.completed && hasNext && (
-                                <button onClick={goNext} className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-black uppercase text-[10px] shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Próxima Aula</button>
+                            {hasNext && !isNextLocked && (
+                                <button onClick={() => {
+                                    if (nextIndices) goToLesson(nextIndices.mIdx, nextIndices.lIdx);
+                                }} className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-black uppercase text-[10px] shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Próxima Aula</button>
                             )}
                         </div>
                         <p className="text-muted-foreground text-sm border-l-2 border-primary/20 pl-4 max-w-2xl leading-relaxed">{course.description}</p>
@@ -386,12 +396,20 @@ export default function CoursePage() {
                             <CircularProgress pct={progressPct} size={48} />
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={goPrev} disabled={!hasPrev} className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted text-slate-700 disabled:opacity-20 active:scale-95 transition-all"><LucideChevronLeft className="h-4 w-4" /></button>
-                            <button onClick={goNext} disabled={!hasNext || (!currentLesson?.completed && userRole !== 'INSTRUCTOR' && userRole !== 'ADMIN')} className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted text-slate-700 disabled:opacity-20 active:scale-95 transition-all"><LucideChevronRight className="h-4 w-4" /></button>
+                            <button onClick={() => {
+                                if (currentLessonIdx > 0) goToLesson(currentModuleIdx, currentLessonIdx - 1);
+                                else if (currentModuleIdx > 0) {
+                                    const prevModule = modules[currentModuleIdx - 1];
+                                    goToLesson(currentModuleIdx - 1, (prevModule?.lessons?.length || 1) - 1);
+                                }
+                            }} disabled={!hasPrev} className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted text-slate-700 disabled:opacity-20 active:scale-95 transition-all"><LucideChevronLeft className="h-4 w-4" /></button>
+                            <button onClick={() => {
+                                if (nextIndices) goToLesson(nextIndices.mIdx, nextIndices.lIdx);
+                            }} disabled={!hasNext || isNextLocked} className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted text-slate-700 disabled:opacity-20 active:scale-95 transition-all"><LucideChevronRight className="h-4 w-4" /></button>
                         </div>
                     </div>
                     <div className="flex-1">
-                        <SyllabusList modules={modules} expandedModules={expandedModules} setExpandedModules={setExpandedModules} currentModuleIdx={currentModuleIdx} currentLessonIdx={currentLessonIdx} isEnrolled={isEnrolled} goToLesson={goToLesson} formatDuration={formatDuration} totalModuleDuration={totalModuleDuration} />
+                        <SyllabusList modules={modules} expandedModules={expandedModules} setExpandedModules={setExpandedModules} currentModuleIdx={currentModuleIdx} currentLessonIdx={currentLessonIdx} isEnrolled={isEnrolled} userRole={userRole} goToLesson={goToLesson} formatDuration={formatDuration} totalModuleDuration={totalModuleDuration} />
                     </div>
                 </div>
             </div>
