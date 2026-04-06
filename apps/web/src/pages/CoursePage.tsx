@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import {
     LucideChevronLeft, LucidePlay, LucideCheck, LucideFileText,
-    LucideX, LucideChevronRight, LucideDownload, LucideZap
+    LucideX, LucideChevronRight, LucideDownload, LucideZap, LucideBookOpen
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -48,6 +48,7 @@ export default function CoursePage() {
     const [indicesInitialized, setIndicesInitialized] = useState(false);
     const [hasResumed, setHasResumed] = useState<string | null>(null);
     const [isEnrolling, setIsEnrolling] = useState(false);
+    const [isSyllabusOpen, setIsSyllabusOpen] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('auth_token');
@@ -262,6 +263,7 @@ export default function CoursePage() {
         <div className="bg-background text-foreground">
             <div className="lg:max-w-[1200px] lg:mx-auto lg:flex lg:gap-0 w-full min-h-screen">
                 <div className="flex-1 min-w-0 lg:border-r lg:border-border flex flex-col">
+                    {/* Desktop Breadcrumbs */}
                     <div className="hidden lg:flex items-center gap-3 px-8 py-6">
                         <Link to="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                             <LucideChevronLeft className="h-4 w-4" />
@@ -271,7 +273,48 @@ export default function CoursePage() {
                         <span className="text-xs font-bold text-foreground/70">{currentLesson?.title || course.title}</span>
                     </div>
 
-                    <div className="w-full flex-1">
+                    {/* Mobile Navigation Sub-header */}
+                    <div className="lg:hidden sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 px-5 py-4 flex items-center justify-between shadow-sm">
+                        <button 
+                            onClick={() => setIsSyllabusOpen(true)}
+                            className="flex items-center gap-2 bg-slate-50 border border-slate-100 hover:border-primary/20 px-3 py-2 rounded-xl transition-all active:scale-95 group"
+                        >
+                            <LucideBookOpen className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Trilha</span>
+                        </button>
+
+                        <div className="flex-1 px-4 text-center truncate">
+                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Aula Atual</p>
+                            <p className="text-[11px] font-black uppercase italic tracking-tighter text-slate-900 truncate leading-tight">{currentLesson?.title}</p>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            <button 
+                                onClick={() => {
+                                    if (currentLessonIdx > 0) goToLesson(currentModuleIdx, currentLessonIdx - 1);
+                                    else if (currentModuleIdx > 0) {
+                                        const prevModule = modules[currentModuleIdx - 1];
+                                        goToLesson(currentModuleIdx - 1, (prevModule?.lessons?.length || 1) - 1);
+                                    }
+                                }} 
+                                disabled={!hasPrev}
+                                className="h-9 w-9 rounded-xl border border-slate-100 bg-white flex items-center justify-center text-slate-400 active:scale-95 disabled:opacity-30 disabled:active:scale-100 transition-all shadow-sm"
+                            >
+                                <LucideChevronLeft className="h-4 w-4" />
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    if (nextIndices) goToLesson(nextIndices.mIdx, nextIndices.lIdx);
+                                }} 
+                                disabled={!hasNext || isNextLocked}
+                                className="h-9 w-9 rounded-xl border border-slate-100 bg-white flex items-center justify-center text-slate-400 active:scale-95 disabled:opacity-30 disabled:active:scale-100 transition-all shadow-sm"
+                            >
+                                <LucideChevronRight className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="w-full flex-1 min-h-[50vh]">
                         {!currentLesson ? (
                             <div className="w-full aspect-video bg-card flex flex-col items-center justify-center p-8">
                                 <LucideFileText className="h-12 w-12 text-muted-foreground mb-4" />
@@ -413,6 +456,66 @@ export default function CoursePage() {
                     </div>
                 </div>
             </div>
+            {/* Mobile Syllabus Drawer */}
+            <AnimatePresence>
+                {isSyllabusOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsSyllabusOpen(false)}
+                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[150] lg:hidden"
+                        />
+                        <motion.div
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                            className="fixed top-0 right-0 h-full w-[320px] bg-white z-[160] lg:hidden shadow-[-10px_0_30px_rgba(0,0,0,0.05)] flex flex-col"
+                        >
+                            <div className="px-6 py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-1 bg-primary rounded-full" />
+                                    <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-900 italic">Trilha do Curso</span>
+                                </div>
+                                <button
+                                    onClick={() => setIsSyllabusOpen(false)}
+                                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 active:scale-95 transition-all shadow-sm"
+                                >
+                                    <LucideX className="h-4 w-4" />
+                                </button>
+                            </div>
+                            <div className="px-6 py-4 border-b border-slate-50">
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{completedLessons} de {totalLessons} aulas</p>
+                                    <CircularProgress pct={progressPct} size={32} />
+                                </div>
+                                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                    <motion.div initial={{ width: 0 }} animate={{ width: `${progressPct}%` }} className="h-full bg-primary" />
+                                </div>
+                            </div>
+                            <div className="flex-1 overflow-y-auto no-scrollbar">
+                                <SyllabusList 
+                                    modules={modules} 
+                                    expandedModules={expandedModules} 
+                                    setExpandedModules={setExpandedModules} 
+                                    currentModuleIdx={currentModuleIdx} 
+                                    currentLessonIdx={currentLessonIdx} 
+                                    isEnrolled={isEnrolled} 
+                                    userRole={userRole} 
+                                    goToLesson={(m, l) => {
+                                        goToLesson(m, l);
+                                        setIsSyllabusOpen(false);
+                                    }} 
+                                    formatDuration={formatDuration} 
+                                    totalModuleDuration={totalModuleDuration} 
+                                />
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
