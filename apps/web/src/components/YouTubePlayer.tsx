@@ -32,10 +32,11 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 }) => {
     const playerRef = useRef<any>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const iframeIdRef = useRef(`yt-player-${Math.random().toString(36).substr(2, 9)}`);
+    const [playerId, setPlayerId] = useState(() => `yt-player-${Math.random().toString(36).substr(2, 9)}`);
     const intervalRef = useRef<any>(null);
     const maxReachedRef = useRef(0);
     const hideTimerRef = useRef<any>(null);
+    const prevIdRef = useRef<string>("");
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -52,6 +53,8 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     const [availableQualities, setAvailableQualities] = useState<string[]>([]);
     const [currentQuality, setCurrentQuality] = useState<string>("auto");
     const [showQuality, setShowQuality] = useState(false);
+    const [qualityPreference, setQualityPreference] = useState<'sd' | 'hd'>('hd');
+    const [startFromTime, setStartFromTime] = useState<number>(initialSeconds);
 
     const qualityLabels: Record<string, string> = {
         highres: "4K+",
@@ -84,12 +87,28 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         setDuration(event.target.getDuration());
         setIsLoading(false);
         event.target.setVolume(volume);
-        if (initialSeconds > 0) event.target.seekTo(initialSeconds, true);
+        
+        const resumeTime = startFromTime || initialSeconds;
+        if (resumeTime > 0) {
+            event.target.seekTo(resumeTime, true);
+        }
+        
+        // Auto-play if we are reloading for quality
+        if (startFromTime > 0) {
+            event.target.playVideo();
+        }
         
         if (event.target.getAvailableQualityLevels) {
             const levels = event.target.getAvailableQualityLevels();
             setAvailableQualities(levels);
         }
+
+        // Force preferred quality immediately
+        const targetQ = qualityPreference === 'hd' ? 'hd1080' : 'medium';
+        if (event.target.setPlaybackQuality) {
+            event.target.setPlaybackQuality(targetQ);
+        }
+
         if (event.target.getPlaybackQuality) {
             setCurrentQuality(event.target.getPlaybackQuality());
         }
@@ -142,7 +161,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
                 try { playerRef.current.destroy(); } catch (e) { }
             }
 
-            playerRef.current = new window.YT.Player(iframeIdRef.current, {
+            playerRef.current = new window.YT.Player(playerId, {
                 events: {
                     onReady: onPlayerReady,
                     onStateChange: onPlayerStateChange,
@@ -156,9 +175,19 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         setIsLoading(true);
         setIsPlaying(false);
         setEnded(false);
-        setCurrentTime(0);
-        maxReachedRef.current = 0;
+        
+        // Only reset progress if the video itself changed
+        const isNewVideo = prevIdRef.current !== videoId;
+        if (isNewVideo) {
+            setCurrentTime(0);
+            maxReachedRef.current = 0;
+            prevIdRef.current = videoId;
+            setStartFromTime(initialSeconds);
+            // Force a new unique ID for the new video
+            setPlayerId(`yt-player-${Math.random().toString(36).substr(2, 9)}`);
+        }
 
+        let attachTimeout: any;
         if (!window.YT) {
             // API not loaded yet — inject script and register callback
             const tag = document.createElement('script');
@@ -167,9 +196,8 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
             firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
             window.onYouTubeIframeAPIReady = attachPlayer;
         } else {
-            // API already loaded — wait one tick so the iframe DOM is mounted
-            const t = setTimeout(attachPlayer, 150);
-            return () => clearTimeout(t);
+            // API already loaded — wait a bit longer so the iframe DOM is fully mounted with new ID
+            attachTimeout = setTimeout(attachPlayer, 250);
         }
 
         // Hard fallback: if player never fires onReady/onStateChange, clear loading after 8s
@@ -178,18 +206,19 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         intervalRef.current = setInterval(() => {
             if (playerRef.current && playerRef.current.getCurrentTime) {
                 const time = playerRef.current.getCurrentTime();
-                setCurrentTime(time);
-                if (time > maxReachedRef.current) maxReachedRef.current = time;
-
                 const dur = playerRef.current.getDuration();
+                
                 if (dur > 0) {
                     setDuration(dur);
+                    setCurrentTime(time);
+                    if (time > maxReachedRef.current) maxReachedRef.current = time;
                     onProgress?.({ playedSeconds: time, played: time / dur });
                 }
             }
         }, 500);
 
         return () => {
+            if (attachTimeout) clearTimeout(attachTimeout);
             clearTimeout(fallback);
             clearInterval(intervalRef.current);
             if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
@@ -198,7 +227,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
             }
             playerRef.current = null;
         };
-    }, [videoId]);
+    }, [videoId, qualityPreference, playerId]);
 
     const togglePlay = (e?: React.MouseEvent) => {
         e?.stopPropagation();
@@ -263,20 +292,18 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         setShowSpeed(false);
     };
 
-    const changeQuality = (q: string) => {
+    const changeQuality = (q: 'sd' | 'hd') => {
         if (!playerRef.current) return;
-        const currentTime = playerRef.current.getCurrentTime();
         
-        // setPlaybackQuality is often ignored by the YouTube player on modern browsers.
-        // We use loadVideoById to force a reload with the requested quality.
-        playerRef.current.loadVideoById({
-            videoId: videoId,
-            startSeconds: currentTime,
-            suggestedQuality: q
-        });
+        // Capture current time to resume after reload
+        const time = playerRef.current.getCurrentTime() || 0;
+        setStartFromTime(time);
         
-        setCurrentQuality(q);
+        // Force a new unique ID for the quality change remount
+        setPlayerId(`yt-player-${Math.random().toString(36).substr(2, 9)}`);
+        setQualityPreference(q);
         setShowQuality(false);
+        setIsLoading(true);
     };
 
     const toggleFullscreen = () => {
@@ -300,8 +327,9 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     return (
         <div ref={containerRef} className="relative w-full h-full bg-black select-none overflow-hidden group">
             <iframe
-                id={iframeIdRef.current}
-                src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1`}
+                key={playerId}
+                id={playerId}
+                src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&high_res=1&vq=${qualityPreference === 'hd' ? 'hd1080' : 'medium'}${startFromTime > 0 ? `&start=${Math.floor(startFromTime)}` : ''}`}
                 className="absolute inset-0 w-full h-full border-0"
                 allow="autoplay; encrypted-media"
                 title="player"
@@ -417,19 +445,25 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
                                         className={`flex items-center gap-1 font-black text-[10px] tracking-wider uppercase transition-colors ${showQuality ? 'text-primary' : 'text-white/60 hover:text-white'}`}
                                     >
                                         <LucideMonitor className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                                        <span>{currentQuality.startsWith('hd') ? 'HD' : 'SD'}</span>
+                                        <span>{qualityPreference.toUpperCase()}</span>
                                     </button>
-                                    {showQuality && availableQualities.length > 0 && (
-                                        <div className="absolute bottom-8 right-0 bg-black/95 border border-white/10 rounded-xl py-1 w-32 shadow-2xl overflow-hidden z-40">
-                                            <p className="text-[8px] font-black uppercase tracking-widest text-white/30 px-3 py-1">Resolução</p>
-                                            {availableQualities.map(q => (
-                                                <button
-                                                    key={q} onClick={(e) => { e.stopPropagation(); changeQuality(q); }}
-                                                    className={`w-full px-3 py-1.5 text-left text-[11px] font-bold hover:bg-white/10 transition-colors ${currentQuality === q ? 'text-primary' : 'text-white/60'}`}
-                                                >
-                                                    {qualityLabels[q] || q}
-                                                </button>
-                                            ))}
+                                    {showQuality && (
+                                        <div className="absolute bottom-8 right-0 bg-black/95 border border-white/10 rounded-xl py-1 w-28 shadow-2xl overflow-hidden z-40">
+                                            <p className="text-[8px] font-black uppercase tracking-widest text-white/30 px-3 py-1">Qualidade</p>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); changeQuality('hd'); }}
+                                                className={`w-full px-3 py-2 text-left text-[11px] font-bold hover:bg-white/10 transition-colors flex items-center justify-between ${qualityPreference === 'hd' ? 'text-primary' : 'text-white/60'}`}
+                                            >
+                                                <span>HD</span>
+                                                {qualityPreference === 'hd' && <LucideCheckCircle className="h-3 w-3" />}
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); changeQuality('sd'); }}
+                                                className={`w-full px-3 py-2 text-left text-[11px] font-bold hover:bg-white/10 transition-colors flex items-center justify-between ${qualityPreference === 'sd' ? 'text-primary' : 'text-white/60'}`}
+                                            >
+                                                <span>SD</span>
+                                                {qualityPreference === 'sd' && <LucideCheckCircle className="h-3 w-3" />}
+                                            </button>
                                         </div>
                                     )}
                                 </div>
