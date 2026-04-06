@@ -86,7 +86,11 @@ export class EssaySubmissionService {
 
   async getAllSubmissions(instructorId: string, role?: string, status?: SubmissionStatus) {
     const isAdmin = role === 'ADMIN';
-    const where: any = {};
+    const where: any = {
+      user: {
+        role: 'STUDENT',
+      },
+    };
     if (status) where.status = status;
 
     if (!isAdmin) {
