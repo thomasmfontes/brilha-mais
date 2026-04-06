@@ -28,7 +28,10 @@ interface Submission {
     lesson: {
         id: string;
         title: string;
+        order: number;
         module: {
+            title: string;
+            order: number;
             course: {
                 id: string;
                 title: string;
@@ -223,7 +226,14 @@ export default function InstructorSubmissions() {
                                             <span className="text-[10px] font-bold uppercase tracking-widest">{format(new Date(sub.createdAt), "dd MMM, yyyy", { locale: ptBR })}</span>
                                         </div>
                                         <span className="text-border">|</span>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest truncate">{sub.lesson.module.course.title} • {sub.lesson.title}</span>
+                                        <div className="flex items-center gap-2 truncate">
+                                            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-[9px] font-black shrink-0">
+                                                M{sub.lesson.module.order + 1} • A{sub.lesson.order + 1}
+                                            </span>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest truncate">
+                                                {sub.lesson.module.title} • {sub.lesson.title}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -267,7 +277,12 @@ export default function InstructorSubmissions() {
                                     <div className="space-y-8">
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{selectedSubmission.lesson.module.course.title}</p>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-[9px] font-black">
+                                                        M{selectedSubmission.lesson.module.order + 1} • A{selectedSubmission.lesson.order + 1}
+                                                    </span>
+                                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{selectedSubmission.lesson.module.title}</p>
+                                                </div>
                                                 <h2 className="text-2xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">{selectedSubmission.lesson.title}</h2>
                                             </div>
                                             <button onClick={() => setSelectedSubmission(null)} className="h-10 w-10 bg-muted rounded-2xl flex items-center justify-center text-muted-foreground hover:bg-muted/80 transition-colors">

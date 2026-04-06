@@ -107,7 +107,14 @@ export class EssaySubmissionService {
           select: {
             id: true,
             title: true,
-            module: { select: { course: { select: { id: true, title: true } } } },
+            order: true,
+            module: {
+              select: {
+                title: true,
+                order: true,
+                course: { select: { id: true, title: true } },
+              },
+            },
           },
         },
       },
