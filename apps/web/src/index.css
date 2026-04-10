@@ -35,36 +35,6 @@
 
     --radius: 0.75rem;
   }
-
-  /* .dark {
-    --background: 224 71% 4%;
-    --foreground: 0 0% 98%;
-
-    --card: 224 71% 7%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 224 71% 7%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 38 92% 50%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 224 71% 15%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 224 71% 12%;
-    --muted-foreground: 224 10% 60%;
-
-    --accent: 224 71% 15%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 224 71% 15%;
-    --input: 224 71% 15%;
-    --ring: 38 92% 50%;
-  } */
 }
 
 @layer base {
@@ -115,7 +85,8 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
+    height: 4px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
@@ -123,19 +94,16 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
+    background: transparent;
     border-radius: 10px;
+    transition: background 0.3s ease;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.2);
+  .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
   }
 
-  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  .dark .custom-scrollbar:hover::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
   }
 }

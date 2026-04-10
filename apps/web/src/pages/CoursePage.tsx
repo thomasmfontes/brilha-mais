@@ -260,9 +260,9 @@ export default function CoursePage() {
     );
 
     return (
-        <div className="bg-background text-foreground">
-            <div className="lg:max-w-[1200px] lg:mx-auto lg:flex lg:gap-0 w-full min-h-screen">
-                <div className="flex-1 min-w-0 lg:border-r lg:border-border flex flex-col">
+        <div className="bg-background text-foreground h-screen overflow-hidden">
+            <div className="lg:max-w-[1200px] lg:mx-auto lg:flex lg:gap-0 w-full h-full">
+                <div className="flex-1 min-w-0 lg:border-r lg:border-border flex flex-col h-full overflow-y-auto custom-scrollbar">
                     {/* Desktop Breadcrumbs */}
                     <div className="hidden lg:flex items-center gap-3 px-8 py-6">
                         <Link to="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
@@ -481,8 +481,8 @@ export default function CoursePage() {
                     </div>
                 </div>
 
-                <div className="hidden lg:flex flex-col w-80 xl:w-96 flex-shrink-0 bg-card sticky top-0 h-screen overflow-y-auto border-l border-border">
-                    <div className="px-6 py-8 border-b border-border sticky top-0 z-10 bg-card/80 backdrop-blur-md">
+                <div className="hidden lg:flex flex-col w-80 xl:w-96 flex-shrink-0 bg-card border-l border-border h-full overflow-hidden">
+                    <div className="px-6 py-8 border-b border-border bg-card">
                         <div className="flex items-center justify-between gap-6 mb-6">
                             <div className="flex-1 truncate">
                                 <h2 className="text-lg font-black truncate uppercase italic tracking-tighter text-slate-900">{course.title}</h2>
@@ -503,7 +503,7 @@ export default function CoursePage() {
                             }} disabled={!hasNext || isNextLocked} className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted text-slate-700 disabled:opacity-20 active:scale-95 transition-all"><LucideChevronRight className="h-4 w-4" /></button>
                         </div>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
                         <SyllabusList modules={modules} expandedModules={expandedModules} setExpandedModules={setExpandedModules} currentModuleIdx={currentModuleIdx} currentLessonIdx={currentLessonIdx} isEnrolled={isEnrolled} userRole={userRole} goToLesson={goToLesson} formatDuration={formatDuration} totalModuleDuration={totalModuleDuration} />
                     </div>
                 </div>

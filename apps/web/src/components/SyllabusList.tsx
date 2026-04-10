@@ -31,10 +31,10 @@ const SyllabusList = ({
             const isExpanded = !!expandedModules[mIdx];
             const dur = totalModuleDuration(module);
             return (
-                <div key={`module-${mIdx}-${module.id || mIdx}`} className="border-b border-border last:border-none">
+                <div key={`module-${mIdx}-${module.id || mIdx}`} className="border-b border-border/50 last:border-none relative">
                     <button
                         onClick={() => setExpandedModules(prev => ({ ...prev, [mIdx]: !prev[mIdx] }))}
-                        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-muted/50 transition-colors"
+                        className={`w-full flex items-center justify-between px-5 py-4 text-left hover:bg-muted/50 transition-all sticky top-0 z-20 bg-card/90 backdrop-blur-md border-b border-transparent ${isExpanded ? 'border-border/30 shadow-sm' : ''}`}
                     >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                             <motion.div
