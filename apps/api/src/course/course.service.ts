@@ -65,6 +65,7 @@ export class CourseService {
                     completed: (less.progress?.length > 0 && less.progress[0].isCompleted),
                     youtubeId: this.extractYoutubeId(less.videoUrl),
                     duration: this.formatDuration(less.duration),
+                    description: less.description,
                     quiz: less.quizzes?.[0],
                     materials: less.materials
                 }))
@@ -189,7 +190,7 @@ export class CourseService {
             if (user?.role === 'STUDENT') {
                 const areaIds = studentTurma?.areas.map(a => a.categoryId) || [];
                 where.categoryId = { in: areaIds };
-            } else if (user?.role === 'INSTRUCTOR') {
+            } else if (user?.role === 'INSTRUCTOR' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
                 where.categoryId = { in: instructorAreas.map(a => a.categoryId) };
             }
         }
@@ -311,6 +312,7 @@ export class CourseService {
                                 content: less.content,
                                 videoUrl: less.youtubeId ? `https://youtube.com/watch?v=${less.youtubeId}` : less.videoUrl,
                                 pdfUrl: less.pdfUrl,
+                                description: less.description,
                                 duration: typeof less.duration === 'number' ? less.duration : 0,
                                 order: lIdx,
                                 isFree: less.isFree || false,
@@ -423,6 +425,7 @@ export class CourseService {
                         videoUrl: less.youtubeId ? `https://youtube.com/watch?v=${less.youtubeId}` : less.videoUrl,
                         pdfUrl: less.pdfUrl,
                         duration: typeof less.duration === 'number' ? less.duration : 0,
+                        description: less.description,
                         order: lIdx,
                         isFree: less.isFree || false,
                         allowPdfDownload: less.allowPdfDownload !== false,
@@ -515,7 +518,7 @@ export class CourseService {
     }
 
     async getCourseStudentProgress(courseId: string, studentId: string, instructorId: string, role?: string) {
-        const isAdmin = role === 'ADMIN';
+        const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
             select: { instructorId: true }
@@ -556,7 +559,7 @@ export class CourseService {
     }
 
     async findStudentsByCourse(courseId: string, instructorId: string, role?: string) {
-        const isAdmin = role === 'ADMIN';
+        const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
             select: { instructorId: true }
@@ -587,7 +590,7 @@ export class CourseService {
     }
 
     async getLessonStudentsProgress(courseId: string, lessonId: string, instructorId: string, role?: string) {
-        const isAdmin = role === 'ADMIN';
+        const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
             select: { instructorId: true }

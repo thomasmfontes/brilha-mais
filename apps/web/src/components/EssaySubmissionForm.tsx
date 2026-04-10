@@ -278,13 +278,18 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                         <button
                             onClick={handleSubmit}
                             disabled={isSubmitting || (!essayResponse.trim() && !essayFile) || isLocked}
-                            className={`flex-1 h-16 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl transition-all disabled:opacity-50 disabled:grayscale shrink-0 ${isRedoRequired ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600' : 'bg-primary text-primary-foreground shadow-primary/20 hover:brightness-110 active:scale-95'}`}
+                            className={`flex-1 min-h-[64px] rounded-2xl font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-xl transition-all shrink-0 
+                                ${isSubmitting || (!essayResponse.trim() && !essayFile) || isLocked 
+                                    ? 'bg-slate-100 text-slate-400 shadow-none cursor-not-allowed' 
+                                    : isRedoRequired 
+                                        ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600 active:scale-95' 
+                                        : 'bg-primary text-primary-foreground shadow-primary/20 hover:brightness-110 active:scale-95'}`}
                         >
                             {isSubmitting ? (
-                                <><LoadingSpinner size="sm" variant="white" /> Enviando...</>
+                                <><LoadingSpinner size="sm" variant="primary" /> Enviando...</>
                             ) : (
                                 <>
-                                    <LucideZap className={`h-5 w-5 ${!isLocked ? 'fill-current' : ''}`} /> 
+                                    <LucideZap className={`h-5 w-5 ${(!isSubmitting && (essayResponse.trim() || essayFile) && !isLocked) ? 'fill-current' : ''}`} /> 
                                     {isRedoRequired ? 'REENVIAR VERSÃO CORRIGIDA' : (mySubmission ? 'DESAFIO ENVIADO' : 'ENVIAR RESPOSTA')}
                                 </>
                             )}

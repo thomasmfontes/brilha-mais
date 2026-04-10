@@ -436,9 +436,13 @@ export default function CoursePage() {
                                 </button>
                             )}
                         </div>
-                        <div className="prose prose-slate max-w-none">
-                            <p className="text-slate-600 text-sm border-l-4 border-primary/20 pl-4 py-1 leading-relaxed italic">{course.description}</p>
-                        </div>
+                        {(currentLesson?.description || course.description) && (
+                            <div className="prose prose-slate max-w-none">
+                                <p className="text-slate-600 text-sm border-l-4 border-primary/20 pl-4 py-1 leading-relaxed italic whitespace-pre-wrap">
+                                    {currentLesson?.description || course.description}
+                                </p>
+                            </div>
+                        )}
                         
                         {/* Materials Grid */}
                         {currentLesson?.materials?.length > 0 && (

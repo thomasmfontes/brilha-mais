@@ -43,7 +43,8 @@ interface DraftLesson {
     contentType: 'VIDEO' | 'PDF' | 'QUIZ' | 'ESSAY';
     youtubeId?: string;
     pdfUrl?: string;
-    content?: string; // For ESSAY instructions
+    content?: string; // For ESSAY instructions/statements
+    description?: string; // Short intro/description
     quiz?: Quiz;
     order?: number;
     materials?: Material[];
@@ -492,6 +493,16 @@ export default function InstructorSyllabus() {
                                                 />
                                             </div>
 
+                                            <div>
+                                                <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block border-l-2 border-primary pl-2 italic">Descrição da Aula (Opcional)</label>
+                                                <textarea
+                                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 min-h-[80px] text-sm"
+                                                    value={lesson.description || ''}
+                                                    onChange={(e) => updateLesson(mIdx, lIdx, { description: e.target.value })}
+                                                    placeholder="Uma breve introdução sobre o que será tratado nesta aula..."
+                                                />
+                                            </div>
+
                                             {lesson.contentType === 'VIDEO' && (
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block pl-2 border-l-2 border-red-500 italic">ID do YouTube</label>
@@ -560,7 +571,7 @@ export default function InstructorSyllabus() {
 
                                             {lesson.contentType === 'ESSAY' && (
                                                 <div className="space-y-2">
-                                                    <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block pl-2 border-l-2 border-amber-500 italic">Instruções do Desafio</label>
+                                                    <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block pl-2 border-l-2 border-amber-500 italic">Enunciado / Instruções do Desafio</label>
                                                     <textarea
                                                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 min-h-[120px] text-sm"
                                                         value={lesson.content || ''}

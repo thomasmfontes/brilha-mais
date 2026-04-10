@@ -159,6 +159,7 @@ model Module {
 model Lesson {
   id               String            @id @default(uuid())
   title            String
+  description      String?
   content          String?
   contentType      ContentType       @default(VIDEO)
   videoUrl         String?

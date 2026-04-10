@@ -24,14 +24,14 @@ export class AuditController {
     @UseGuards(JwtAuthGuard)
     @Get('instructor')
     async getInstructorActivity(@Req() req: any, @Query('limit') limit?: string) {
-        // Only INSTRUCTOR and ADMIN can access this
-        if (req.user.role !== 'INSTRUCTOR' && req.user.role !== 'ADMIN') {
+        // Only INSTRUCTOR, ADMIN, and SUPER_ADMIN can access this
+        if (req.user.role !== 'INSTRUCTOR' && req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
             return [];
         }
 
         return this.auditService.getActivityForInstructor(
             req.user.id,
-            req.user.role === 'ADMIN',
+            req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN',
             limit ? parseInt(limit) : 50
         );
     }
