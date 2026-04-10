@@ -34,6 +34,8 @@ model User {
   essaySubmissions EssaySubmission[]
   materialDownloads MaterialDownload[]
   hasSeenWelcomeVideo Boolean    @default(false)
+  locationId    String?
+  location      Location?        @relation(fields: [locationId], references: [id])
 }
 
 model StudentMaterial {
@@ -58,6 +60,8 @@ model Turma {
   updatedAt   DateTime @updatedAt
   users       User[]   @relation("UserTurmas")
   areas       TurmaArea[]
+  locationId  String?
+  location    Location? @relation(fields: [locationId], references: [id])
 }
 
 model Course {
@@ -73,6 +77,8 @@ model Course {
   updatedAt    DateTime     @updatedAt
   category     Category?    @relation(fields: [categoryId], references: [id])
   instructor   User         @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+  locationId   String?
+  location     Location?    @relation(fields: [locationId], references: [id])
   enrollments  Enrollment[]
   modules      Module[]
   reviews      Review[]
@@ -90,6 +96,17 @@ model Category {
   instructors InstructorArea[]
   students    StudentArea[] // @deprecated
   turmas      TurmaArea[]
+}
+
+model Location {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+  turmas    Turma[]
+  courses   Course[]
 }
 
 model InstructorArea {

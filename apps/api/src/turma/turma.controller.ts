@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { TurmaService } from './turma.service';
 import { CreateTurmaDto, UpdateTurmaDto } from './turma.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -12,8 +12,9 @@ export class TurmaController {
 
     @Get()
     @Roles('ADMIN')
-    findAll() {
-        return this.turmaService.findAll();
+    findAll(@Req() req: any) {
+        const locationId = req.user.locationId;
+        return this.turmaService.findAll(locationId);
     }
 
     @Get(':id')
@@ -24,7 +25,11 @@ export class TurmaController {
 
     @Post()
     @Roles('ADMIN')
-    create(@Body() createTurmaDto: CreateTurmaDto) {
+    create(@Body() createTurmaDto: CreateTurmaDto, @Req() req: any) {
+        // Force locationId if admin is restricted
+        if (req.user.locationId) {
+            createTurmaDto.locationId = req.user.locationId;
+        }
         return this.turmaService.create(createTurmaDto);
     }
 

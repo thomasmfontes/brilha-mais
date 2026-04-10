@@ -1,4 +1,4 @@
-import { LucideShield, LucideUsers, LucideBookOpen, LucideAlertTriangle, LucideShieldCheck, LucidePlus, LucideLayoutGrid, LucideSearch, LucideUserCog, LucideCheck, LucideTrash2, LucideEdit2, LucidePencil, LucideFolder, LucideChevronDown, LucideXCircle, LucideUserCircle, LucideMaximize2, LucideLoader2, LucideCamera } from "lucide-react";
+import { LucideShield, LucideUsers, LucideBookOpen, LucideAlertTriangle, LucideShieldCheck, LucidePlus, LucideLayoutGrid, LucideSearch, LucideUserCog, LucideCheck, LucideTrash2, LucideEdit2, LucidePencil, LucideFolder, LucideChevronDown, LucideXCircle, LucideUserCircle, LucideMaximize2, LucideLoader2, LucideCamera, LucideMapPin, LucideLayoutDashboard, LucideGraduationCap } from "lucide-react";
 import { getIconComponent } from "../utils/icons";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,21 @@ interface Category {
     _count?: { courses: number };
 }
 
+interface Location {
+    id: string;
+    name: string;
+    slug: string;
+    _count?: {
+        turmas: number;
+        courses: number;
+    };
+    counts?: {
+        students: number;
+        instructors: number;
+        admins: number;
+    }
+}
+
 interface User {
     id: string;
     name: string;
@@ -28,6 +43,8 @@ interface User {
         name: string,
         areas?: { category: { id: string, name: string } }[]
     }[];
+    locationId?: string | null;
+    location?: Location | null;
 }
 
 interface AdminStats {
@@ -49,6 +66,8 @@ interface Turma {
     createdAt: string;
     _count?: { users: number };
     areas?: { category: { id: string, name: string } }[];
+    locationId?: string | null;
+    location?: Location | null;
 }
 
 const UserSkeleton = () => (
@@ -115,6 +134,10 @@ const StatSkeleton = () => (
     </div>
 );
 
+const FilterSkeleton = () => (
+    <div className="h-10 w-32 bg-slate-100 rounded-xl animate-shimmer border border-slate-200/50" />
+);
+
 const ConfirmModal = ({ message, subtext, onConfirm, onCancel, isDeleting }: { message: string; subtext?: string; onConfirm: () => void; onCancel: () => void; isDeleting?: boolean }) => (
     <PortalModal isOpen={true} onClose={onCancel} preventCloseOnOverlayClick={isDeleting}>
         <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
@@ -170,10 +193,12 @@ const AuditSkeleton = () => (
 
 export default function AdminDashboard() {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    const [activeTab, setActiveTab] = useState<'overview' | 'areas' | 'turmas' | 'users'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'areas' | 'turmas' | 'users' | 'locations'>('overview');
     const [users, setUsers] = useState<User[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [turmas, setTurmas] = useState<Turma[]>([]);
+    const [locations, setLocations] = useState<Location[]>([]);
+    const [selectedLocationId, setSelectedLocationId] = useState<string>("ALL");
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingStats, setIsLoadingStats] = useState(false);
     const [isFetchingTurmas, setIsFetchingTurmas] = useState(false);
@@ -202,6 +227,11 @@ export default function AdminDashboard() {
     const [isTurmaAreaModalOpen, setIsTurmaAreaModalOpen] = useState(false);
     const [selectedTurmaForAreas, setSelectedTurmaForAreas] = useState<Turma | null>(null);
     const [tempTurmaAreas, setTempTurmaAreas] = useState<string[]>([]);
+    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+    const [locationName, setLocationName] = useState("");
+    const [editingLocation, setEditingLocation] = useState<Location | null>(null);
+    const [isSavingLocation, setIsSavingLocation] = useState(false);
+    const [userLocationId, setUserLocationId] = useState<string | null | undefined>(undefined);
     const listFileInputRef = useRef<HTMLInputElement>(null);
 
     const handleTabChange = (tab: typeof activeTab) => {
@@ -261,6 +291,7 @@ export default function AdminDashboard() {
     const [turmaDescription, setTurmaDescription] = useState("");
     const [editingTurma, setEditingTurma] = useState<Turma | null>(null);
     const [isSavingTurma, setIsSavingTurma] = useState(false);
+    const [tempLocationId, setTempLocationId] = useState<string | null>(null);
 
     const availableIcons = [
         { name: "Geral", icon: "LucideLayoutGrid" },
@@ -306,15 +337,26 @@ export default function AdminDashboard() {
     });
 
     useEffect(() => {
+        fetchProfile();
+        fetchLocations(true);
         if (activeTab === 'overview') fetchStats();
         if (activeTab === 'users') {
             fetchUsers();
-            fetchCategories(true); // Auxiliar - não reseta loading principal
-            fetchTurmas(true); // Auxiliar - não reseta loading principal
+            fetchCategories(true);
+            fetchTurmas(true);
         }
         if (activeTab === 'areas') fetchCategories();
         if (activeTab === 'turmas') fetchTurmas();
     }, [activeTab]);
+
+    const fetchProfile = async () => {
+        try {
+            const { data } = await api.get('/users/me');
+            setUserLocationId(data.locationId);
+        } catch (error) {
+            console.error("Error fetching profile:", error);
+        }
+    };
 
     const fetchStats = async () => {
         setIsLoadingStats(true);
@@ -376,6 +418,57 @@ export default function AdminDashboard() {
         }
     };
 
+    const fetchLocations = async (silent = false) => {
+        try {
+            const { data } = await api.get('/locations');
+            setLocations(data);
+        } catch (error) {
+            console.error("Error fetching locations:", error);
+        }
+    };
+
+    const handleSaveLocation = async () => {
+        if (!locationName.trim()) return;
+        setIsSavingLocation(true);
+        try {
+            if (editingLocation) {
+                await api.put(`/locations/${editingLocation.id}`, { name: locationName });
+            } else {
+                await api.post("/locations", { name: locationName });
+            }
+            await fetchLocations(true);
+            toast.success(editingLocation ? "Localidade atualizada!" : "Localidade criada!");
+            setIsLocationModalOpen(false);
+            setLocationName("");
+            setEditingLocation(null);
+        } catch (error) {
+            console.error("Error saving location:", error);
+            toast.error("Erro ao salvar localidade.");
+        } finally {
+            setIsSavingLocation(false);
+        }
+    };
+
+    const handleDeleteLocation = async (id: string) => {
+        setConfirmModal({
+            message: "Excluir esta localidade?",
+            subtext: "Isso afetará usuários e turmas vinculados. Esta ação não pode ser desfeita.",
+            onConfirm: async () => {
+                setIsDeleting(true);
+                try {
+                    await api.delete(`/locations/${id}`);
+                    await fetchLocations(true);
+                } catch (error) {
+                    console.error("Error deleting location:", error);
+                    toast.error("Erro ao excluir localidade.");
+                } finally {
+                    setIsDeleting(false);
+                    setConfirmModal(null);
+                }
+            }
+        });
+    };
+
     const handleUpdateRole = async (userId: string, role: string) => {
         // Optimistic update
         const previousUsers = [...users];
@@ -390,6 +483,20 @@ export default function AdminDashboard() {
             console.error("Error updating role:", error);
             setUsers(previousUsers); // Revert
             toast.error("Erro ao atualizar função do usuário. A alteração foi revertida.");
+        } finally {
+            setUpdatingRoleFor(null);
+        }
+    };
+
+    const handleUpdateUserLocation = async (userId: string, locationId: string | null) => {
+        setUpdatingRoleFor(userId); // Use the same spinner state
+        try {
+            await api.put(`/users/${userId}/location`, { locationId });
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, locationId, location: locations.find(l => l.id === locationId) || null } : u));
+            toast.success("Localidade do usuário atualizada!");
+        } catch (error) {
+            console.error("Error updating user location:", error);
+            toast.error("Erro ao atualizar localidade do usuário.");
         } finally {
             setUpdatingRoleFor(null);
         }
@@ -516,6 +623,7 @@ export default function AdminDashboard() {
             setIsCategoryModalOpen(false);
             setCategoryName("");
             setCategoryIcon("LucideLayoutGrid");
+            setTempLocationId(null);
             setEditingCategory(null);
         } catch (error) {
             console.error("Error saving category:", error);
@@ -532,12 +640,14 @@ export default function AdminDashboard() {
             if (editingTurma) {
                 await api.put(`/turmas/${editingTurma.id}`, {
                     name: turmaName,
-                    description: turmaDescription
+                    description: turmaDescription,
+                    locationId: tempLocationId
                 });
             } else {
                 await api.post("/turmas", {
                     name: turmaName,
-                    description: turmaDescription
+                    description: turmaDescription,
+                    locationId: tempLocationId
                 });
             }
             await fetchTurmas(true);
@@ -545,6 +655,7 @@ export default function AdminDashboard() {
             setIsTurmaModalOpen(false);
             setTurmaName("");
             setTurmaDescription("");
+            setTempLocationId(null);
             setEditingTurma(null);
         } catch (error) {
             console.error("Error saving turma:", error);
@@ -620,8 +731,26 @@ export default function AdminDashboard() {
         const matchesArea = filterArea === 'ALL' ||
             u.assignedAreas?.some(a => a.category.id === filterArea) ||
             u.turmas?.some(t => t.areas?.some(a => a.category.id === filterArea));
+        
+        // Security filter: Unit admin only sees their location. Super admin follows the location filter.
+        const isWithinAdminScope = !userLocationId || u.locationId === userLocationId;
+        const matchesLocationFilter = selectedLocationId === 'ALL' || u.locationId === selectedLocationId;
 
-        return matchesSearch && matchesRole && matchesTurma && matchesArea;
+        return matchesSearch && matchesRole && matchesTurma && matchesArea && isWithinAdminScope && matchesLocationFilter;
+    });
+
+    const filteredTurmas = turmas.filter(t => {
+        const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Security filter: Unit admin only sees their location. Super admin follows the location filter.
+        const isWithinAdminScope = !userLocationId || t.locationId === userLocationId;
+        const matchesLocationFilter = selectedLocationId === 'ALL' || t.locationId === selectedLocationId;
+        
+        return matchesSearch && isWithinAdminScope && matchesLocationFilter;
+    });
+
+    const filteredCategories = categories.filter(c => {
+        return c.name.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
     return (
@@ -632,35 +761,54 @@ export default function AdminDashboard() {
                     <p className="text-slate-900 text-xs md:text-lg font-bold">Gestão central do ecossistema Brilha Mais.</p>
                 </div>
 
-                <div className="flex bg-slate-100 p-1.5 rounded-[2rem] border border-slate-200/50 w-full shadow-inner">
-                    <div className="flex w-full gap-1">
+                <div className="bg-slate-100 p-1 rounded-[2rem] border border-slate-200/50 w-full shadow-inner overflow-hidden">
+                    <div className="flex w-full gap-0.5">
                         <button
                             onClick={() => handleTabChange('overview')}
-                            className={`flex-1 px-2 md:px-6 py-3 rounded-[1.5rem] text-[9px] md:text-[10px] font-black uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeTab === 'overview' ? 'bg-primary text-white shadow-md' : 'text-slate-900 hover:text-primary hover:bg-white/50'}`}
+                            className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'overview' ? 'bg-primary text-white shadow-md' : 'text-slate-900 hover:text-primary hover:bg-white/50'}`}
                         >
-                            Visão Geral
+                            <LucideLayoutDashboard className="h-4 w-4 md:hidden" />
+                            <span className="hidden md:inline">Visão Geral</span>
                         </button>
                         <button
                             onClick={() => handleTabChange('areas')}
-                            className={`flex-1 px-2 md:px-6 py-3 rounded-[1.5rem] text-[9px] md:text-[10px] font-black uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeTab === 'areas' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
+                            className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'areas' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
                         >
-                            Áreas
+                            <LucideLayoutGrid className="h-4 w-4 md:hidden" />
+                            <span className="hidden md:inline">Áreas</span>
                         </button>
                         <button
                             onClick={() => handleTabChange('turmas')}
-                            className={`flex-1 px-2 md:px-6 py-3 rounded-[1.5rem] text-[9px] md:text-[10px] font-black uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeTab === 'turmas' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
+                            className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'turmas' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
                         >
-                            Turmas
+                            <LucideGraduationCap className="h-4 w-4 md:hidden" />
+                            <span className="hidden md:inline">Turmas</span>
                         </button>
                         <button
                             onClick={() => handleTabChange('users')}
-                            className={`flex-1 px-2 md:px-6 py-3 rounded-[1.5rem] text-[9px] md:text-[10px] font-black uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeTab === 'users' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
+                            className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'users' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
                         >
-                            Usuários
+                            <LucideUserCircle className="h-4 w-4 md:hidden" />
+                            <span className="hidden md:inline">Usuários</span>
                         </button>
+                        {userLocationId === undefined ? (
+                            <div className="flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] bg-slate-200/50 animate-shimmer">
+                                <LucideMapPin className="h-4 w-4 md:hidden opacity-20" />
+                                <span className="hidden md:inline opacity-20 text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em]">Localidades</span>
+                            </div>
+                        ) : userLocationId === null && (
+                            <button
+                                onClick={() => handleTabChange('locations')}
+                                className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'locations' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
+                            >
+                                <LucideMapPin className="h-4 w-4 md:hidden" />
+                                <span className="hidden md:inline">Localidades</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
+
 
             {activeTab === 'overview' && (
                 <motion.div
@@ -737,6 +885,78 @@ export default function AdminDashboard() {
                 </motion.div>
             )}
 
+            {activeTab === 'locations' && !userLocationId && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-8"
+                >
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:px-0">
+                        <h2 className="text-xl md:text-2xl font-black tracking-tight uppercase">Gestão de Localidades (Pólos)</h2>
+                        <button
+                            onClick={() => { setEditingLocation(null); setLocationName(""); setIsLocationModalOpen(true); }}
+                            className="w-full md:w-auto bg-primary text-primary-foreground px-6 py-3.5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-all text-xs"
+                        >
+                            <LucidePlus className="h-5 w-5" /> Nova Localidade
+                        </button>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:px-0">
+                        {locations.map(loc => (
+                            <div key={loc.id} className="p-8 rounded-[2.5rem] bg-card border border-border backdrop-blur-md relative group shadow-sm flex flex-col justify-between">
+                                <div className="space-y-6">
+                                    <div className="flex items-start justify-between">
+                                        <div className="p-3 rounded-2xl bg-amber-50 text-amber-500 border border-amber-100 mb-4">
+                                            <LucideMapPin className="h-6 w-6" />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    setEditingLocation(loc);
+                                                    setLocationName(loc.name);
+                                                    setIsLocationModalOpen(true);
+                                                }}
+                                                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-muted-foreground hover:text-primary"
+                                            >
+                                                <LucideEdit2 className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteLocation(loc.id)}
+                                                className="p-2 rounded-xl bg-white/5 transition-colors text-destructive hover:bg-destructive/10"
+                                            >
+                                                <LucideTrash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{loc.name}</h3>
+                                        <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Alunos</span>
+                                                <span className="text-base font-black text-slate-900">{loc.counts?.students || 0}</span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Instrutores</span>
+                                                <span className="text-base font-black text-slate-900">{loc.counts?.instructors || 0}</span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Admins</span>
+                                                <span className="text-base font-black text-slate-900">{loc.counts?.admins || 0}</span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Turmas</span>
+                                                <span className="text-base font-black text-slate-900">{loc._count?.turmas || 0}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+            )}
+
             {activeTab === 'areas' && (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -760,10 +980,10 @@ export default function AdminDashboard() {
                                 <CategorySkeleton />
                                 <CategorySkeleton />
                             </>
-                        ) : categories.map(area => (
-                            <div key={area.id} className="p-8 rounded-[2.5rem] bg-card border border-border backdrop-blur-md relative group shadow-sm">
+                        ) : filteredCategories.map(area => (
+                            <div key={area.id} className="p-8 rounded-[2.5rem] bg-card border border-border backdrop-blur-md relative group shadow-sm flex flex-col justify-between">
                                 <div className="flex items-start justify-between mb-6">
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 flex-1">
                                         <div className="p-3 rounded-2xl bg-primary/10 text-primary w-fit mb-4">
                                             {getIconComponent(area.icon || "LucideLayoutGrid")}
                                         </div>
@@ -803,6 +1023,7 @@ export default function AdminDashboard() {
                                         )) : <span className="text-[10px] text-muted-foreground italic">Nenhum instrutor</span>}
                                     </div>
                                 </div>
+
                             </div>
                         ))}
                     </div>
@@ -819,10 +1040,73 @@ export default function AdminDashboard() {
                         <h2 className="text-xl md:text-2xl font-black tracking-tight uppercase">Gestão de Turmas</h2>
                         <button
                             onClick={() => { setEditingTurma(null); setTurmaName(""); setTurmaDescription(""); setIsTurmaModalOpen(true); }}
-                            className="w-full md:w-auto bg-primary text-primary-foreground px-6 py-3.5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-[transform,box-shadow,background-color] text-xs"
+                            className="w-full md:w-auto bg-primary text-primary-foreground px-6 py-3.5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-[transform,shadow,background-color] text-xs"
                         >
                             <LucidePlus className="h-5 w-5" /> Nova Turma
                         </button>
+                    </div>
+ 
+                    {/* Desktop Toolbar */}
+                    <div className="hidden md:block bg-card border border-border rounded-[2rem] p-4 shadow-sm mb-8">
+                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                             <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1">
+                                 <div className="relative group flex-1 max-w-md">
+                                     <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                                     <input
+                                         type="text"
+                                         placeholder="Buscar turmas..."
+                                         value={searchQuery}
+                                         onChange={(e) => setSearchQuery(e.target.value)}
+                                         className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-[11px] font-black outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50 transition-all placeholder:text-slate-400 text-slate-950"
+                                     />
+                                 </div>
+ 
+                                 <div className="flex flex-wrap gap-2 items-center">
+                                     {userLocationId === undefined ? (
+                                         <FilterSkeleton />
+                                     ) : userLocationId === null && (
+                                         <FilterSelect
+                                             icon={LucideMapPin}
+                                             value={selectedLocationId}
+                                             onChange={setSelectedLocationId}
+                                             placeholder="Localidade"
+                                             options={locations.map(l => ({ id: l.id, name: l.name }))}
+                                         />
+                                     )}
+                                 </div>
+                             </div>
+ 
+                             <div className="flex items-center shrink-0">
+                                 <span className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-900 bg-slate-100/50 px-4 py-2 rounded-xl border border-slate-100 whitespace-nowrap">
+                                     TOTAL: <span className="text-primary ml-1">{filteredTurmas.length}</span>
+                                 </span>
+                             </div>
+                         </div>
+                    </div>
+
+                    {/* Mobile Toolbar */}
+                    <div className="md:hidden bg-card border border-border rounded-[2.5rem] p-4 shadow-sm mb-8 space-y-3">
+                        <div className="relative group">
+                            <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Buscar turmas..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-black outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 text-slate-950"
+                            />
+                        </div>
+                        {userLocationId === undefined ? (
+                            <div className="h-12 w-full bg-slate-100 rounded-2xl animate-shimmer border border-slate-200/50" />
+                        ) : userLocationId === null && (
+                            <FilterSelect
+                                icon={LucideMapPin}
+                                value={selectedLocationId}
+                                onChange={setSelectedLocationId}
+                                placeholder="Localidade"
+                                options={locations.map(l => ({ id: l.id, name: l.name }))}
+                            />
+                        )}
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:px-0">
@@ -832,7 +1116,7 @@ export default function AdminDashboard() {
                                 <CategorySkeleton />
                                 <CategorySkeleton />
                             </>
-                        ) : turmas.length > 0 ? turmas.map(turma => (
+                        ) : filteredTurmas.map(turma => (
                             <div key={turma.id} className="p-8 rounded-[2.5rem] bg-card border border-border backdrop-blur-md relative group shadow-sm flex flex-col justify-between">
                                 <div className="space-y-4">
                                     <div className="flex items-start justify-between">
@@ -852,6 +1136,7 @@ export default function AdminDashboard() {
                                                     setEditingTurma(turma);
                                                     setTurmaName(turma.name);
                                                     setTurmaDescription(turma.description || "");
+                                                    setTempLocationId(turma.locationId || null);
                                                     setIsTurmaModalOpen(true);
                                                 }}
                                                 className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-muted-foreground hover:text-primary"
@@ -882,25 +1167,26 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
 
-                                <div className="mt-8 pt-6 border-t border-border flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">
-                                            <LucideUsers className="h-4 w-4 text-slate-400" />
-                                        </div>
-                                        <span className="text-xs font-bold text-slate-500">{turma._count?.users || 0} Integrantes</span>
-                                    </div>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{new Date(turma.createdAt).toLocaleDateString()}</span>
-                                </div>
+                                <div className="mt-8 pt-6 border-t border-border flex flex-col gap-4">
+                                     <div className="flex items-center justify-between w-full">
+                                         <div className="flex items-center gap-2">
+                                             <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center">
+                                                 <LucideUsers className="h-4 w-4 text-slate-300" />
+                                             </div>
+                                             <span className="text-xs font-bold text-slate-500">{turma._count?.users || 0} Integrantes</span>
+                                         </div>
+                                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{new Date(turma.createdAt).toLocaleDateString()}</span>
+                                     </div>
+                                     
+                                     <div className="flex items-center gap-2 px-3 py-2 bg-slate-50/50 rounded-xl border border-slate-100/50">
+                                         <LucideMapPin className="h-3 w-3 text-primary/40" />
+                                         <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                                             {turma.location?.name || 'Unidade Geral'}
+                                         </span>
+                                     </div>
+                                 </div>
                             </div>
-                        )) : (
-                            <div className="col-span-full py-20 text-center bg-card border border-border rounded-[2.5rem] shadow-sm">
-                                <div className="h-20 w-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <LucideUsers className="h-10 w-10 text-muted-foreground/30" />
-                                </div>
-                                <h3 className="text-lg font-black text-slate-900">Nenhuma turma encontrada</h3>
-                                <p className="text-muted-foreground max-w-xs mx-auto mt-2">Comece criando sua primeira turma para organizar seus alunos.</p>
-                            </div>
-                        )}
+                        ))}
                     </div>
                 </motion.div>
             )}
@@ -930,6 +1216,18 @@ export default function AdminDashboard() {
                                     </div>
 
                                     <div className="flex flex-wrap gap-2 items-center">
+                                        {userLocationId === undefined ? (
+                                            <FilterSkeleton />
+                                        ) : userLocationId === null && (
+                                            <FilterSelect
+                                                icon={LucideMapPin}
+                                                value={selectedLocationId}
+                                                onChange={setSelectedLocationId}
+                                                placeholder="Localidade"
+                                                options={locations.map(l => ({ id: l.id, name: l.name }))}
+                                            />
+                                        )}
+
                                         <FilterSelect
                                             icon={LucideUserCircle}
                                             value={filterRole}
@@ -958,20 +1256,6 @@ export default function AdminDashboard() {
                                             options={categories.map(c => ({ id: c.id, name: c.name }))}
                                         />
 
-                                        {(searchQuery || filterRole !== 'ALL' || filterTurma !== 'ALL' || filterArea !== 'ALL') && (
-                                            <button
-                                                onClick={() => {
-                                                    setSearchQuery("");
-                                                    setFilterRole('ALL');
-                                                    setFilterTurma('ALL');
-                                                    setFilterArea('ALL');
-                                                }}
-                                                className="flex items-center gap-1.5 px-3 py-2 text-slate-950 hover:bg-slate-50 rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors border border-transparent hover:border-slate-200 shrink-0"
-                                            >
-                                                <LucideXCircle className="h-3 w-3" />
-                                                Limpar Filtros
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
 
@@ -989,6 +1273,7 @@ export default function AdminDashboard() {
                                     <th className="px-8 py-5">Role</th>
                                     <th className="px-8 py-5">Turmas</th>
                                     <th className="px-8 py-5">Áreas</th>
+                                    <th className="px-8 py-5">Localidade</th>
                                     <th className="px-8 py-5 text-right">Ações</th>
                                 </tr>
                             </thead>
@@ -1055,7 +1340,7 @@ export default function AdminDashboard() {
                                                     <LoadingSpinner size="sm" />
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-3 py-2 w-44 shadow-sm group-hover/role:bg-white transition-all focus-within:ring-4 focus-within:ring-primary/10 focus-within:border-primary">
+                                                <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-3 py-2 w-44 shadow-sm group-hover/role:bg-white transition-all focus-within:ring-4 focus-within:ring-primary/10 focus-within:border-primary cursor-pointer">
                                                     <select
                                                         value={user.role}
                                                         onChange={(e) => handleUpdateRole(user.id, e.target.value)}
@@ -1063,7 +1348,7 @@ export default function AdminDashboard() {
                                                     >
                                                         <option value="STUDENT">Aluno</option>
                                                         <option value="INSTRUCTOR">Instrutor</option>
-                                                        <option value="ADMIN">Administrador</option>
+                                                        <option value="ADMIN">{user.locationId ? 'Admin' : 'Super Admin'}</option>
                                                     </select>
                                                     <LucideUserCog className="h-3.5 w-3.5 opacity-30 pointer-events-none shrink-0" />
                                                 </div>
@@ -1091,39 +1376,57 @@ export default function AdminDashboard() {
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="flex flex-wrap gap-2">
-                                                {updatingRoleFor === user.id ? (
-                                                    <div className="flex items-center">
-                                                        <LoadingSpinner size="xs" />
-                                                    </div>
-                                                ) : user.role === 'ADMIN' ? (
-                                                    <span className="px-3 py-1.5 rounded-full bg-purple-50 text-purple-600 text-[9px] font-black uppercase tracking-[0.15em] border border-purple-100 shadow-sm">
-                                                        Controle Total
-                                                    </span>
-                                                ) : (
-                                                    <>
-                                                        {user.role === 'INSTRUCTOR' && user.assignedAreas.map((a, i) => (
-                                                            <span key={`ins-${i}`} className="px-3 py-1.5 rounded-lg bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest border border-primary/10">
-                                                                {a.category.name}
-                                                            </span>
-                                                        ))}
-                                                        {user.role === 'STUDENT' && user.turmas?.map(t => t.areas?.map((a, i) => (
-                                                            <span key={`stu-${t.id}-${i}`} className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
-                                                                {a.category.name}
-                                                            </span>
-                                                        )))}
-                                                    </>
-                                                )}
+                                                            {updatingRoleFor === user.id ? (
+                                                                <div className="flex items-center">
+                                                                    <LoadingSpinner size="xs" />
+                                                                </div>
+                                                            ) : user.role === 'ADMIN' ? (
+                                                                <span className="px-3 py-1.5 rounded-full bg-purple-50 text-purple-600 text-[9px] font-black uppercase tracking-[0.15em] border border-purple-100 shadow-sm">
+                                                                    {user.locationId ? 'Admin' : 'Super Admin'}
+                                                                </span>
+                                                            ) : (
+                                                                <>
+                                                                    {user.role === 'INSTRUCTOR' && user.assignedAreas.map((a, i) => (
+                                                                        <span key={`ins-${i}`} className="px-3 py-1.5 rounded-lg bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest border border-primary/10">
+                                                                            {a.category.name}
+                                                                        </span>
+                                                                    ))}
+                                                                    {user.role === 'STUDENT' && user.turmas?.map(t => t.areas?.map((a, i) => (
+                                                                        <span key={`stu-${t.id}-${i}`} className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                                                                            {a.category.name}
+                                                                        </span>
+                                                                    )))}
+                                                                </>
+                                                            )}
 
-                                                {user.role === 'INSTRUCTOR' && (
-                                                    <button
-                                                        onClick={() => handleOpenAreaModal(user)}
-                                                        className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground transition-colors"
-                                                    >
-                                                        <LucidePlus className="h-3 w-3" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
+                                                            {user.role === 'INSTRUCTOR' && (
+                                                                <button
+                                                                    onClick={() => handleOpenAreaModal(user)}
+                                                                    className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground transition-colors"
+                                                                >
+                                                                    <LucidePlus className="h-3 w-3" />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-6">
+                                                        {!userLocationId ? (
+                                                            <select
+                                                                value={user.locationId || ""}
+                                                                onChange={(e) => handleUpdateUserLocation(user.id, e.target.value || null)}
+                                                                className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[10px] font-bold outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                                                            >
+                                                                <option value="">Global</option>
+                                                                {locations.map(loc => (
+                                                                    <option key={loc.id} value={loc.id}>{loc.name}</option>
+                                                                ))}
+                                                            </select>
+                                                        ) : (
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                                {user.location?.name || 'Global'}
+                                                            </span>
+                                                        )}
+                                                    </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex justify-end gap-2 text-right">
                                                 {user.role === 'STUDENT' && (
@@ -1160,7 +1463,7 @@ export default function AdminDashboard() {
 
                     {/* Mobile Card List */}
                     <div className="md:hidden space-y-4">
-                        <div className="bg-card border border-border rounded-[2rem] p-4 shadow-sm space-y-3">
+                        <div className="bg-card border border-border rounded-[2.5rem] p-4 shadow-sm space-y-3">
                             <div className="relative group">
                                 <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                                 <input
@@ -1172,49 +1475,45 @@ export default function AdminDashboard() {
                                 />
                             </div>
 
-                            <div className="flex flex-col gap-2">
-                                <div className="grid grid-cols-1 gap-2">
+                            <div className="space-y-2">
+                                {userLocationId === undefined ? (
+                                    <div className="h-12 w-full bg-slate-100 rounded-2xl animate-shimmer border border-slate-200/50" />
+                                ) : userLocationId === null && (
                                     <FilterSelect
-                                        icon={LucideUserCircle}
-                                        value={filterRole}
-                                        onChange={(val) => setFilterRole(val as any)}
-                                        placeholder="Filtrar por Função"
-                                        options={[
-                                            { id: 'STUDENT', name: 'Alunos' },
-                                            { id: 'INSTRUCTOR', name: 'Instrutores' },
-                                            { id: 'ADMIN', name: 'Administradores' },
-                                        ]}
+                                        icon={LucideMapPin}
+                                        value={selectedLocationId}
+                                        onChange={setSelectedLocationId}
+                                        placeholder="Localidade"
+                                        options={locations.map(l => ({ id: l.id, name: l.name }))}
                                     />
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <FilterSelect
-                                            icon={LucideUsers}
-                                            value={filterTurma}
-                                            onChange={setFilterTurma}
-                                            placeholder="Turma"
-                                            options={turmas.map(t => ({ id: t.id, name: t.name }))}
-                                        />
-                                        <FilterSelect
-                                            icon={LucideLayoutGrid}
-                                            value={filterArea}
-                                            onChange={setFilterArea}
-                                            placeholder="Área"
-                                            options={categories.map(c => ({ id: c.id, name: c.name }))}
-                                        />
-                                    </div>
-                                </div>
-                                {(searchQuery || filterRole !== 'ALL' || filterTurma !== 'ALL' || filterArea !== 'ALL') && (
-                                    <button
-                                        onClick={() => {
-                                            setSearchQuery("");
-                                            setFilterRole('ALL');
-                                            setFilterTurma('ALL');
-                                            setFilterArea('ALL');
-                                        }}
-                                        className="w-full py-3 text-slate-900 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2 active:scale-95"
-                                    >
-                                        <LucideXCircle className="h-3.5 w-3.5" /> Limpar Filtros
-                                    </button>
                                 )}
+                                <FilterSelect
+                                    icon={LucideUserCircle}
+                                    value={filterRole}
+                                    onChange={(val) => setFilterRole(val as any)}
+                                    placeholder="Função"
+                                    options={[
+                                        { id: 'STUDENT', name: 'Alunos' },
+                                        { id: 'INSTRUCTOR', name: 'Instrutores' },
+                                        { id: 'ADMIN', name: 'Administradores' },
+                                    ]}
+                                />
+                                <div className="grid grid-cols-2 gap-2">
+                                    <FilterSelect
+                                        icon={LucideGraduationCap}
+                                        value={filterTurma}
+                                        onChange={setFilterTurma}
+                                        placeholder="Turma"
+                                        options={turmas.map(t => ({ id: t.id, name: t.name }))}
+                                    />
+                                    <FilterSelect
+                                        icon={LucideLayoutGrid}
+                                        value={filterArea}
+                                        onChange={setFilterArea}
+                                        placeholder="Área"
+                                        options={categories.map(c => ({ id: c.id, name: c.name }))}
+                                    />
+                                </div>
                             </div>
                         </div>
                         {isLoading ? (
@@ -1271,6 +1570,24 @@ export default function AdminDashboard() {
                                             </h3>
                                         )}
                                         <p className="text-sm font-medium text-slate-500 truncate lowercase">{user.email}</p>
+                                        <div className="mt-1">
+                                            {!userLocationId ? (
+                                                <select
+                                                    value={user.locationId || ""}
+                                                    onChange={(e) => handleUpdateUserLocation(user.id, e.target.value || null)}
+                                                    className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[9px] font-black uppercase tracking-widest text-slate-500 outline-none"
+                                                >
+                                                    <option value="">Global</option>
+                                                    {locations.map(loc => (
+                                                        <option key={loc.id} value={loc.id}>{loc.name}</option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
+                                                    {user.location?.name || 'Global'}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1316,7 +1633,7 @@ export default function AdminDashboard() {
                                                     <LoadingSpinner size="sm" />
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl pl-5 pr-4 py-3 w-full sm:w-48 shadow-sm group-hover/role:bg-white transition-all focus-within:ring-4 focus-within:ring-primary/10 focus-within:border-primary">
+                                                <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl pl-5 pr-4 py-3 w-full sm:w-48 shadow-sm group-hover/role:bg-white transition-all focus-within:ring-4 focus-within:ring-primary/10 focus-within:border-primary cursor-pointer">
                                                     <select
                                                         value={user.role}
                                                         onChange={(e) => handleUpdateRole(user.id, e.target.value)}
@@ -1324,7 +1641,7 @@ export default function AdminDashboard() {
                                                     >
                                                         <option value="STUDENT">Aluno</option>
                                                         <option value="INSTRUCTOR">Instrutor</option>
-                                                        <option value="ADMIN">Administrador</option>
+                                                        <option value="ADMIN">{user.locationId ? 'Admin' : 'Super Admin'}</option>
                                                     </select>
                                                     <LucideUserCog className="h-4 w-4 opacity-30 pointer-events-none shrink-0" />
                                                 </div>
@@ -1685,172 +2002,122 @@ export default function AdminDashboard() {
                 </motion.div>
             </PortalModal>
 
-            {/* Turma CRUD Modal */}
-            <PortalModal isOpen={isTurmaModalOpen} onClose={() => setIsTurmaModalOpen(false)} preventCloseOnOverlayClick={isSavingTurma}>
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-full max-w-lg bg-card border border-border rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
-                >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
-
-                    <div className="mb-6 md:mb-10 relative shrink-0">
-                        <h2 className="text-3xl font-black mb-2 flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-inner">
-                                <LucideUsers className="h-6 w-6" />
+            {/* Category CRUD Modal */}
+            <PortalModal isOpen={isCategoryModalOpen} onClose={() => setIsCategoryModalOpen(false)}>
+                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                    className="relative w-full max-w-xl bg-card border border-border rounded-[2rem] p-8 md:p-12 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground" />
+                    <h2 className="text-3xl font-black mb-10 flex items-center gap-4">
+                        <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                            <LucidePlus className="h-6 w-6" />
+                        </div>
+                        {editingCategory ? 'Editar Área' : 'Nova Área'}
+                    </h2>
+                    <div className="space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+                        <div>
+                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Área</label>
+                            <input className="w-full bg-slate-50 border border-slate-200 rounded-[1.5rem] px-6 py-4 outline-none font-bold mt-2 text-slate-900 shadow-sm focus:ring-2 focus:ring-primary/20 transition-all"
+                                placeholder="Ex: Tecnologia, Inglês, etc." value={categoryName} onChange={(e) => setCategoryName(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Ícone Representativo</label>
+                            <div className="grid grid-cols-5 md:grid-cols-6 gap-2 mt-2 bg-slate-50/50 p-3 rounded-[1.5rem] border border-slate-100">
+                                {availableIcons.map((item) => (
+                                    <button key={item.icon} onClick={() => setCategoryIcon(item.icon)}
+                                        className={`aspect-square rounded-xl flex items-center justify-center transition-all ${categoryIcon === item.icon ? 'bg-primary text-white scale-105 shadow-md' : 'bg-white text-slate-400 hover:text-primary hover:bg-primary/5'}`}>
+                                        {getIconComponent(item.icon, "h-5 w-5")}
+                                    </button>
+                                ))}
                             </div>
-                            {editingTurma ? "Editar Turma" : "Nova Turma"}
-                        </h2>
-                        <p className="text-slate-500 font-medium leading-tight">Organize seus alunos em grupos para facilitar a gestão de progresso.</p>
-                    </div>
-
-                    <div className="space-y-8 overflow-y-auto pr-2 custom-scrollbar flex-1 pb-4">
-                        <div>
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Turma</label>
-                            <input
-                                className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold mt-2.5 text-slate-900 placeholder:text-slate-300 shadow-sm"
-                                placeholder="Ex: Turma A - 2024, Desenvolvimento Web, etc."
-                                value={turmaName}
-                                onChange={(e) => setTurmaName(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Descrição (Opcional)</label>
-                            <textarea
-                                className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold mt-2.5 text-slate-900 placeholder:text-slate-300 shadow-sm min-h-[120px] resize-none"
-                                placeholder="Descreva o propósito desta turma..."
-                                value={turmaDescription}
-                                onChange={(e) => setTurmaDescription(e.target.value)}
-                            />
                         </div>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-white/5 shrink-0">
-                        <button
-                            onClick={() => setIsTurmaModalOpen(false)}
-                            className="bg-slate-100 text-slate-600 py-3 md:py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all border border-slate-200"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={handleSaveTurma}
-                            disabled={isSavingTurma}
-                            className="bg-primary text-primary-foreground py-3 md:py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            {isSavingTurma ? (
+                    <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-100">
+                        <button onClick={() => setIsCategoryModalOpen(false)} className="bg-slate-100 text-slate-600 py-4 rounded-xl font-black uppercase tracking-widest transition-all hover:bg-slate-200 text-xs">Cancelar</button>
+                        <button onClick={handleSaveCategory} disabled={isSavingCategory} className="bg-primary text-primary-foreground py-4 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-xs">
+                            {isSavingCategory ? (
                                 <>
                                     <LoadingSpinner size="sm" variant="white" />
-                                    Salvando...
+                                    <span>Salvando...</span>
                                 </>
-                            ) : (
-                                "Salvar Turma"
-                            )}
+                            ) : 'Salvar Área'}
                         </button>
                     </div>
                 </motion.div>
             </PortalModal>
 
-            {/* Category CRUD Modal */}
-            <PortalModal isOpen={isCategoryModalOpen} onClose={() => setIsCategoryModalOpen(false)} preventCloseOnOverlayClick={isSavingCategory}>
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-full max-w-lg bg-card border border-border rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
-                >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
-
-                    <div className="mb-6 md:mb-10 relative shrink-0">
-                        <h2 className="text-3xl font-black mb-2 flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-inner">
-                                {getIconComponent(categoryIcon || "", "h-6 w-6")}
-                            </div>
-                            {editingCategory ? "Editar Área" : "Nova Área"}
-                        </h2>
-                        <p className="text-slate-500 font-medium leading-tight">Defina os detalhes da categoria para organizar seus cursos com excelência.</p>
-                    </div>
-
-                    <div className="space-y-8 overflow-y-auto pr-2 custom-scrollbar flex-1 pb-4">
+            {/* Turma CRUD Modal */}
+            <PortalModal isOpen={isTurmaModalOpen} onClose={() => setIsTurmaModalOpen(false)}>
+                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                    className="relative w-full max-w-xl bg-card border border-border rounded-[2rem] p-8 md:p-12 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground" />
+                    <h2 className="text-3xl font-black mb-10 flex items-center gap-4">
+                        <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                            <LucideUsers className="h-6 w-6" />
+                        </div>
+                        {editingTurma ? 'Editar Turma' : 'Nova Turma'}
+                    </h2>
+                    <div className="space-y-8 overflow-y-auto pr-4 custom-scrollbar">
                         <div>
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Área</label>
-                            <input
-                                className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold mt-2.5 text-slate-900 placeholder:text-slate-300 shadow-sm"
-                                placeholder="Ex: Tecnologia, Inglês, etc."
-                                value={categoryName}
-                                onChange={(e) => setCategoryName(e.target.value)}
-                            />
+                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Turma</label>
+                            <input className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm"
+                                placeholder="Ex: Turma A 2024" value={turmaName} onChange={(e) => setTurmaName(e.target.value)} />
                         </div>
-
                         <div>
-                            <div className="flex items-center justify-between mb-3 ml-1">
-                                <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800">Selecione o Ícone</label>
-                                <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Visual</span>
-                            </div>
-
-                            <div className="bg-slate-50/50 border border-slate-100 rounded-[2rem] p-4 shadow-inner">
-                                <div className="grid grid-cols-5 gap-3 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar p-1">
-                                    {availableIcons.map((item) => (
-                                        <button
-                                            key={item.icon}
-                                            onClick={() => setCategoryIcon(item.icon)}
-                                            className={`aspect-square rounded-2xl flex items-center justify-center transition-all relative group ${categoryIcon === item.icon
-                                                ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-105 z-10'
-                                                : 'bg-white border border-slate-100 text-slate-400 hover:border-primary/30 hover:text-primary hover:scale-105 shadow-sm'
-                                                }`}
-                                            title={item.name}
-                                        >
-                                            {getIconComponent(item.icon, "h-6 w-6")}
-                                            {categoryIcon === item.icon && (
-                                                <motion.div
-                                                    layoutId="activeIcon"
-                                                    className="absolute inset-0 border-4 border-white/20 rounded-2xl"
-                                                    initial={false}
-                                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                                />
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Descrição</label>
+                            <textarea className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm min-h-[100px] resize-none"
+                                placeholder="Sobre a turma..." value={turmaDescription} onChange={(e) => setTurmaDescription(e.target.value)} />
                         </div>
-
-                        {/* Preview Section */}
-                        <div className="pt-2">
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1 block mb-3">Pré-visualização</label>
-                            <div className="p-4 md:p-6 rounded-[1.5rem] bg-white border-2 border-primary/20 shadow-xl shadow-primary/5 flex items-center gap-4 relative overflow-hidden group">
-                                <div className="h-10 w-10 md:h-12 md:w-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary relative z-10 shadow-inner shrink-0">
-                                    {getIconComponent(categoryIcon || "", "h-5 w-5 md:h-6 md:w-6")}
-                                </div>
-                                <div className="relative z-10 min-w-0">
-                                    <h3 className="text-base md:text-lg font-black text-slate-900 leading-none mb-1 truncate">{categoryName || "Nome da Área"}</h3>
-                                    <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">0 cursos registrados</p>
-                                </div>
+                        {!userLocationId && (
+                            <div>
+                                <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Localidade (Pólo)</label>
+                                <select className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm"
+                                    value={tempLocationId || ""} onChange={(e) => setTempLocationId(e.target.value || null)}>
+                                    <option value="">Selecione uma localidade (Obrigatório)</option>
+                                    {locations.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}
+                                </select>
                             </div>
-                        </div>
+                        )}
                     </div>
-
-                    <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-white/5 shrink-0">
-                        <button
-                            onClick={() => setIsCategoryModalOpen(false)}
-                            className="bg-slate-100 text-slate-600 py-3 md:py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all border border-slate-200"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={handleSaveCategory}
-                            disabled={isSavingCategory}
-                            className="bg-primary text-primary-foreground py-3 md:py-4 rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            {isSavingCategory ? (
+                    <div className="grid grid-cols-2 gap-4 mt-10 pt-8 border-t border-white/5">
+                        <button onClick={() => setIsTurmaModalOpen(false)} className="bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest transition-all hover:bg-slate-200 text-xs">Cancelar</button>
+                        <button onClick={handleSaveTurma} disabled={isSavingTurma} className="bg-primary text-primary-foreground py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-xs">
+                            {isSavingTurma ? (
                                 <>
                                     <LoadingSpinner size="sm" variant="white" />
-                                    Salvando...
+                                    <span>Salvando...</span>
                                 </>
-                            ) : (
-                                "Salvar"
-                            )}
+                            ) : 'Salvar Turma'}
+                        </button>
+                    </div>
+                </motion.div>
+            </PortalModal>
+
+            {/* Location Manager Modal */}
+            <PortalModal isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)}>
+                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                    className="relative w-full max-w-lg bg-card border border-border rounded-[2rem] p-8 md:p-12 shadow-2xl">
+                    <h2 className="text-3xl font-black mb-8 flex items-center gap-4">
+                        <div className="p-3 rounded-2xl bg-amber-50 text-amber-500">
+                            <LucideMapPin className="h-6 w-6" />
+                        </div>
+                        {editingLocation ? 'Editar Localidade' : 'Nova Localidade'}
+                    </h2>
+                    <div className="space-y-6">
+                        <div>
+                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Localidade (Pólo)</label>
+                            <input className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm"
+                                placeholder="Ex: Água Rasa, Cubatão..." value={locationName} onChange={(e) => setLocationName(e.target.value)} />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mt-10">
+                        <button onClick={() => setIsLocationModalOpen(false)} className="bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest transition-all hover:bg-slate-200 text-xs">Cancelar</button>
+                        <button onClick={handleSaveLocation} disabled={isSavingLocation} className="bg-primary text-primary-foreground py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-xs">
+                            {isSavingLocation ? (
+                                <>
+                                    <LoadingSpinner size="sm" variant="white" />
+                                    <span>Salvando...</span>
+                                </>
+                            ) : 'Salvar'}
                         </button>
                     </div>
                 </motion.div>
@@ -1992,7 +2259,7 @@ function FilterSelect({
     const isActive = value !== 'ALL';
 
     return (
-        <div className={`relative flex items-center group transition-all duration-300`}>
+        <div className={`relative flex items-center group transition-all duration-300 cursor-pointer`}>
             <div className={`absolute left-3.5 z-10 transition-colors duration-300 ${isActive ? 'text-primary' : 'text-slate-400 group-hover:text-black'}`}>
                 <Icon className="h-3.5 w-3.5" />
             </div>

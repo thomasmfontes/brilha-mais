@@ -6,9 +6,12 @@ import { CreateTurmaDto, UpdateTurmaDto } from './turma.dto';
 export class TurmaService {
     constructor(private prisma: PrismaService) { }
 
-    async findAll() {
+    async findAll(locationId?: string) {
+        const where = locationId ? { locationId } : {};
         return this.prisma.turma.findMany({
+            where,
             include: {
+                location: true,
                 _count: {
                     select: { users: true },
                 },
@@ -45,7 +48,7 @@ export class TurmaService {
         return turma;
     }
 
-    async create(createTurmaDto: CreateTurmaDto) {
+    async create(createTurmaDto: CreateTurmaDto & { locationId?: string }) {
         return this.prisma.turma.create({
             data: createTurmaDto,
         });

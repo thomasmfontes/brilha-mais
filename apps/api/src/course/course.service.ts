@@ -72,9 +72,12 @@ export class CourseService {
         };
     }
 
-    async findAdminCourses() {
+    async findAdminCourses(locationId?: string) {
+        const where = locationId ? { locationId } : {};
         const courses = await this.prisma.course.findMany({
+            where,
             include: {
+                location: true,
                 category: true,
                 _count: {
                     select: { 
@@ -91,7 +94,8 @@ export class CourseService {
             ...course,
             status: course.isPublished ? 'Publicado' : 'Privado',
             students: course._count?.enrollments || 0,
-            category: course.category?.name || 'Sem categoria'
+            category: course.category?.name || 'Sem categoria',
+            locationName: course.location?.name || 'Global'
         }));
     }
 
@@ -166,13 +170,21 @@ export class CourseService {
 
         if (userId) {
             const [user, instructorAreas, studentTurma] = await Promise.all([
-                this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+                this.prisma.user.findUnique({ where: { id: userId }, select: { role: true, locationId: true } }),
                 this.prisma.instructorArea.findMany({ where: { userId }, select: { categoryId: true } }),
                 this.prisma.turma.findFirst({
                     where: { users: { some: { id: userId } } },
                     include: { areas: true }
                 })
             ]);
+
+            // Scope by location: (Course.locationId === user.locationId OR Course.locationId === null)
+            if (user?.locationId) {
+                where.OR = [
+                    { locationId: user.locationId },
+                    { locationId: null }
+                ];
+            }
 
             if (user?.role === 'STUDENT') {
                 const areaIds = studentTurma?.areas.map(a => a.categoryId) || [];
@@ -258,13 +270,18 @@ export class CourseService {
         const { modules, ...courseData } = data;
 
         // Filtrar apenas campos que existem no modelo Course do Prisma
-        const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'instructorId', 'categoryId'];
+        const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'instructorId', 'categoryId', 'locationId'];
         const filteredData: any = {};
         validFields.forEach(field => {
             if (courseData[field] !== undefined) {
                 filteredData[field] = courseData[field];
             }
         });
+        
+        // Use the inherited locationId if it was found
+        if (finalLocationId) {
+            filteredData.locationId = finalLocationId;
+        }
 
         const course = await this.prisma.course.create({
             data: filteredData
@@ -327,7 +344,7 @@ export class CourseService {
 
     async update(id: string, data: any, actorId?: string) {
         const { modules, ...courseData } = data;
-        const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'categoryId'];
+        const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'categoryId', 'locationId'];
         const filteredUpdateData: any = {};
 
         validFields.forEach(field => {

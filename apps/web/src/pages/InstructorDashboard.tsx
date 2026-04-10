@@ -79,9 +79,18 @@ export default function InstructorDashboard() {
         try {
             const response = await api.get('/users/me');
             if (response.data) {
-                setUserRole(response.data.role);
-                if (response.data.assignedAreas) {
-                    const categories = response.data.assignedAreas.map((area: any) => area.category);
+                const userData = response.data;
+                setUserRole(userData.role);
+                
+                // If it's a Super Admin (ADMIN with no locationId), they should see all categories
+                if (userData.role === 'ADMIN' && !userData.locationId) {
+                    const { data: allCategories } = await api.get('/categories');
+                    setAssignedCategories(allCategories);
+                    if (allCategories.length > 0) {
+                        setNewCourse(prev => ({ ...prev, category: allCategories[0].id }));
+                    }
+                } else if (userData.assignedAreas) {
+                    const categories = userData.assignedAreas.map((area: any) => area.category);
                     setAssignedCategories(categories);
                     if (categories.length > 0) {
                         setNewCourse(prev => ({ ...prev, category: categories[0].id }));

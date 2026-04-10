@@ -46,8 +46,10 @@ export class CategoryController {
 
   @Post()
   @Roles(Role.ADMIN)
-  create(@Body() data: { name: string; icon?: string }, @Req() req: any) {
-    return this.categoryService.create(data.name, data.icon, req.user.id);
+  create(@Body() data: { name: string; icon?: string; locationId?: string }, @Req() req: any) {
+    // If admin has a location, force it. Otherwise, use what was sent or null (global).
+    const locationId = req.user.locationId || data.locationId;
+    return this.categoryService.create(data.name, data.icon, locationId, req.user.id);
   }
 
   @Put(':id')

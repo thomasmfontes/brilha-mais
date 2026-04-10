@@ -15,6 +15,7 @@ import { AuditModule } from './audit/audit.module';
 import { TurmaModule } from './turma/turma.module';
 import { EssaySubmissionModule } from './essay-submission/essay-submission.module';
 import { MaterialDownloadModule } from './material-download/material-download.module';
+import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { MaterialDownloadModule } from './material-download/material-download.mo
     TurmaModule,
     EssaySubmissionModule,
     MaterialDownloadModule,
+    LocationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

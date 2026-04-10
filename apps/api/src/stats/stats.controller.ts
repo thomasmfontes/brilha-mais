@@ -12,8 +12,9 @@ export class StatsController {
 
   @Get('admin')
   @Roles(Role.ADMIN)
-  getAdminStats() {
-    return this.statsService.getAdminStats();
+  getAdminStats(@Req() req: any) {
+    const locationId = req.user.locationId;
+    return this.statsService.getAdminStats(locationId);
   }
 
   @Get('instructor')

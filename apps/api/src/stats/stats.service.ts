@@ -6,22 +6,32 @@ const INSTRUCTOR_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
 @Injectable()
 export class StatsService {
-  private adminCache: { data: any; expiresAt: number } | null = null;
+  private adminCache = new Map<string, { data: any; expiresAt: number }>();
   private instructorCache = new Map<string, { data: any; expiresAt: number }>();
 
   constructor(private prisma: PrismaService) { }
 
-  async getAdminStats() {
-    if (this.adminCache && Date.now() < this.adminCache.expiresAt) {
-      return this.adminCache.data;
+  async getAdminStats(locationId?: string) {
+    const cacheKey = locationId || 'GLOBAL';
+    const cached = this.adminCache.get(cacheKey);
+
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data;
     }
+
+    // Filters for Unit Admins
+    const userWhere = locationId ? { locationId } : {};
+    const enrollmentWhere = locationId ? { user: { locationId } } : { user: { role: 'STUDENT' as const } };
+    const logWhere = locationId ? { user: { locationId } } : {};
+    const courseWhere = locationId ? { locationId } : {};
 
     const [totalUsers, totalCourses, totalEnrollments, recentLogs] =
       await Promise.all([
-        this.prisma.user.count(),
-        this.prisma.course.count(),
-        this.prisma.enrollment.count({ where: { user: { role: 'STUDENT' } } }),
+        this.prisma.user.count({ where: userWhere }),
+        this.prisma.course.count({ where: courseWhere }),
+        this.prisma.enrollment.count({ where: enrollmentWhere }),
         this.prisma.auditLog.findMany({
+          where: logWhere,
           take: 5,
           orderBy: { createdAt: 'desc' },
           include: { user: { select: { name: true } } },
@@ -40,13 +50,17 @@ export class StatsService {
       })),
     };
 
-    this.adminCache = { data, expiresAt: Date.now() + ADMIN_CACHE_TTL_MS };
+    this.adminCache.set(cacheKey, { data, expiresAt: Date.now() + ADMIN_CACHE_TTL_MS });
     return data;
   }
 
   // Call this whenever a user/course/enrollment changes to bust the admin cache
-  invalidateAdminCache() {
-    this.adminCache = null;
+  invalidateAdminCache(locationId?: string) {
+    if (locationId) {
+      this.adminCache.delete(locationId);
+    } else {
+      this.adminCache.clear();
+    }
   }
 
   async getInstructorStats(instructorId: string) {

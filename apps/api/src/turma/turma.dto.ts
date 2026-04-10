@@ -8,6 +8,10 @@ export class CreateTurmaDto {
     @IsString()
     @IsOptional()
     description?: string;
+
+    @IsString()
+    @IsOptional()
+    locationId?: string;
 }
 
 export class UpdateTurmaDto {
@@ -18,4 +22,8 @@ export class UpdateTurmaDto {
     @IsString()
     @IsOptional()
     description?: string;
+
+    @IsString()
+    @IsOptional()
+    locationId?: string;
 }

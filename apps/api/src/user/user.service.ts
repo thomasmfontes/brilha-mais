@@ -12,9 +12,12 @@ export class UserService {
     private categoryService: CategoryService,
   ) { }
 
-  async findAll() {
+  async findAll(locationId?: string) {
+    const where = locationId ? { locationId } : {};
     return this.prisma.user.findMany({
+      where,
       include: {
+        location: true,
         assignedAreas: { include: { category: true } },
         turmas: {
           include: {
@@ -207,10 +210,11 @@ export class UserService {
     return user;
   }
 
-  async updateProfile(userId: string, data: { name?: string; avatarUrl?: string }, actorId?: string) {
+  async updateProfile(userId: string, data: { name?: string; avatarUrl?: string; locationId?: string }, actorId?: string) {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data,
+      include: { location: true }
     });
 
     await this.audit.log(
@@ -218,7 +222,25 @@ export class UserService {
       user.name ?? 'Usuário',
       userId,
       actorId || userId,
-      { ...data, userName: user.name }
+      { ...data, userName: user.name, locationName: user.location?.name }
+    );
+
+    return user;
+  }
+
+  async updateLocation(userId: string, locationId: string | null, actorId?: string) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { locationId },
+      include: { location: true }
+    });
+
+    await this.audit.log(
+      'Alteração de Localidade',
+      user.name ?? 'Usuário',
+      userId,
+      actorId,
+      { locationId, locationName: user.location?.name || 'Global' }
     );
 
     return user;

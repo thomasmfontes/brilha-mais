@@ -47,9 +47,9 @@ export class CategoryService {
 
       if (user?.role === 'STUDENT') {
         const areaIds = studentTurma?.areas.map(a => a.categoryId) || [];
-        where.id = { in: areaIds };
+        where.id = { ...where.id, in: areaIds };
       } else if (user?.role === 'INSTRUCTOR') {
-        where.id = { in: instructorAreas.map((a) => a.categoryId) };
+        where.id = { ...where.id, in: instructorAreas.map((a) => a.categoryId) };
       }
     }
 

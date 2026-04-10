@@ -73,9 +73,19 @@ export class CourseController {
   }
 
   @Get()
-  findAll(@Req() req: any) {
+  async findAll(@Req() req: any) {
     const userId = this.extractUserId(req);
+    // If not logged in, return global courses
+    if (!userId) {
+      return this.courseService.findAll();
+    }
     return this.courseService.findAll(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('admin/list')
+  getAdminCourses(@Req() req: any) {
+    return this.courseService.findAdminCourses(req.user.locationId);
   }
 
   @Get(':id')
@@ -87,7 +97,9 @@ export class CourseController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: any, @Body() data: any) {
-    return this.courseService.create({ ...data, instructorId: req.user.id });
+    // If admin has a location, force it. Otherwise, use what was sent or null (global).
+    const locationId = req.user.locationId || data.locationId;
+    return this.courseService.create({ ...data, instructorId: req.user.id, locationId });
   }
 
   @UseGuards(JwtAuthGuard)

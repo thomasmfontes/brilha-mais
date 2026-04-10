@@ -28,8 +28,11 @@ export class UserController {
 
   @Get()
   @Roles(Role.ADMIN)
-  findAll() {
-    return this.userService.findAll();
+  findAll(@Req() req: any) {
+    // If Admin has a location, limit search to that location.
+    // If Admin has NO location (Super Admin), show everything.
+    const locationId = req.user.locationId;
+    return this.userService.findAll(locationId);
   }
 
   @Get('me')
@@ -88,6 +91,16 @@ export class UserController {
     @Req() req: any,
   ) {
     return this.userService.syncTurmas(id, turmaIds, req.user.id);
+  }
+
+  @Put(':id/location')
+  @Roles(Role.ADMIN)
+  updateLocation(
+    @Param('id') id: string,
+    @Body('locationId') locationId: string | null,
+    @Req() req: any,
+  ) {
+    return this.userService.updateLocation(id, locationId, req.user.id);
   }
 
   @Delete(':id')
