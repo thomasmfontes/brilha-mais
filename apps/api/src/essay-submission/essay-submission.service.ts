@@ -62,7 +62,7 @@ export class EssaySubmissionService {
   }
 
   async getSubmissionsByLesson(lessonId: string, instructorId: string, role?: string, status?: SubmissionStatus) {
-    const isAdmin = role === 'ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN';
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
       include: { module: { include: { course: true } } },
@@ -72,7 +72,10 @@ export class EssaySubmissionService {
       throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
     }
 
-    const where: any = { lessonId };
+    const where: any = { 
+      lessonId,
+      user: { role: 'STUDENT' }
+    };
     if (status) where.status = status;
 
     return this.prisma.essaySubmission.findMany({
@@ -85,11 +88,9 @@ export class EssaySubmissionService {
   }
 
   async getAllSubmissions(instructorId: string, role?: string, status?: SubmissionStatus) {
-    const isAdmin = role === 'ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN';
     const where: any = {
-      user: {
-        role: 'STUDENT',
-      },
+      user: { role: 'STUDENT' }
     };
     if (status) where.status = status;
 
@@ -128,7 +129,7 @@ export class EssaySubmissionService {
   }
 
   async review(submissionId: string, instructorId: string, dto: ReviewEssayDto, role?: string) {
-    const isAdmin = role === 'ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN';
     const submission = await this.prisma.essaySubmission.findUnique({
       where: { id: submissionId },
       include: { lesson: { include: { module: { include: { course: true } } } } },
@@ -146,6 +147,44 @@ export class EssaySubmissionService {
         feedbackFileUrl: dto.feedbackFileUrl,
         feedbackFileName: dto.feedbackFileName,
         status: 'REVIEWED',
+      },
+    });
+  }
+
+  async requestRedo(submissionId: string, instructorId: string, dto?: ReviewEssayDto, role?: string) {
+    const isAdmin = role?.toUpperCase() === 'ADMIN';
+    console.log('[DEBUG] requestRedo:', { submissionId, instructorId, role, isAdmin });
+    
+    const submission = await this.prisma.essaySubmission.findUnique({
+      where: { id: submissionId },
+      include: { lesson: { include: { module: { include: { course: true } } } } },
+    });
+
+    if (!submission) {
+      console.log('[DEBUG] Submission not found');
+      throw new HttpException('Submissão não encontrada', HttpStatus.NOT_FOUND);
+    }
+
+    if (!isAdmin && submission.lesson.module.course.instructorId !== instructorId) {
+      console.log('[DEBUG] Ownership check failed:', { 
+        courseInstructorId: submission.lesson.module.course.instructorId,
+        currentUserId: instructorId 
+      });
+      throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+    }
+
+    // Reset progress for this student and lesson
+    await this.progress.toggleLessonCompletion(submission.userId, submission.lessonId, false);
+
+    // Update status to REDO_REQUIRED and save feedback
+    return this.prisma.essaySubmission.update({
+      where: { id: submissionId },
+      data: { 
+        status: 'REDO_REQUIRED' as any,
+        grade: null,
+        feedback: dto?.feedback,
+        feedbackFileUrl: dto?.feedbackFileUrl,
+        feedbackFileName: dto?.feedbackFileName,
       },
     });
   }

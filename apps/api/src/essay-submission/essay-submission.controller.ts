@@ -1,12 +1,14 @@
-import { Controller, Post, Body, Get, Param, Patch, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Patch, Delete, UseGuards, Req, Query } from '@nestjs/common';
 import { EssaySubmissionService } from './essay-submission.service';
 import { SubmitEssayDto } from './dto/submit-essay.dto';
 import { ReviewEssayDto } from './dto/review-essay.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { SubmissionStatus } from '@prisma/client';
+import { SubmissionStatus, Role } from '@prisma/client';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('essay-submissions')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EssaySubmissionController {
   constructor(private readonly service: EssaySubmissionService) {}
 
@@ -37,5 +39,11 @@ export class EssaySubmissionController {
   @Patch(':id/review')
   review(@Req() req: any, @Param('id') submissionId: string, @Body() dto: ReviewEssayDto) {
     return this.service.review(submissionId, req.user.id, dto, req.user.role);
+  }
+
+  @Patch(':id/redo')
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
+  requestRedo(@Req() req: any, @Param('id') submissionId: string, @Body() dto: ReviewEssayDto) {
+    return this.service.requestRedo(submissionId, req.user.id, dto, req.user.role);
   }
 }

@@ -4,9 +4,10 @@ import { createPortal } from "react-dom";
 import { 
     LucideFileText, LucideCheckCircle, LucideChevronRight, 
     LucideSearch, LucideFilter, LucideMessageSquare, LucideStar,
-    LucideDownload, LucideX, LucideZap, LucideCalendar, LucideUser, LucideChevronDown
+    LucideDownload, LucideX, LucideZap, LucideCalendar, LucideUser, LucideChevronDown, LucideRefreshCw
 } from "lucide-react";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { PortalModal } from "../components/PortalModal";
 import api from "../utils/api";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -17,9 +18,11 @@ interface Submission {
     content: string;
     fileUrl?: string;
     fileName?: string;
-    status: 'PENDING' | 'REVIEWED';
+    status: 'PENDING' | 'REVIEWED' | 'REDO_REQUIRED';
     grade?: number;
     feedback?: string;
+    feedbackFileUrl?: string;
+    feedbackFileName?: string;
     createdAt: string;
     user: {
         name: string;
@@ -56,10 +59,27 @@ export default function InstructorSubmissions() {
     const [isUploadingFeedback, setIsUploadingFeedback] = useState(false);
     const [uploadFeedbackProgress, setUploadFeedbackProgress] = useState(0);
     const [showEnunciado, setShowEnunciado] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showRedoConfirm, setShowRedoConfirm] = useState(false);
 
     useEffect(() => {
         fetchSubmissions();
     }, [filter]);
+
+    useEffect(() => {
+        if (selectedSubmission) {
+            setGrade(selectedSubmission.grade ?? 100);
+            setFeedback(selectedSubmission.feedback ?? "");
+            if (selectedSubmission.feedbackFileUrl) {
+                setFeedbackFile({
+                    url: selectedSubmission.feedbackFileUrl,
+                    name: selectedSubmission.feedbackFileName ?? "Arquivo de feedback"
+                });
+            } else {
+                setFeedbackFile(null);
+            }
+        }
+    }, [selectedSubmission]);
 
     const fetchSubmissions = async () => {
         setIsLoading(true);
@@ -139,9 +159,36 @@ export default function InstructorSubmissions() {
         }
     };
 
+    const handleClearSubmission = async () => {
+        if (!selectedSubmission) return;
+        setShowRedoConfirm(true);
+    };
+
+    const confirmRedo = async () => {
+        if (!selectedSubmission) return;
+
+        setIsDeleting(true);
+        try {
+            await api.patch(`/essay-submissions/${selectedSubmission.id}/redo`, {
+                feedback,
+                feedbackFileUrl: feedbackFile?.url,
+                feedbackFileName: feedbackFile?.name
+            });
+            toast.success("Solicitação de refação enviada!");
+            setSelectedSubmission(null);
+            setShowRedoConfirm(false);
+            fetchSubmissions();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao solicitar refação");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const filteredSubmissions = submissions.filter(s => 
-        (s.user.name.toLowerCase().includes(search.toLowerCase()) || 
-         s.lesson.title.toLowerCase().includes(search.toLowerCase())) &&
+        ((s.user.name?.toLowerCase() || "").includes(search.toLowerCase()) || 
+         (s.lesson.title?.toLowerCase() || "").includes(search.toLowerCase())) &&
         (filter === 'ALL' || s.status === filter)
     );
 
@@ -455,13 +502,23 @@ export default function InstructorSubmissions() {
                                         </div>
                                     </div>
 
-                                    <button 
-                                        onClick={handleReview}
-                                        disabled={isSaving || selectedSubmission.status === 'REVIEWED'}
-                                        className="w-full h-14 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3 mt-8 shrink-0"
-                                    >
-                                        {isSaving ? <LoadingSpinner size="sm" variant="white" /> : <><LucideZap className="h-4 w-4 fill-current" /> Finalizar Avaliação</>}
-                                    </button>
+                                    <div className="flex flex-col gap-3 mt-8 shrink-0">
+                                        <button 
+                                            onClick={handleReview}
+                                            disabled={isSaving || isDeleting || selectedSubmission.status === 'REVIEWED'}
+                                            className="w-full h-14 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                        >
+                                            {isSaving ? <LoadingSpinner size="sm" variant="white" /> : <><LucideZap className="h-4 w-4 fill-current" /> Finalizar Avaliação</>}
+                                        </button>
+
+                                        <button 
+                                            onClick={handleClearSubmission}
+                                            disabled={isSaving || isDeleting}
+                                            className="w-full h-12 bg-white border border-amber-500/20 text-amber-600 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-amber-50 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                        >
+                                            {isDeleting ? <LoadingSpinner size="sm" variant="primary" /> : <><LucideRefreshCw className="h-3.5 w-3.5" /> Solicitar Refação / Correção</>}
+                                        </button>
+                                    </div>
                                 </div>
                             </motion.div>
                         </div>
@@ -469,6 +526,50 @@ export default function InstructorSubmissions() {
                 </AnimatePresence>,
                 document.body
             )}
+
+            {/* Redo Confirmation Modal */}
+            <PortalModal isOpen={showRedoConfirm} onClose={() => setShowRedoConfirm(false)}>
+                <motion.div 
+                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                    className="bg-white rounded-[32px] p-8 max-w-md w-full shadow-2xl space-y-6 relative overflow-hidden"
+                >
+                    <div className="absolute top-0 left-0 w-full h-2 bg-amber-500" />
+                    
+                    <div className="flex items-center gap-4">
+                        <div className="h-14 w-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 shrink-0">
+                            <LucideRefreshCw className="h-7 w-7 animate-spin-slow" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black italic uppercase tracking-tighter text-slate-900 leading-none mb-1">Solicitar Refação?</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Confirmação de Pedido</p>
+                        </div>
+                    </div>
+
+                    <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl">
+                        <p className="text-sm font-medium text-slate-600 leading-relaxed text-center">
+                            Deseja solicitar que o aluno refaça este desafio? Ele conseguirá ver seu <span className="text-primary font-bold">feedback atual</span> e enviar uma <span className="text-primary font-bold">nova versão</span>.
+                        </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={() => setShowRedoConfirm(false)}
+                            className="flex-1 h-14 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-all active:scale-95"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            onClick={confirmRedo}
+                            disabled={isDeleting}
+                            className="flex-1 h-14 bg-amber-500 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            {isDeleting ? <LoadingSpinner size="sm" variant="white" /> : "Sim, solicitar"}
+                        </button>
+                    </div>
+                </motion.div>
+            </PortalModal>
         </div>
     );
 }

@@ -278,7 +278,16 @@ export class CourseService {
             }
         });
         
-        // Use the inherited locationId if it was found
+        // Use the inherited locationId from instructor if no locationId was provided
+        let finalLocationId = courseData.locationId;
+        if (!finalLocationId && courseData.instructorId) {
+            const instructor = await this.prisma.user.findUnique({
+                where: { id: courseData.instructorId },
+                select: { locationId: true }
+            });
+            finalLocationId = instructor?.locationId;
+        }
+
         if (finalLocationId) {
             filteredData.locationId = finalLocationId;
         }

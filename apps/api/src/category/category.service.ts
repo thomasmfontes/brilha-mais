@@ -37,7 +37,7 @@ export class CategoryService {
     if (userId) {
       // Fetch user role and assigned areas in parallel
       const [user, instructorAreas, studentTurma] = await Promise.all([
-        this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+        this.prisma.user.findUnique({ where: { id: userId }, select: { role: true, locationId: true } }),
         this.prisma.instructorArea.findMany({ where: { userId }, select: { categoryId: true } }),
         this.prisma.turma.findFirst({
           where: { users: { some: { id: userId } } },
@@ -50,6 +50,14 @@ export class CategoryService {
         where.id = { ...where.id, in: areaIds };
       } else if (user?.role === 'INSTRUCTOR') {
         where.id = { ...where.id, in: instructorAreas.map((a) => a.categoryId) };
+      }
+
+      // Scope by location: (Category.locationId === user.locationId OR Category.locationId === null)
+      if (user?.locationId) {
+        where.OR = [
+          { locationId: user.locationId },
+          { locationId: null }
+        ];
       }
     }
 
@@ -65,8 +73,8 @@ export class CategoryService {
     return result;
   }
 
-  async create(name: string, icon?: string, actorId?: string) {
-    const category = await this.prisma.category.create({ data: { name, icon } });
+  async create(name: string, icon?: string, locationId?: string, actorId?: string) {
+    const category = await (this.prisma.category.create as any)({ data: { name, icon, locationId } });
     this.invalidateCache();
 
     await this.audit.log('Criação de Área', name, category.id, actorId, { name, icon });

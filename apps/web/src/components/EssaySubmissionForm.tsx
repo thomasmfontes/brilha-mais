@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { LucideFileText, LucideCheck, LucideDownload, LucideX, LucideZap, LucidePlay, LucideChevronRight } from "lucide-react";
+import { LucideFileText, LucideCheck, LucideDownload, LucideX, LucideZap, LucidePlay, LucideChevronRight, LucideRefreshCw, LucidePaperclip } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
 import api from "../utils/api";
 
@@ -16,23 +16,67 @@ interface EssaySubmissionFormProps {
 }
 
 export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, onSuccess, markAsCompleted }: EssaySubmissionFormProps) {
-    const [essayResponse, setEssayResponse] = useState(mySubmission?.content || "");
-    const [essayFile, setEssayFile] = useState<{ url: string; name: string } | null>(
-        mySubmission?.fileUrl ? { url: mySubmission.fileUrl, name: mySubmission.fileName || "arquivo-anexo" } : null
-    );
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Synchronous initialization to prevent race conditions
+    const [essayResponse, setEssayResponse] = useState(() => {
+        if (typeof window === 'undefined' || !lesson?.id) return "";
+        const saved = localStorage.getItem(`draft_essay_${lesson.id}`);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                return (parsed.content ?? (mySubmission?.lessonId === lesson.id ? mySubmission?.content : "")) || "";
+            } catch (e) { return (mySubmission?.lessonId === lesson.id ? mySubmission?.content : "") || ""; }
+        }
+        return (mySubmission?.lessonId === lesson.id ? mySubmission?.content : "") || "";
+    });
+
+    const [essayFile, setEssayFile] = useState<{ url: string; name: string } | null>(() => {
+        if (typeof window === 'undefined' || !lesson?.id) {
+            return mySubmission?.lessonId === lesson.id && mySubmission?.fileUrl ? { url: mySubmission.fileUrl, name: mySubmission.fileName || "arquivo-anexo" } : null;
+        }
+        const saved = localStorage.getItem(`draft_essay_${lesson.id}`);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                return parsed.file ?? (mySubmission?.lessonId === lesson.id && mySubmission?.fileUrl ? { url: mySubmission.fileUrl, name: mySubmission.fileName || "arquivo-anexo" } : null);
+            } catch (e) { return null; }
+        }
+        return mySubmission?.lessonId === lesson.id && mySubmission?.fileUrl ? { url: mySubmission.fileUrl, name: mySubmission.fileName || "arquivo-anexo" } : null;
+    });
     useEffect(() => {
-        if (mySubmission) {
+        const isRedoRequired = mySubmission?.status === 'REDO_REQUIRED';
+        const isLocked = !!mySubmission && !isRedoRequired;
+
+        // Ensure the submission actually belongs to this lesson
+        if (mySubmission && mySubmission.lessonId !== lesson?.id) return;
+
+        if (isLocked) {
+            // When locked, strictly enforce server state
             setEssayResponse(mySubmission.content || "");
             setEssayFile(mySubmission.fileUrl ? { url: mySubmission.fileUrl, name: mySubmission.fileName || "arquivo-anexo" } : null);
-        } else {
-            setEssayResponse("");
-            setEssayFile(null);
+        } else if (lesson?.id && mySubmission) {
+            // Specialized sync for Redo Required when NO local draft exists yet
+            const savedDraft = localStorage.getItem(`draft_essay_${lesson.id}`);
+            if (!savedDraft) {
+                setEssayResponse(mySubmission.content || "");
+                setEssayFile(mySubmission.fileUrl ? { url: mySubmission.fileUrl, name: mySubmission.fileName || "arquivo-anexo" } : null);
+            }
         }
     }, [mySubmission, lesson?.id]);
+
+    // Auto-save Draft
+    useEffect(() => {
+        const isRedoRequired = mySubmission?.status === 'REDO_REQUIRED';
+        const isLocked = !!mySubmission && !isRedoRequired;
+        
+        if (!isLocked && lesson?.id && !isLoading) {
+            const draft = { content: essayResponse, file: essayFile };
+            localStorage.setItem(`draft_essay_${lesson.id}`, JSON.stringify(draft));
+        }
+    }, [essayResponse, essayFile, lesson?.id, mySubmission, isLoading]);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -85,6 +129,10 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
             });
             markAsCompleted();
             onSuccess();
+            // Clear draft on success
+            if (lesson?.id) {
+                localStorage.removeItem(`draft_essay_${lesson.id}`);
+            }
         } catch (err) {
             console.error(err);
             alert("Erro ao enviar resposta.");
@@ -94,6 +142,8 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
     };
 
     const isReviewed = mySubmission?.status === 'REVIEWED';
+    const isRedoRequired = mySubmission?.status === 'REDO_REQUIRED';
+    const isLocked = !!mySubmission && !isRedoRequired;
 
     if (isLoading) {
         return (
@@ -121,21 +171,33 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                     </p>
                 </div>
 
-                {isReviewed && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl space-y-3">
+                {(isReviewed || isRedoRequired) && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-6 border rounded-2xl space-y-3 ${isRedoRequired ? 'bg-amber-500/10 border-amber-500/20' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-emerald-500">
-                                <LucideCheck className="h-5 w-5" />
-                                <span className="font-black uppercase tracking-widest text-[10px]">Desafio Corrigido</span>
+                            <div className={`flex items-center gap-2 ${isRedoRequired ? 'text-amber-600' : 'text-emerald-500'}`}>
+                                {isRedoRequired ? <LucideRefreshCw className="h-5 w-5 animate-spin-slow" /> : <LucideCheck className="h-5 w-5" />}
+                                <span className="font-black uppercase tracking-widest text-[10px]">
+                                    {isRedoRequired ? 'Refação Solicitada' : 'Desafio Corrigido'}
+                                </span>
                             </div>
-                            <div className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-lg font-black italic">
-                                {mySubmission.grade}/100
-                            </div>
+                            {mySubmission.grade !== null && !isRedoRequired && (
+                                <div className={`${isRedoRequired ? 'bg-amber-500' : 'bg-emerald-500'} text-white px-3 py-1 rounded-lg text-lg font-black italic`}>
+                                    {mySubmission.grade}/100
+                                </div>
+                            )}
                         </div>
+                        
+                        {isRedoRequired && (
+                            <div className="bg-amber-500 text-white px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 shadow-lg shadow-amber-500/20">
+                                <LucideZap className="h-4 w-4 fill-current" />
+                                O instrutor solicitou que você refaça este desafio. Veja o feedback abaixo e envie uma nova versão.
+                            </div>
+                        )}
+
                         {mySubmission.feedback && (
                             <div className="p-4 bg-white/50 rounded-xl">
                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 italic">Feedback do Instrutor:</p>
-                                <p className="text-sm font-medium text-slate-700 italic">"{mySubmission.feedback}"</p>
+                                <p className="text-sm font-medium text-slate-700 italic whitespace-pre-wrap">{mySubmission.feedback}</p>
                             </div>
                         )}
                         {mySubmission.feedbackFileUrl && (
@@ -145,18 +207,18 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                                     href={mySubmission.feedbackFileUrl} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="flex items-center justify-between p-4 bg-white/60 border border-emerald-500/10 rounded-xl hover:bg-white transition-all group"
+                                    className={`flex items-center justify-between p-4 bg-white/60 border rounded-xl hover:bg-white transition-all group ${isRedoRequired ? 'border-amber-500/10' : 'border-emerald-500/10'}`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="h-9 w-9 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 border border-emerald-500/10">
+                                        <div className={`h-9 w-9 rounded-lg flex items-center justify-center border transition-all ${isRedoRequired ? 'bg-amber-500/10 text-amber-500 border-amber-500/10' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/10'}`}>
                                             <LucideDownload className="h-4 w-4" />
                                         </div>
                                         <div className="min-w-0">
                                             <p className="text-[11px] font-bold text-slate-800 truncate max-w-[180px]">{mySubmission.feedbackFileName || "Ver correção"}</p>
-                                            <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">Clique para baixar</p>
+                                            <p className={`text-[8px] font-black uppercase tracking-widest mt-0.5 ${isRedoRequired ? 'text-amber-500' : 'text-emerald-500'}`}>Clique para baixar</p>
                                         </div>
                                     </div>
-                                    <LucideChevronRight className="h-4 w-4 text-emerald-500/30 group-hover:text-emerald-500 transition-all" />
+                                    <LucideChevronRight className={`h-4 w-4 transition-all ${isRedoRequired ? 'text-amber-500/30 group-hover:text-amber-500' : 'text-emerald-500/30 group-hover:text-emerald-500'}`} />
                                 </a>
                             </div>
                         )}
@@ -172,15 +234,15 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                         <textarea 
                             value={essayResponse}
                             onChange={(e) => setEssayResponse(e.target.value)}
-                            readOnly={!!mySubmission}
+                            readOnly={isLocked}
                             placeholder="Escreva sua resposta aqui..."
-                            className={`w-full bg-white border border-slate-200 rounded-3xl p-8 text-slate-700 font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all min-h-[300px] shadow-sm ${!!mySubmission ? 'opacity-70 cursor-not-allowed bg-slate-50/50' : ''}`}
+                            className={`w-full bg-white border border-slate-200 rounded-3xl p-8 text-slate-700 font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all min-h-[300px] shadow-sm ${isLocked ? 'opacity-70 cursor-not-allowed bg-slate-50/50' : ''}`}
                         />
                     </div>
 
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1">
-                            <input type="file" id="essay-file-upload" className="hidden" onChange={handleFileUpload} disabled={!!mySubmission} />
+                            <input type="file" id="essay-file-upload" className="hidden" onChange={handleFileUpload} disabled={isLocked} />
                             {essayFile ? (
                                 <div className="flex items-center justify-between p-5 bg-primary/5 border border-primary/10 rounded-2xl h-16 transition-all group">
                                     <div className="flex items-center gap-4 min-w-0">
@@ -192,7 +254,7 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                                             <p className="text-[9px] font-bold text-primary uppercase tracking-widest mt-0.5">Arquivo Anexado</p>
                                         </div>
                                     </div>
-                                    {!mySubmission && (
+                                    {!isLocked && (
                                         <button onClick={() => setEssayFile(null)} className="p-2 hover:bg-destructive/10 text-destructive rounded-lg transition-colors">
                                             <LucideX className="h-4 w-4" />
                                         </button>
@@ -201,13 +263,13 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                             ) : (
                                 <button
                                     onClick={() => document.getElementById('essay-file-upload')?.click()}
-                                    disabled={isUploading || !!mySubmission}
+                                    disabled={isUploading || isLocked}
                                     className="w-full h-16 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center gap-3 text-slate-400 hover:border-primary/50 hover:text-primary transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isUploading ? (
                                         <><LoadingSpinner size="sm" variant="primary" /> {uploadProgress}%</>
                                     ) : (
-                                        <><LucidePlay className="h-4 w-4 group-hover:text-primary transition-colors rotate-90" /> <span className="text-[10px] font-black uppercase tracking-widest">Anexar material extra</span></>
+                                        <><LucidePaperclip className="h-4 w-4 group-hover:text-primary transition-colors" /> <span className="text-[10px] font-black uppercase tracking-widest">Anexar material extra</span></>
                                     )}
                                 </button>
                             )}
@@ -215,15 +277,15 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
 
                         <button
                             onClick={handleSubmit}
-                            disabled={isSubmitting || (!essayResponse.trim() && !essayFile) || !!mySubmission}
-                            className="flex-1 h-16 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale shrink-0"
+                            disabled={isSubmitting || (!essayResponse.trim() && !essayFile) || isLocked}
+                            className={`flex-1 h-16 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl transition-all disabled:opacity-50 disabled:grayscale shrink-0 ${isRedoRequired ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600' : 'bg-primary text-primary-foreground shadow-primary/20 hover:brightness-110 active:scale-95'}`}
                         >
                             {isSubmitting ? (
                                 <><LoadingSpinner size="sm" variant="white" /> Enviando...</>
                             ) : (
                                 <>
-                                    <LucideZap className={`h-5 w-5 ${!mySubmission ? 'fill-current' : ''}`} /> 
-                                    {mySubmission ? 'DESAFIO ENVIADO' : 'ENVIAR RESPOSTA'}
+                                    <LucideZap className={`h-5 w-5 ${!isLocked ? 'fill-current' : ''}`} /> 
+                                    {isRedoRequired ? 'REENVIAR VERSÃO CORRIGIDA' : (mySubmission ? 'DESAFIO ENVIADO' : 'ENVIAR RESPOSTA')}
                                 </>
                             )}
                         </button>

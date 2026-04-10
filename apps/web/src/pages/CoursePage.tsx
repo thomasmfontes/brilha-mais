@@ -405,6 +405,7 @@ export default function CoursePage() {
                                 {currentLesson.contentType === 'ESSAY' && (
                                     <div className="p-4 md:p-8">
                                         <EssaySubmissionForm 
+                                            key={currentLesson.id}
                                             lesson={currentLesson} 
                                             mySubmission={myEssaySubmission} 
                                             isLoading={isLoadingSubmission}
