@@ -32,14 +32,14 @@ const menuItems = [
 ];
 
 const adminItems = [
-    { icon: <LucideMonitorPlay className="h-5 w-5" />, label: "Instrutor", path: "/instructor", roles: ['instructor', 'admin'] },
-    { icon: <LucideCheckCircle className="h-5 w-5" />, label: "Correções", path: "/instructor/submissions", roles: ['instructor', 'admin'] },
-    { icon: <LucideSettings2 className="h-5 w-5" />, label: "Administração", path: "/admin", roles: ['admin'] },
+    { icon: <LucideMonitorPlay className="h-5 w-5" />, label: "Instrutor", path: "/instructor", roles: ['instructor', 'admin', 'super_admin'] },
+    { icon: <LucideCheckCircle className="h-5 w-5" />, label: "Correções", path: "/instructor/submissions", roles: ['instructor', 'admin', 'super_admin'] },
+    { icon: <LucideSettings2 className="h-5 w-5" />, label: "Administração", path: "/admin", roles: ['admin', 'super_admin'] },
 ];
 
 export function AppLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [userRole, setUserRole] = useState<'student' | 'instructor' | 'admin'>('student');
+    const [userRole, setUserRole] = useState<'student' | 'instructor' | 'admin' | 'super_admin'>('student');
     const [userName, setUserName] = useState<string>('');
     const [userAvatar, setUserAvatar] = useState<string>('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -238,7 +238,7 @@ export function AppLayout() {
                             <div className="text-right hidden sm:block">
                                 <p className="text-[11px] font-black uppercase tracking-tight text-slate-900 leading-tight">{userName || 'Usuário'}</p>
                                 <p className="text-[9px] text-primary uppercase font-black tracking-widest leading-tight">
-                                    {userRole === 'admin' ? 'Administrador' : userRole === 'instructor' ? 'Instrutor' : 'Aluno'}
+                                    {userRole === 'super_admin' ? 'Super Admin' : userRole === 'admin' ? 'Administrador' : userRole === 'instructor' ? 'Instrutor' : 'Aluno'}
                                 </p>
                             </div>
                             
@@ -409,7 +409,7 @@ export function AppLayout() {
                                             <p className="text-sm font-black uppercase tracking-tight text-slate-900 truncate leading-none mb-1">{userName || 'Usuário'}</p>
                                             <div className="flex items-center gap-1.5">
                                                 <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                                                <p className="text-[10px] text-primary font-black uppercase tracking-widest">{userRole}</p>
+                                                <p className="text-[10px] text-primary font-black uppercase tracking-widest">{userRole === 'super_admin' ? 'Super Admin' : userRole}</p>
                                             </div>
                                         </div>
                                     </div>
