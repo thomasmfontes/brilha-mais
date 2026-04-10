@@ -59,14 +59,6 @@ export class UserController {
     return this.userService.assignInstructorArea(id, categoryId, req.user.id);
   }
 
-  @Post(':id/student-areas')
-  @Roles(Role.ADMIN)
-  assignStudentArea(
-    @Param('id') id: string,
-    @Body('categoryId') categoryId: string,
-  ) {
-    return this.userService.assignStudentArea(id, categoryId);
-  }
 
   @Delete(':id/instructor-areas/:categoryId')
   @Roles(Role.ADMIN)
@@ -77,24 +69,15 @@ export class UserController {
     return this.userService.removeInstructorArea(id, categoryId);
   }
 
-  @Delete(':id/student-areas/:categoryId')
-  @Roles(Role.ADMIN)
-  removeStudentArea(
-    @Param('id') id: string,
-    @Param('categoryId') categoryId: string,
-  ) {
-    return this.userService.removeStudentArea(id, categoryId);
-  }
 
   @Put(':id/areas')
   @Roles(Role.ADMIN)
   syncAreas(
     @Param('id') id: string,
     @Body('instructorAreaIds') instructorAreaIds: string[],
-    @Body('studentAreaIds') studentAreaIds: string[],
     @Req() req: any,
   ) {
-    return this.userService.syncAreas(id, instructorAreaIds, studentAreaIds, req.user.id);
+    return this.userService.syncAreas(id, instructorAreaIds, req.user.id);
   }
 
   @Put(':id/turmas')

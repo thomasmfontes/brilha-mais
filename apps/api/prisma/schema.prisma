@@ -28,7 +28,7 @@ model User {
   assignedAreas InstructorArea[]
   progress      Progress[]
   reviews       Review[]
-  studentAreas  StudentArea[]
+  studentAreas  StudentArea[] // @deprecated - Areas are now assigned to Turma
   turmas        Turma[]          @relation("UserTurmas")
   studentMaterials StudentMaterial[]
   essaySubmissions EssaySubmission[]
@@ -57,6 +57,7 @@ model Turma {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   users       User[]   @relation("UserTurmas")
+  areas       TurmaArea[]
 }
 
 model Course {
@@ -87,7 +88,8 @@ model Category {
   icon         String?
   courses      Course[]
   instructors InstructorArea[]
-  students    StudentArea[]
+  students    StudentArea[] // @deprecated
+  turmas      TurmaArea[]
 }
 
 model InstructorArea {
@@ -110,6 +112,17 @@ model StudentArea {
 
   @@unique([userId, categoryId])
   @@index([userId])
+}
+
+model TurmaArea {
+  id         String   @id @default(uuid())
+  turmaId    String
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  turma      Turma    @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+
+  @@unique([turmaId, categoryId])
+  @@index([turmaId])
 }
 
 model Module {

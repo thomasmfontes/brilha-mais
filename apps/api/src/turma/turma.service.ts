@@ -12,6 +12,9 @@ export class TurmaService {
                 _count: {
                     select: { users: true },
                 },
+                areas: {
+                    include: { category: true }
+                }
             },
             orderBy: { createdAt: 'desc' },
         });
@@ -29,6 +32,9 @@ export class TurmaService {
                         role: true,
                     },
                 },
+                areas: {
+                    include: { category: true }
+                }
             },
         });
 
@@ -77,6 +83,34 @@ export class TurmaService {
                     disconnect: { id: userId },
                 },
             },
+        });
+    }
+
+    async syncAreas(turmaId: string, categoryIds: string[]) {
+        return this.prisma.$transaction(async (tx) => {
+            // Remove existing areas
+            await tx.turmaArea.deleteMany({
+                where: { turmaId },
+            });
+
+            // Add new areas
+            if (categoryIds.length > 0) {
+                await tx.turmaArea.createMany({
+                    data: categoryIds.map((categoryId) => ({
+                        turmaId,
+                        categoryId,
+                    })),
+                });
+            }
+
+            return tx.turma.findUnique({
+                where: { id: turmaId },
+                include: {
+                    areas: {
+                        include: { category: true }
+                    }
+                }
+            });
         });
     }
 }

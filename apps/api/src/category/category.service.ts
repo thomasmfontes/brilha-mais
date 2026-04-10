@@ -36,14 +36,18 @@ export class CategoryService {
 
     if (userId) {
       // Fetch user role and assigned areas in parallel
-      const [user, studentAreas, instructorAreas] = await Promise.all([
+      const [user, instructorAreas, studentTurma] = await Promise.all([
         this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
-        this.prisma.studentArea.findMany({ where: { userId }, select: { categoryId: true } }),
         this.prisma.instructorArea.findMany({ where: { userId }, select: { categoryId: true } }),
+        this.prisma.turma.findFirst({
+          where: { users: { some: { id: userId } } },
+          include: { areas: true }
+        })
       ]);
 
       if (user?.role === 'STUDENT') {
-        where.id = { in: studentAreas.map((a) => a.categoryId) };
+        const areaIds = studentTurma?.areas.map(a => a.categoryId) || [];
+        where.id = { in: areaIds };
       } else if (user?.role === 'INSTRUCTOR') {
         where.id = { in: instructorAreas.map((a) => a.categoryId) };
       }

@@ -23,8 +23,11 @@ interface User {
     role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
     avatarUrl?: string;
     assignedAreas: { category: { id: string, name: string } }[];
-    studentAreas: { category: { id: string, name: string } }[];
-    turmas: { id: string, name: string }[];
+    turmas: { 
+        id: string, 
+        name: string,
+        areas?: { category: { id: string, name: string } }[]
+    }[];
 }
 
 interface AdminStats {
@@ -45,6 +48,7 @@ interface Turma {
     description?: string;
     createdAt: string;
     _count?: { users: number };
+    areas?: { category: { id: string, name: string } }[];
 }
 
 const UserSkeleton = () => (
@@ -195,6 +199,9 @@ export default function AdminDashboard() {
     const [previewAvatar, setPreviewAvatar] = useState<{ id: string; url: string; name: string } | null>(null);
     const [isUpdatingAvatarFor, setIsUpdatingAvatarFor] = useState<string | null>(null);
     const [targetUserIdForAvatar, setTargetUserIdForAvatar] = useState<string | null>(null);
+    const [isTurmaAreaModalOpen, setIsTurmaAreaModalOpen] = useState(false);
+    const [selectedTurmaForAreas, setSelectedTurmaForAreas] = useState<Turma | null>(null);
+    const [tempTurmaAreas, setTempTurmaAreas] = useState<string[]>([]);
     const listFileInputRef = useRef<HTMLInputElement>(null);
 
     const handleTabChange = (tab: typeof activeTab) => {
@@ -388,13 +395,13 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleToggleArea = (categoryId: string, type: 'instructor' | 'student', isAssigned: boolean) => {
+    const handleToggleArea = (categoryId: string, type: 'instructor' | 'turma', isAssigned: boolean) => {
         if (type === 'instructor') {
             setTempInstructorAreas(prev =>
                 isAssigned ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
             );
         } else {
-            setTempStudentAreas(prev =>
+            setTempTurmaAreas(prev =>
                 isAssigned ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
             );
         }
@@ -413,8 +420,13 @@ export default function AdminDashboard() {
     const handleOpenAreaModal = (user: User) => {
         setSelectedUser(user);
         setTempInstructorAreas(user.assignedAreas.map(a => a.category.id));
-        setTempStudentAreas(user.studentAreas.map(a => a.category.id));
         setIsAreaModalOpen(true);
+    };
+
+    const handleOpenTurmaAreaModal = (turma: Turma) => {
+        setSelectedTurmaForAreas(turma);
+        setTempTurmaAreas(turma.areas?.map(a => a.category.id) || []);
+        setIsTurmaAreaModalOpen(true);
     };
 
     const handleOpenTurmaModal = (user: User) => {
@@ -429,7 +441,6 @@ export default function AdminDashboard() {
         try {
             const { data: updatedUser } = await api.put(`/users/${selectedUser.id}/areas`, {
                 instructorAreaIds: tempInstructorAreas,
-                studentAreaIds: tempStudentAreas
             });
 
             setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
@@ -438,6 +449,28 @@ export default function AdminDashboard() {
         } catch (error) {
             console.error("Error saving areas:", error);
             toast.error("Erro ao salvar áreas. Tente novamente.");
+        } finally {
+            setIsSavingPermissions(false);
+        }
+    };
+
+    const handleSaveTurmaAreas = async () => {
+        if (!selectedTurmaForAreas) return;
+        setIsSavingPermissions(true);
+        try {
+            await api.put(`/turmas/${selectedTurmaForAreas.id}/areas`, {
+                categoryIds: tempTurmaAreas,
+            });
+
+            await fetchTurmas(true);
+            // Also refresh users if they are on screen because their inherited areas might have changed
+            if (activeTab === 'users') await fetchUsers(true);
+
+            toast.success("Áreas da turma atualizadas!");
+            setIsTurmaAreaModalOpen(false);
+        } catch (error) {
+            console.error("Error saving turma areas:", error);
+            toast.error("Erro ao salvar áreas da turma. Tente novamente.");
         } finally {
             setIsSavingPermissions(false);
         }
@@ -586,7 +619,7 @@ export default function AdminDashboard() {
         const matchesTurma = filterTurma === 'ALL' || u.turmas?.some(t => t.id === filterTurma);
         const matchesArea = filterArea === 'ALL' ||
             u.assignedAreas?.some(a => a.category.id === filterArea) ||
-            u.studentAreas?.some(a => a.category.id === filterArea);
+            u.turmas?.some(t => t.areas?.some(a => a.category.id === filterArea));
 
         return matchesSearch && matchesRole && matchesTurma && matchesArea;
     });
@@ -808,6 +841,13 @@ export default function AdminDashboard() {
                                         </div>
                                         <div className="flex gap-2">
                                             <button
+                                                onClick={() => handleOpenTurmaAreaModal(turma)}
+                                                className="p-2 rounded-xl bg-white/5 hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-500"
+                                                title="Gerenciar Áreas da Turma"
+                                            >
+                                                <LucideLayoutGrid className="h-4 w-4" />
+                                            </button>
+                                            <button
                                                 onClick={() => {
                                                     setEditingTurma(turma);
                                                     setTurmaName(turma.name);
@@ -829,6 +869,16 @@ export default function AdminDashboard() {
                                     <div>
                                         <h3 className="text-xl font-bold">{turma.name}</h3>
                                         <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{turma.description || "Sem descrição"}</p>
+                                        <div className="flex flex-wrap gap-1.5 mt-4">
+                                            {turma.areas?.map((a, i) => (
+                                                <span key={i} className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                                                    {a.category.name}
+                                                </span>
+                                            ))}
+                                            {(!turma.areas || turma.areas.length === 0) && (
+                                                <span className="text-[9px] text-muted-foreground/40 font-black uppercase tracking-widest italic">Nenhuma área atribuída</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1056,15 +1106,15 @@ export default function AdminDashboard() {
                                                                 {a.category.name}
                                                             </span>
                                                         ))}
-                                                        {user.role === 'STUDENT' && user.studentAreas.map((a, i) => (
-                                                            <span key={`stu-${i}`} className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                                                        {user.role === 'STUDENT' && user.turmas?.map(t => t.areas?.map((a, i) => (
+                                                            <span key={`stu-${t.id}-${i}`} className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
                                                                 {a.category.name}
                                                             </span>
-                                                        ))}
+                                                        )))}
                                                     </>
                                                 )}
 
-                                                {user.role !== 'ADMIN' && (
+                                                {user.role === 'INSTRUCTOR' && (
                                                     <button
                                                         onClick={() => handleOpenAreaModal(user)}
                                                         className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground transition-colors"
@@ -1305,18 +1355,20 @@ export default function AdminDashboard() {
                                                                 {a.category.name}
                                                             </span>
                                                         ))}
-                                                        {user.role === 'STUDENT' && user.studentAreas.map((a, i) => (
-                                                            <span key={`stu-${i}`} className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100 shadow-sm">
+                                                        {user.role === 'STUDENT' && user.turmas?.map(t => t.areas?.map((a, i) => (
+                                                            <span key={`stu-mb-${t.id}-${i}`} className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100 shadow-sm">
                                                                 {a.category.name}
                                                             </span>
-                                                        ))}
+                                                        )))}
 
-                                                        <button
-                                                            onClick={() => handleOpenAreaModal(user)}
-                                                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all text-[10px] font-black uppercase tracking-tight shadow-sm hover:shadow-md"
-                                                        >
-                                                            <LucidePlus className="h-3 w-3" /> Adicionar Área
-                                                        </button>
+                                                        {user.role === 'INSTRUCTOR' && (
+                                                            <button
+                                                                onClick={() => handleOpenAreaModal(user)}
+                                                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all text-[10px] font-black uppercase tracking-tight shadow-sm hover:shadow-md"
+                                                            >
+                                                                <LucidePlus className="h-3 w-3" /> Adicionar Área
+                                                            </button>
+                                                        )}
                                                     </>
                                                 )}
                                             </div>
@@ -1413,7 +1465,6 @@ export default function AdminDashboard() {
                                     const isStudentAssigned = tempStudentAreas.includes(area.id);
 
                                     const showInstructorToggle = selectedUser?.role === 'INSTRUCTOR' || selectedUser?.role === 'ADMIN';
-                                    const showStudentToggle = selectedUser?.role === 'STUDENT' || selectedUser?.role === 'ADMIN';
 
                                     return (
                                         <div key={area.id} className="group p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary/30 transition-all duration-300 flex items-center justify-between gap-6 shadow-sm">
@@ -1440,17 +1491,6 @@ export default function AdminDashboard() {
                                                     </div>
                                                 )}
 
-                                                {showStudentToggle && (
-                                                    <div className="flex flex-col items-center gap-1.5">
-                                                        <span className="text-[8px] font-black uppercase text-muted-foreground/50 tracking-widest">Estudar</span>
-                                                        <button
-                                                            onClick={() => handleToggleArea(area.id, 'student', isStudentAssigned || false)}
-                                                            className={`h-7 w-12 rounded-full flex items-center transition-all px-1 ${isStudentAssigned ? 'bg-green-500 justify-end' : 'bg-slate-200 justify-start'}`}
-                                                        >
-                                                            <motion.div layout className="h-5 w-5 rounded-full bg-white shadow-md" />
-                                                        </button>
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
                                     );
@@ -1552,6 +1592,93 @@ export default function AdminDashboard() {
                                 </>
                             ) : (
                                 "Salvar Turma"
+                            )}
+                        </button>
+                    </div>
+                </motion.div>
+            </PortalModal>
+
+            {/* Turma Area Assignment Modal */}
+            <PortalModal isOpen={isTurmaAreaModalOpen} onClose={() => setIsTurmaAreaModalOpen(false)} preventCloseOnOverlayClick={isSavingPermissions}>
+                <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="relative w-full max-w-xl bg-card border border-border rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                >
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/50 via-emerald-500 to-emerald-500/50" />
+
+                    <div className="mb-6 md:mb-10 relative shrink-0">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <h2 className="text-3xl font-black mb-2 flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                                        <LucideLayoutGrid className="h-6 w-6 text-emerald-500" />
+                                    </div>
+                                    Áreas da Turma
+                                </h2>
+                                <div className="mt-4 flex items-center gap-2">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60 leading-none">Editando áreas da turma</span>
+                                    <span className="px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-[9px] font-black tracking-widest uppercase border border-emerald-500/20">
+                                        {selectedTurmaForAreas?.name}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6 overflow-y-auto pr-2 md:pr-4 custom-scrollbar flex-1">
+                        {isFetchingCategories ? (
+                            <div className="flex flex-col items-center justify-center py-12 space-y-4 w-full">
+                                <LoadingSpinner size="md" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Carregando áreas...</p>
+                            </div>
+                        ) : categories.length === 0 ? (
+                            <p className="w-full text-center py-10 text-xs text-muted-foreground italic bg-slate-50 rounded-3xl border border-dashed border-slate-200">Nenhuma área cadastrada.</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {categories.map(area => {
+                                    const isAssigned = tempTurmaAreas.includes(area.id);
+                                    return (
+                                        <div key={area.id} className="group p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-emerald-500/30 transition-all duration-300 flex items-center justify-between gap-6 shadow-sm">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform shadow-inner">
+                                                    {getIconComponent(area.icon || "", "h-5 w-5")}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm tracking-tight text-slate-900">{area.name}</p>
+                                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">{area._count?.courses || 0} cursos</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    onClick={() => handleToggleArea(area.id, 'turma', isAssigned)}
+                                                    className={`h-7 w-12 rounded-full flex items-center transition-all px-1 ${isAssigned ? 'bg-emerald-500 justify-end' : 'bg-slate-200 justify-start'}`}
+                                                >
+                                                    <motion.div layout className="h-5 w-5 rounded-full bg-white shadow-md" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pt-8 border-t border-white/10 flex gap-4 shrink-0">
+                        <button
+                            onClick={handleSaveTurmaAreas}
+                            disabled={isSavingPermissions}
+                            className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                        >
+                            {isSavingPermissions ? (
+                                <>
+                                    <LoadingSpinner size="sm" variant="white" />
+                                    Salvando...
+                                </>
+                            ) : (
+                                "Salvar Áreas da Turma"
                             )}
                         </button>
                     </div>

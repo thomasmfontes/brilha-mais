@@ -43,17 +43,19 @@ export class AreaAccessGuard implements CanActivate {
     }
 
     if (user.role === 'STUDENT') {
-      const assignment = await this.prisma.studentArea.findUnique({
+      const assignment = await this.prisma.turmaArea.findFirst({
         where: {
-          userId_categoryId: {
-            userId: user.id,
-            categoryId: course.categoryId,
+          categoryId: course.categoryId,
+          turma: {
+            users: {
+              some: { id: user.id },
+            },
           },
         },
       });
       if (!assignment)
         throw new ForbiddenException(
-          'You do not have access to this knowledge area',
+          'Você não possui acesso a esta área de conhecimento',
         );
     }
 

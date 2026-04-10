@@ -16,8 +16,11 @@ export class UserService {
     return this.prisma.user.findMany({
       include: {
         assignedAreas: { include: { category: true } },
-        studentAreas: { include: { category: true } },
-        turmas: true,
+        turmas: {
+          include: {
+            areas: { include: { category: true } }
+          }
+        },
       },
     });
   }
@@ -27,8 +30,11 @@ export class UserService {
       where: { id },
       include: {
         assignedAreas: { include: { category: true } },
-        studentAreas: { include: { category: true } },
-        turmas: true,
+        turmas: {
+          include: {
+            areas: { include: { category: true } }
+          }
+        },
       },
     });
   }
@@ -90,16 +96,6 @@ export class UserService {
     return assignment;
   }
 
-  async assignStudentArea(userId: string, categoryId: string) {
-    return this.prisma.studentArea.upsert({
-      where: {
-        userId_categoryId: { userId, categoryId },
-      },
-      update: {},
-      create: { userId, categoryId },
-    });
-  }
-
   async removeInstructorArea(userId: string, categoryId: string) {
     return this.prisma.instructorArea.delete({
       where: {
@@ -108,15 +104,7 @@ export class UserService {
     });
   }
 
-  async removeStudentArea(userId: string, categoryId: string) {
-    return this.prisma.studentArea.delete({
-      where: {
-        userId_categoryId: { userId, categoryId },
-      },
-    });
-  }
-
-  async syncAreas(userId: string, instructorAreaIds: string[], studentAreaIds: string[], actorId?: string) {
+  async syncAreas(userId: string, instructorAreaIds: string[], actorId?: string) {
     // 1. Get user details for audit logging
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('User not found');
@@ -125,18 +113,11 @@ export class UserService {
     const result = await this.prisma.$transaction(async (tx) => {
       // Clear existing areas
       await tx.instructorArea.deleteMany({ where: { userId } });
-      await tx.studentArea.deleteMany({ where: { userId } });
 
       // Create new areas
       if (instructorAreaIds.length > 0) {
         await tx.instructorArea.createMany({
           data: instructorAreaIds.map((categoryId) => ({ userId, categoryId })),
-        });
-      }
-
-      if (studentAreaIds.length > 0) {
-        await tx.studentArea.createMany({
-          data: studentAreaIds.map((categoryId) => ({ userId, categoryId })),
         });
       }
 
@@ -148,8 +129,7 @@ export class UserService {
         actorId,
         {
           userName: user.name,
-          instructorAreasCount: instructorAreaIds.length,
-          studentAreasCount: studentAreaIds.length
+          instructorAreasCount: instructorAreaIds.length
         }
       );
 
@@ -157,8 +137,11 @@ export class UserService {
         where: { id: userId },
         include: {
           assignedAreas: { include: { category: true } },
-          studentAreas: { include: { category: true } },
-          turmas: true,
+          turmas: {
+            include: {
+              areas: { include: { category: true } }
+            }
+          },
         },
       });
     });
@@ -181,9 +164,12 @@ export class UserService {
         },
       },
       include: {
-        turmas: true,
+        turmas: {
+          include: {
+            areas: { include: { category: true } }
+          }
+        },
         assignedAreas: { include: { category: true } },
-        studentAreas: { include: { category: true } },
       },
     });
 

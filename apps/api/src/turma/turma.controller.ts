@@ -51,4 +51,10 @@ export class TurmaController {
     removeUser(@Param('id') id: string, @Param('userId') userId: string) {
         return this.turmaService.removeUserFromTurma(id, userId);
     }
+
+    @Put(':id/areas')
+    @Roles('ADMIN')
+    syncAreas(@Param('id') id: string, @Body('categoryIds') categoryIds: string[]) {
+        return this.turmaService.syncAreas(id, categoryIds);
+    }
 }
