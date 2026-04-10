@@ -43,12 +43,17 @@ export class UserService {
   }
 
   async updateRole(userId: string, role: string, actorId?: string) {
+    const updateData: any = { role: role as Role };
+    if (role === 'SUPER_ADMIN') {
+      updateData.locationId = null;
+    }
+
     const user = await this.prisma.user.update({
       where: { id: userId },
-      data: { role: role as Role },
+      data: updateData,
     });
 
-    const roleLabel = role === 'ADMIN' ? 'Administrador' : role === 'INSTRUCTOR' ? 'Instrutor' : 'Aluno';
+    const roleLabel = role === 'SUPER_ADMIN' ? 'Super Admin' : role === 'ADMIN' ? 'Administrador' : role === 'INSTRUCTOR' ? 'Instrutor' : 'Aluno';
 
     await this.audit.log(
       `Alteração de Role → ${roleLabel}`,

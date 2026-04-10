@@ -35,7 +35,7 @@ interface User {
     id: string;
     name: string;
     email: string;
-    role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
+    role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN' | 'SUPER_ADMIN';
     avatarUrl?: string;
     assignedAreas: { category: { id: string, name: string } }[];
     turmas: { 
@@ -204,7 +204,7 @@ export default function AdminDashboard() {
     const [isFetchingTurmas, setIsFetchingTurmas] = useState(false);
     const [isFetchingCategories, setIsFetchingCategories] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [filterRole, setFilterRole] = useState<'ALL' | 'STUDENT' | 'INSTRUCTOR' | 'ADMIN'>('ALL');
+    const [filterRole, setFilterRole] = useState<'ALL' | 'STUDENT' | 'INSTRUCTOR' | 'ADMIN' | 'SUPER_ADMIN'>('ALL');
     const [filterTurma, setFilterTurma] = useState<string>("ALL");
     const [filterArea, setFilterArea] = useState<string>("ALL");
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -318,6 +318,8 @@ export default function AdminDashboard() {
 
     const getIconBadge = (role: string) => {
         switch (role) {
+            case 'SUPER_ADMIN':
+                return <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 text-indigo-600 px-3 py-1 text-[10px] font-black uppercase tracking-widest border border-indigo-100 shadow-sm"><LucideShieldCheck className="h-3 w-3" /> Super</span>;
             case 'ADMIN':
                 return <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 text-purple-600 px-3 py-1 text-[10px] font-black uppercase tracking-widest border border-purple-100 shadow-sm"><LucideShield className="h-3 w-3" /> Admin</span>;
             case 'INSTRUCTOR':
@@ -472,7 +474,12 @@ export default function AdminDashboard() {
     const handleUpdateRole = async (userId: string, role: string) => {
         // Optimistic update
         const previousUsers = [...users];
-        setUsers(users.map(u => u.id === userId ? { ...u, role: role as any } : u));
+        setUsers(users.map(u => u.id === userId ? { 
+            ...u, 
+            role: role as any,
+            locationId: role === 'SUPER_ADMIN' ? null : u.locationId,
+            location: role === 'SUPER_ADMIN' ? null : u.location
+        } : u));
 
         setUpdatingRoleFor(userId);
         try {
@@ -1237,6 +1244,7 @@ export default function AdminDashboard() {
                                                 { id: 'STUDENT', name: 'Alunos' },
                                                 { id: 'INSTRUCTOR', name: 'Instrutores' },
                                                 { id: 'ADMIN', name: 'Administradores' },
+                                                { id: 'SUPER_ADMIN', name: 'Super Admins' },
                                             ]}
                                         />
 
@@ -1344,11 +1352,12 @@ export default function AdminDashboard() {
                                                     <select
                                                         value={user.role}
                                                         onChange={(e) => handleUpdateRole(user.id, e.target.value)}
-                                                        className={`appearance-none bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer w-full ${user.role === 'ADMIN' ? 'text-purple-600' : user.role === 'INSTRUCTOR' ? 'text-blue-600' : 'text-emerald-600'}`}
+                                                        className={`appearance-none bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer w-full ${user.role === 'SUPER_ADMIN' ? 'text-indigo-600' : user.role === 'ADMIN' ? 'text-purple-600' : user.role === 'INSTRUCTOR' ? 'text-blue-600' : 'text-emerald-600'}`}
                                                     >
                                                         <option value="STUDENT">Aluno</option>
                                                         <option value="INSTRUCTOR">Instrutor</option>
-                                                        <option value="ADMIN">{user.locationId ? 'Admin' : 'Super Admin'}</option>
+                                                        <option value="ADMIN">Admin</option>
+                                                        <option value="SUPER_ADMIN">Super</option>
                                                     </select>
                                                     <LucideUserCog className="h-3.5 w-3.5 opacity-30 pointer-events-none shrink-0" />
                                                 </div>
@@ -1361,7 +1370,7 @@ export default function AdminDashboard() {
                                                         {t.name}
                                                     </span>
                                                 ))}
-                                                {user.role !== 'ADMIN' && (
+                                                {user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
                                                     <button
                                                         onClick={() => handleOpenTurmaModal(user)}
                                                         className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground transition-colors"
@@ -1369,7 +1378,7 @@ export default function AdminDashboard() {
                                                         <LucidePlus className="h-3 w-3" />
                                                     </button>
                                                 )}
-                                                {(!user.turmas || user.turmas.length === 0) && user.role === 'ADMIN' && (
+                                                {(!user.turmas || user.turmas.length === 0) && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
                                                     <span className="text-[10px] text-muted-foreground/50 italic">N/A</span>
                                                 )}
                                             </div>
@@ -1380,9 +1389,13 @@ export default function AdminDashboard() {
                                                                 <div className="flex items-center">
                                                                     <LoadingSpinner size="xs" />
                                                                 </div>
+                                                            ) : user.role === 'SUPER_ADMIN' ? (
+                                                                <span className="px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-[0.15em] border border-indigo-100 shadow-sm">
+                                                                    Acesso Geral
+                                                                </span>
                                                             ) : user.role === 'ADMIN' ? (
                                                                 <span className="px-3 py-1.5 rounded-full bg-purple-50 text-purple-600 text-[9px] font-black uppercase tracking-[0.15em] border border-purple-100 shadow-sm">
-                                                                    {user.locationId ? 'Admin' : 'Super Admin'}
+                                                                    Admin
                                                                 </span>
                                                             ) : (
                                                                 <>
@@ -1410,7 +1423,7 @@ export default function AdminDashboard() {
                                                         </div>
                                                     </td>
                                                     <td className="px-8 py-6">
-                                                        {!userLocationId ? (
+                                                        {!userLocationId && user.role !== 'SUPER_ADMIN' ? (
                                                             <select
                                                                 value={user.locationId || ""}
                                                                 onChange={(e) => handleUpdateUserLocation(user.id, e.target.value || null)}

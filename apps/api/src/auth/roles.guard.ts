@@ -23,6 +23,13 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    return requiredRoles.some((role) => user.role?.toString().toUpperCase() === role.toUpperCase());
+    const userRole = user.role?.toString().toUpperCase();
+
+    // Super Admin has access to everything
+    if (userRole === 'SUPER_ADMIN') {
+      return true;
+    }
+
+    return requiredRoles.some((role) => userRole === role.toUpperCase());
   }
 }

@@ -322,6 +322,7 @@ enum Role {
   STUDENT
   INSTRUCTOR
   ADMIN
+  SUPER_ADMIN
 }
 
 enum ContentType {
