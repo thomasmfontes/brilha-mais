@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { LucideChevronLeft, LucidePlus, LucideTrash2, LucideLayout, LucidePlay, LucideClock, LucideSave, LucideLink, LucideChevronDown, LucideMoreVertical, LucideFileText, LucideDownload, LucideGlobe, LucideFileJson, LucideUploadCloud, LucideX, LucideCheck, LucideCircle, LucideHelpCircle } from "lucide-react";
+import { LucideChevronLeft, LucidePlus, LucideTrash2, LucideLayout, LucidePlay, LucideClock, LucideSave, LucideLink, LucideChevronDown, LucideChevronUp, LucideMoreVertical, LucideFileText, LucideDownload, LucideGlobe, LucideFileJson, LucideUploadCloud, LucideX, LucideCheck, LucideCircle, LucideHelpCircle } from "lucide-react";
 import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
@@ -64,6 +64,7 @@ export default function InstructorSyllabus() {
     // Local state for course and modules
     const [courseTitle, setCourseTitle] = useState("");
     const [localModules, setLocalModules] = useState<DraftModule[]>([]);
+    const [jumpIndices, setJumpIndices] = useState<Record<string, string>>({});
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [uploadingFor, setUploadingFor] = useState<string | null>(null); // "mIdx-lIdx"
@@ -154,6 +155,49 @@ export default function InstructorSyllabus() {
         setLocalModules(next);
     };
 
+    const moveModule = (mIdx: number, direction: 'up' | 'down') => {
+        const next = [...localModules];
+        const targetIdx = direction === 'up' ? mIdx - 1 : mIdx + 1;
+        if (targetIdx < 0 || targetIdx >= next.length) return;
+
+        const temp = next[mIdx];
+        next[mIdx] = next[targetIdx];
+        next[targetIdx] = temp;
+        setLocalModules(next);
+    };
+
+    const jumpModule = (mIdx: number) => {
+        const value = jumpIndices[`m-${mIdx}`];
+        if (!value) return;
+        
+        let newIdx = parseInt(value) - 1;
+        if (isNaN(newIdx)) return;
+        
+        const next = [...localModules];
+        if (newIdx < 0) newIdx = 0;
+        if (newIdx >= next.length) newIdx = next.length - 1;
+        
+        // Use parseInt to compare correctly even with leading zeros
+        if (newIdx === mIdx) {
+            setJumpIndices(prev => {
+                const n = { ...prev };
+                delete n[`m-${mIdx}`];
+                return n;
+            });
+            return;
+        }
+
+        const target = next.splice(mIdx, 1)[0];
+        next.splice(newIdx, 0, target);
+        
+        setLocalModules(next);
+        setJumpIndices(prev => {
+            const n = { ...prev };
+            delete n[`m-${mIdx}`];
+            return n;
+        });
+    };
+
     const addLesson = (mIdx: number) => {
         const next = [...localModules];
         next[mIdx].lessons.push({
@@ -189,6 +233,53 @@ export default function InstructorSyllabus() {
         }
         next[mIdx].lessons[lIdx] = { ...next[mIdx].lessons[lIdx], ...updatedData };
         setLocalModules(next);
+    };
+
+    const moveLesson = (mIdx: number, lIdx: number, direction: 'up' | 'down') => {
+        const next = [...localModules];
+        const lessons = [...next[mIdx].lessons];
+        const targetIdx = direction === 'up' ? lIdx - 1 : lIdx + 1;
+        if (targetIdx < 0 || targetIdx >= lessons.length) return;
+
+        const temp = lessons[lIdx];
+        lessons[lIdx] = lessons[targetIdx];
+        lessons[targetIdx] = temp;
+        next[mIdx].lessons = lessons;
+        setLocalModules(next);
+    };
+
+    const jumpLesson = (mIdx: number, lIdx: number) => {
+        const value = jumpIndices[`l-${mIdx}-${lIdx}`];
+        if (!value) return;
+
+        let newIdx = parseInt(value) - 1;
+        if (isNaN(newIdx)) return;
+
+        const next = [...localModules];
+        const lessons = [...next[mIdx].lessons];
+        
+        if (newIdx < 0) newIdx = 0;
+        if (newIdx >= lessons.length) newIdx = lessons.length - 1;
+
+        if (newIdx === lIdx) {
+            setJumpIndices(prev => {
+                const n = { ...prev };
+                delete n[`l-${mIdx}-${lIdx}`];
+                return n;
+            });
+            return;
+        }
+
+        const target = lessons.splice(lIdx, 1)[0];
+        lessons.splice(newIdx, 0, target);
+        
+        next[mIdx].lessons = lessons;
+        setLocalModules(next);
+        setJumpIndices(prev => {
+            const n = { ...prev };
+            delete n[`l-${mIdx}-${lIdx}`];
+            return n;
+        });
     };
 
     const addQuestion = (mIdx: number, lIdx: number) => {
@@ -433,9 +524,27 @@ export default function InstructorSyllabus() {
                 {localModules.map((module, mIdx) => (
                     <div key={mIdx} className="bg-white border border-slate-200 rounded-[2rem] md:rounded-[3rem] shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-                            <div className="flex items-center gap-4 flex-1">
-                                <div className="h-9 w-9 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-xs shadow-md">
-                                    {String(mIdx + 1).padStart(2, '0')}
+                            <div className="flex items-center gap-3 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 bg-slate-100 rounded-full px-3 h-9 border border-slate-200 focus-within:border-primary focus-within:bg-white transition-all">
+                                        <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide select-none">Módulo</span>
+                                        <input
+                                            type="number"
+                                            className="w-8 bg-transparent text-center font-black text-sm text-slate-800 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            value={jumpIndices[`m-${mIdx}`] !== undefined ? jumpIndices[`m-${mIdx}`] : String(mIdx + 1).padStart(2, '0')}
+                                            onChange={(e) => setJumpIndices(prev => ({ ...prev, [`m-${mIdx}`]: e.target.value }))}
+                                            onKeyDown={(e) => e.key === 'Enter' && jumpModule(mIdx)}
+                                        />
+                                    </div>
+                                    {jumpIndices[`m-${mIdx}`] !== undefined && parseInt(jumpIndices[`m-${mIdx}`]) !== (mIdx + 1) && (
+                                        <button
+                                            onClick={() => jumpModule(mIdx)}
+                                            className="h-9 w-9 rounded-full bg-primary text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-transform shadow-md shadow-primary/30"
+                                            title="Confirmar posição"
+                                        >
+                                            <LucideCheck className="h-4 w-4 stroke-[3px]" />
+                                        </button>
+                                    )}
                                 </div>
                                 <input
                                     className="bg-transparent text-lg font-black outline-none focus:text-primary transition-colors w-full uppercase tracking-tight text-slate-800"
@@ -461,9 +570,25 @@ export default function InstructorSyllabus() {
                                     <div className="flex items-center justify-between mb-5 pb-5 border-b border-slate-100">
                                         <div className="flex items-center gap-3">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[10px] font-black uppercase bg-slate-900 text-white px-2.5 py-1.5 rounded-lg tracking-widest shadow-sm">
-                                                    Aula {String(lIdx + 1).padStart(2, '0')}
-                                                </span>
+                                                <div className="flex items-center gap-2 bg-slate-100 rounded-full px-3 h-8 border border-slate-200 focus-within:border-primary focus-within:bg-white transition-all">
+                                                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide select-none">Aula</span>
+                                                    <input
+                                                        type="number"
+                                                        className="w-7 bg-transparent text-center font-black text-[11px] text-slate-800 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                        value={jumpIndices[`l-${mIdx}-${lIdx}`] !== undefined ? jumpIndices[`l-${mIdx}-${lIdx}`] : String(lIdx + 1).padStart(2, '0')}
+                                                        onChange={(e) => setJumpIndices(prev => ({ ...prev, [`l-${mIdx}-${lIdx}`]: e.target.value }))}
+                                                        onKeyDown={(e) => e.key === 'Enter' && jumpLesson(mIdx, lIdx)}
+                                                    />
+                                                </div>
+                                                {jumpIndices[`l-${mIdx}-${lIdx}`] !== undefined && parseInt(jumpIndices[`l-${mIdx}-${lIdx}`]) !== (lIdx + 1) && (
+                                                    <button
+                                                        onClick={() => jumpLesson(mIdx, lIdx)}
+                                                        className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-transform shadow-md shadow-primary/30"
+                                                        title="Confirmar posição"
+                                                    >
+                                                        <LucideCheck className="h-3.5 w-3.5 stroke-[3px]" />
+                                                    </button>
+                                                )}
                                                 {lesson.title && (
                                                     <span className="hidden md:inline font-black uppercase text-[10px] tracking-tight text-slate-400">
                                                             // {lesson.title}
@@ -471,13 +596,15 @@ export default function InstructorSyllabus() {
                                                 )}
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => removeLesson(mIdx, lIdx)}
-                                            className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-destructive transition-all active:scale-90 border border-transparent hover:border-destructive/20"
-                                            title="Remover Aula"
-                                        >
-                                            <LucideTrash2 className="h-4 w-4" />
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => removeLesson(mIdx, lIdx)}
+                                                className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-destructive transition-all active:scale-90 border border-transparent hover:border-destructive/20"
+                                                title="Remover Aula"
+                                            >
+                                                <LucideTrash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
