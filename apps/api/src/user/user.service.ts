@@ -216,7 +216,6 @@ export class UserService {
   }
 
   async updateProfile(userId: string, data: { name?: string; avatarUrl?: string; locationId?: string }, actorId?: string) {
-    throw new Error(`DIAGNOSE ID: [${userId}]`);
     const user = await this.prisma.user.update({
       where: { id: userId },
       data,

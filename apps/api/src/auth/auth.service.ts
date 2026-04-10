@@ -42,7 +42,7 @@ export class AuthService {
           data: {
             provider,
             providerId,
-            ...(picture ? { avatarUrl: picture } : {}),
+            ...(picture && !user.avatarUrl ? { avatarUrl: picture } : {}),
           },
         });
       }
