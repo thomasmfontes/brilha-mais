@@ -15,7 +15,7 @@ export class AreaAccessGuard implements CanActivate {
     const user = request.user;
 
     if (!user) return false;
-    if (user.role === 'ADMIN') return true;
+    if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') return true;
 
     const courseId = request.params.courseId || request.body.courseId;
     if (!courseId) return true; // Detailed checks should be in specific controllers

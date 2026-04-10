@@ -22,24 +22,26 @@ export class LocationService {
       orderBy: { name: 'asc' },
     });
 
-    return Promise.all(
-      locations.map(async (loc) => {
-        const [students, instructors, admins] = await Promise.all([
-          this.prisma.user.count({ where: { locationId: loc.id, role: 'STUDENT' } }),
-          this.prisma.user.count({ where: { locationId: loc.id, role: 'INSTRUCTOR' } }),
-          this.prisma.user.count({ where: { locationId: loc.id, role: 'ADMIN' } }),
-        ]);
+    // Get all user counts grouped by location and role in a single efficient query
+    const userGroups = await this.prisma.user.groupBy({
+      by: ['locationId', 'role'],
+      _count: true,
+      where: {
+        locationId: { not: null },
+      },
+    });
 
-        return {
-          ...loc,
-          counts: {
-            students,
-            instructors,
-            admins,
-          },
-        };
-      }),
-    );
+    return locations.map((loc) => {
+      return {
+        ...loc,
+        counts: {
+          students: userGroups.find((g) => (g.role as string) === 'STUDENT' && g.locationId === loc.id)?._count ?? 0,
+          instructors: userGroups.find((g) => (g.role as string) === 'INSTRUCTOR' && g.locationId === loc.id)?._count ?? 0,
+          admins: userGroups.find((g) => (g.role as string) === 'ADMIN' && g.locationId === loc.id)?._count ?? 0,
+          supers: userGroups.find((g) => (g.role as string) === 'SUPER_ADMIN' && g.locationId === loc.id)?._count ?? 0,
+        },
+      };
+    });
   }
 
   async findOne(id: string) {

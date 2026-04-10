@@ -63,14 +63,18 @@ export class StatsService {
     }
   }
 
-  async getInstructorStats(instructorId: string) {
-    const cached = this.instructorCache.get(instructorId);
+  async getInstructorStats(instructorId: string, role?: string) {
+    const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
+    const cacheKey = isAdmin ? `GLOBAL_INSTRUCTOR_STATS` : instructorId;
+    const cached = this.instructorCache.get(cacheKey);
     if (cached && Date.now() < cached.expiresAt) return cached.data;
 
     try {
       const now = new Date();
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+      const instrFilter = isAdmin ? {} : { instructorId };
 
       const [
         totalStudents,
@@ -83,35 +87,35 @@ export class StatsService {
       ] = await Promise.all([
         this.prisma.enrollment.count({ 
           where: { 
-            course: { instructorId },
+            course: instrFilter,
             user: { role: 'STUDENT' }
           } 
         }),
         this.prisma.progress.findMany({
-          where: { isCompleted: true, lesson: { module: { course: { instructorId } } } },
+          where: { isCompleted: true, lesson: { module: { course: instrFilter } } },
           include: { lesson: { select: { duration: true } } }
         }),
-        this.prisma.course.count({ where: { instructorId } }),
+        this.prisma.course.count({ where: instrFilter }),
         this.prisma.enrollment.count({
           where: { 
-            course: { instructorId }, 
+            course: instrFilter, 
             enrolledAt: { gte: thirtyDaysAgo },
             user: { role: 'STUDENT' }
           }
         }),
         this.prisma.enrollment.count({
           where: { 
-            course: { instructorId }, 
+            course: instrFilter, 
             enrolledAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
             user: { role: 'STUDENT' }
           }
         }),
         this.prisma.progress.findMany({
-          where: { isCompleted: true, updatedAt: { gte: thirtyDaysAgo }, lesson: { module: { course: { instructorId } } } },
+          where: { isCompleted: true, updatedAt: { gte: thirtyDaysAgo }, lesson: { module: { course: instrFilter } } },
           include: { lesson: { select: { duration: true } } }
         }),
         this.prisma.progress.findMany({
-          where: { isCompleted: true, updatedAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo }, lesson: { module: { course: { instructorId } } } },
+          where: { isCompleted: true, updatedAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo }, lesson: { module: { course: instrFilter } } },
           include: { lesson: { select: { duration: true } } }
         })
       ]);
@@ -137,7 +141,7 @@ export class StatsService {
         minutesTrend: calculateTrend(lastMonthMinutes, prevMonthMinutes)
       };
 
-      this.instructorCache.set(instructorId, { data, expiresAt: Date.now() + INSTRUCTOR_CACHE_TTL_MS });
+      this.instructorCache.set(cacheKey, { data, expiresAt: Date.now() + INSTRUCTOR_CACHE_TTL_MS });
       return data;
     } catch (error) {
       console.error('Error in getInstructorStats:', error);

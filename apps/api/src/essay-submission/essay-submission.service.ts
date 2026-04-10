@@ -62,7 +62,7 @@ export class EssaySubmissionService {
   }
 
   async getSubmissionsByLesson(lessonId: string, instructorId: string, role?: string, status?: SubmissionStatus) {
-    const isAdmin = role?.toUpperCase() === 'ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'SUPER_ADMIN';
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
       include: { module: { include: { course: true } } },
@@ -88,7 +88,7 @@ export class EssaySubmissionService {
   }
 
   async getAllSubmissions(instructorId: string, role?: string, status?: SubmissionStatus) {
-    const isAdmin = role?.toUpperCase() === 'ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'SUPER_ADMIN';
     const where: any = {
       user: { role: 'STUDENT' }
     };
@@ -129,7 +129,7 @@ export class EssaySubmissionService {
   }
 
   async review(submissionId: string, instructorId: string, dto: ReviewEssayDto, role?: string) {
-    const isAdmin = role?.toUpperCase() === 'ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'SUPER_ADMIN';
     const submission = await this.prisma.essaySubmission.findUnique({
       where: { id: submissionId },
       include: { lesson: { include: { module: { include: { course: true } } } } },
@@ -152,7 +152,7 @@ export class EssaySubmissionService {
   }
 
   async requestRedo(submissionId: string, instructorId: string, dto?: ReviewEssayDto, role?: string) {
-    const isAdmin = role?.toUpperCase() === 'ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'SUPER_ADMIN';
     console.log('[DEBUG] requestRedo:', { submissionId, instructorId, role, isAdmin });
     
     const submission = await this.prisma.essaySubmission.findUnique({

@@ -100,7 +100,7 @@ export class CourseService {
     }
 
     async findByInstructor(instructorId: string, role?: string) {
-        const isAdmin = role === 'ADMIN';
+        const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
         const where = isAdmin ? {} : { instructorId };
 
         const courses = await this.prisma.course.findMany({

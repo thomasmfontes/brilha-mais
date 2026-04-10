@@ -20,6 +20,6 @@ export class StatsController {
   @Get('instructor')
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   getInstructorStats(@Req() req: any) {
-    return this.statsService.getInstructorStats(req.user.id);
+    return this.statsService.getInstructorStats(req.user.id, req.user.role);
   }
 }
