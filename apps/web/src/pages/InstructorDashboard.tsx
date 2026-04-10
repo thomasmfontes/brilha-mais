@@ -82,8 +82,8 @@ export default function InstructorDashboard() {
                 const userData = response.data;
                 setUserRole(userData.role);
                 
-                // If it's a Super Admin (ADMIN with no locationId), they should see all categories
-                if (userData.role === 'ADMIN' && !userData.locationId) {
+                // If it's a Super Admin, they should see all categories
+                if (userData.role === 'SUPER_ADMIN') {
                     const { data: allCategories } = await api.get('/categories');
                     setAssignedCategories(allCategories);
                     if (allCategories.length > 0) {
@@ -328,8 +328,8 @@ export default function InstructorDashboard() {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="border-b border-slate-100 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 bg-slate-50/50">
-                                <th className="px-8 py-4">Informações do Curso</th>
-                                {userRole === 'ADMIN' && <th className="px-8 py-4 text-center">Instrutor</th>}
+                                <th className="px-8 py-4 text-center">Informações do Curso</th>
+                                {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && <th className="px-8 py-4 text-center">Instrutor</th>}
                                 <th className="px-8 py-4">Status</th>
                                 <th className="px-8 py-4 text-center">Alunos</th>
                                 <th className="px-8 py-4 text-right">Gerenciamento</th>
@@ -382,7 +382,7 @@ export default function InstructorDashboard() {
                                                 </div>
                                             </div>
                                         </td>
-                                        {userRole === 'ADMIN' && (
+                                        {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
                                             <td className="px-8 py-5 text-center">
                                                 <span className="text-xs font-bold text-slate-600 uppercase tracking-tight">{(course as any).instructorName}</span>
                                             </td>
@@ -493,7 +493,7 @@ export default function InstructorDashboard() {
                                         <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">
                                             {typeof course.category === 'object' ? (course.category as any)?.name : (course.category || 'Sem categoria')}
                                         </span>
-                                        {userRole === 'ADMIN' && (
+                                        {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
                                             <span className="text-[8px] font-black text-primary uppercase tracking-[0.15em] mt-1 bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10 w-fit">
                                                 {(course as any).instructorName}
                                             </span>

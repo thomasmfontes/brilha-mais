@@ -218,7 +218,7 @@ export default function CoursePage() {
     };
 
     const isLessonLocked = (mIdx: number, lIdx: number) => {
-        if (userRole === 'ADMIN' || userRole === 'INSTRUCTOR') return false;
+        if (userRole === 'ADMIN' || userRole === 'INSTRUCTOR' || userRole === 'SUPER_ADMIN') return false;
         if (mIdx === 0 && lIdx === 0) return false;
         
         const targetModule = modules[mIdx];
@@ -274,7 +274,7 @@ export default function CoursePage() {
                     </div>
 
                     {/* Mobile Navigation Sub-header */}
-                    <div className="lg:hidden sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 px-5 py-4 flex items-center justify-between shadow-sm">
+                    <div className="lg:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-lg border-b border-slate-100 px-4 py-3 flex items-center justify-between shadow-sm">
                         <button 
                             onClick={() => setIsSyllabusOpen(true)}
                             className="flex items-center gap-2 bg-slate-50 border border-slate-100 hover:border-primary/20 px-3 py-2 rounded-xl transition-all active:scale-95 group"
@@ -285,7 +285,7 @@ export default function CoursePage() {
 
                         <div className="flex-1 px-4 text-center truncate">
                             <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Aula Atual</p>
-                            <p className="text-[11px] font-black uppercase italic tracking-tighter text-slate-900 truncate leading-tight">{currentLesson?.title}</p>
+                            <p className="text-xs font-black uppercase italic tracking-tight text-slate-900 truncate leading-tight">{currentLesson?.title}</p>
                         </div>
 
                         <div className="flex items-center gap-1.5 shrink-0">
@@ -314,7 +314,7 @@ export default function CoursePage() {
                         </div>
                     </div>
 
-                    <div className="w-full flex-1 min-h-[50vh]">
+                    <div className="w-full">
                         {!currentLesson ? (
                             <div className="w-full aspect-video bg-card flex flex-col items-center justify-center p-8">
                                 <LucideFileText className="h-12 w-12 text-muted-foreground mb-4" />
@@ -324,7 +324,7 @@ export default function CoursePage() {
                             <>
                                 {currentLesson.contentType === 'VIDEO' && (
                                     <div className="relative aspect-video w-full bg-black">
-                                        <YouTubePlayer key={currentLesson.id} videoId={currentLesson.youtubeId} isCompleted={!!currentLesson.completed} isPrivileged={userRole === 'INSTRUCTOR' || userRole === 'ADMIN'} onEnded={markAsCompleted} />
+                                        <YouTubePlayer key={currentLesson.id} videoId={currentLesson.youtubeId} isCompleted={!!currentLesson.completed} isPrivileged={userRole === 'INSTRUCTOR' || userRole === 'ADMIN' || userRole === 'SUPER_ADMIN'} onEnded={markAsCompleted} />
                                     </div>
                                 )}
                                 {currentLesson.contentType === 'PDF' && (
@@ -419,15 +419,26 @@ export default function CoursePage() {
                     </div>
 
                     <div className="p-6 lg:p-10">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-sm font-black text-muted-foreground uppercase">{currentLesson?.title || 'Aula'}</h2>
+                        <div className="flex flex-col gap-6 mb-10 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Conteúdo da Aula</p>
+                                <h1 className="text-2xl lg:text-3xl font-black text-slate-900 uppercase italic tracking-tighter leading-none">{currentLesson?.title || 'Aula'}</h1>
+                            </div>
                             {hasNext && !isNextLocked && (
-                                <button onClick={() => {
-                                    if (nextIndices) goToLesson(nextIndices.mIdx, nextIndices.lIdx);
-                                }} className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-black uppercase text-[10px] shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Próxima Aula</button>
+                                <button 
+                                    onClick={() => {
+                                        if (nextIndices) goToLesson(nextIndices.mIdx, nextIndices.lIdx);
+                                    }} 
+                                    className="w-full lg:w-auto bg-primary text-primary-foreground px-8 py-5 lg:py-3 rounded-2xl lg:rounded-xl font-black uppercase text-sm lg:text-[10px] shadow-xl shadow-primary/25 border-b-4 border-black/10 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 group"
+                                >
+                                    Próxima Aula
+                                    <LucideChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                </button>
                             )}
                         </div>
-                        <p className="text-muted-foreground text-sm border-l-2 border-primary/20 pl-4 max-w-2xl leading-relaxed">{course.description}</p>
+                        <div className="prose prose-slate max-w-none">
+                            <p className="text-slate-600 text-sm border-l-4 border-primary/20 pl-4 py-1 leading-relaxed italic">{course.description}</p>
+                        </div>
                         
                         {/* Materials Grid */}
                         {currentLesson?.materials?.length > 0 && (

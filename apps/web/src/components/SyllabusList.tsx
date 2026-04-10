@@ -66,7 +66,7 @@ const SyllabusList = ({
                                     const isFirst = mIdx === 0 && lIdx === 0;
                                     const prevLesson = lIdx > 0 ? module.lessons[lIdx - 1] : mIdx > 0 ? modules[mIdx - 1]?.lessons?.[modules[mIdx - 1].lessons.length - 1] : null;
                                     
-                                    const isPrivileged = userRole === 'ADMIN' || userRole === 'INSTRUCTOR';
+                                    const isPrivileged = userRole === 'ADMIN' || userRole === 'INSTRUCTOR' || userRole === 'SUPER_ADMIN';
                                     const isLocked = !isPrivileged && !isFirst && (!prevLesson || !prevLesson.completed);
                                     const isActive = mIdx === currentModuleIdx && lIdx === currentLessonIdx;
 
