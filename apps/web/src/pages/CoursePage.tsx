@@ -15,6 +15,7 @@ import EssaySubmissionForm from "../components/EssaySubmissionForm";
 import api from "../utils/api";
 import { resolveThumbnail } from "../utils/url";
 import logo from "../assets/logo.png";
+import CustomPDFViewer from "../components/CustomPDFViewer";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -330,29 +331,22 @@ export default function CoursePage() {
                                 {currentLesson.contentType === 'PDF' && (
                                     <div className="w-full aspect-video bg-white relative group/pdfview overflow-hidden border-b border-border/10">
                                         {currentLesson.pdfUrl ? (
-                                            <div className="w-full h-full flex flex-col">
-                                                {/* Overlay top-right to block Google Viewer's pop-out button */}
-                                                {currentLesson.allowPdfDownload === false && (
-                                                    <>
-                                                        <div className="absolute top-0 right-0 w-16 h-16 md:w-32 md:h-16 bg-white/0 z-50 cursor-not-allowed" />
-                                                        <div className="absolute top-6 right-6 bg-slate-900/90 backdrop-blur-md text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hidden md:flex items-center gap-2 shadow-2xl border border-white/10 select-none z-[60]">
-                                                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" /> Apenas Visualização
-                                                        </div>
-                                                    </>
-                                                )}
-                                                <iframe 
-                                                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(currentLesson.pdfUrl)}&embedded=true`} 
-                                                    className="w-full flex-1 border-none"
-                                                    title="PDF Viewer"
-                                                />
+                                            <div className="w-full h-full flex flex-col relative bg-slate-100">
+                                                <CustomPDFViewer url={currentLesson.pdfUrl} />
+                                                
+                                                {/* If download is completely forbidden we show a toast or a different overlay, 
+                                                    but CustomPDFViewer naturally doesn't have a download button in its UI natively. */}
                                                 {currentLesson.allowPdfDownload !== false && (
-                                                    <div className="absolute bottom-6 right-6 flex gap-3">
+                                                    <div className="absolute top-4 right-4 z-50">
                                                         <button 
-                                                            onClick={() => downloadMaterial(currentLesson.pdfUrl, `${currentLesson.title}.pdf`, currentLesson.id, currentLesson.pdfUrl)}
-                                                            className="bg-primary text-white p-4 rounded-2xl shadow-2xl shadow-primary/40 hover:scale-110 active:scale-95 transition-all flex items-center gap-3 group/pdl"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                downloadMaterial(currentLesson.pdfUrl, `${currentLesson.title}.pdf`, currentLesson.id, currentLesson.pdfUrl);
+                                                            }}
+                                                            title="Baixar material"
+                                                            className="h-9 w-9 flex items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/20 hover:scale-110 active:scale-90 transition-all"
                                                         >
-                                                            <LucideDownload className="h-5 w-5" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest max-w-0 overflow-hidden group-hover/pdl:max-w-[200px] transition-all duration-500 whitespace-nowrap">Baixar Arquivo</span>
+                                                            <LucideDownload className="h-4 w-4" />
                                                         </button>
                                                     </div>
                                                 )}
