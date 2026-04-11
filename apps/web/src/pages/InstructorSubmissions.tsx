@@ -97,6 +97,53 @@ export default function InstructorSubmissions() {
         }
     };
 
+    const [isDownloading, setIsDownloading] = useState<string | null>(null);
+
+    const sanitizeFilename = (name: string) => {
+        return name.replace(/[<>:"/\\|?*]/g, '').trim();
+    };
+
+    const handleDownloadFile = async (sub: Submission) => {
+        if (!sub.fileUrl) return;
+        
+        setIsDownloading(sub.id);
+        try {
+            // Call our new backend proxy endpoint which handles renaming and CORS
+            const response = await api.get(`/essay-submissions/${sub.id}/download`, {
+                responseType: 'blob'
+            });
+            
+            const blob = new Blob([response.data], { type: response.headers['content-type'] });
+            
+            // Re-calculate the pretty name (calculating is safer and synchronous)
+            const originalExt = sub.fileName?.split('.').pop() || sub.fileUrl?.split('.').pop()?.split('?')[0] || 'file';
+            
+            const studentName = sanitizeFilename(sub.user.name);
+            const moduleNum = sub.lesson.module.order + 1;
+            const lessonNum = sub.lesson.order + 1;
+            const courseTitle = sanitizeFilename(sub.lesson.module.course.title);
+
+            const newFileName = `${studentName} - M${moduleNum} - A${lessonNum} - ${courseTitle}.${originalExt}`;
+            
+            // Trigger download
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', newFileName);
+            document.body.appendChild(link);
+            link.click();
+            
+            // Cleanup
+            link.parentNode?.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao baixar arquivo.");
+        } finally {
+            setIsDownloading(null);
+        }
+    };
+
     const handleFeedbackFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -495,23 +542,28 @@ export default function InstructorSubmissions() {
                                     {selectedSubmission.fileUrl && (
                                         <div className="space-y-3">
                                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Anexo Enviado</p>
-                                            <a 
-                                                href={selectedSubmission.fileUrl} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-primary/30 transition-all group shadow-sm"
+                                            <div 
+                                                onClick={() => handleDownloadFile(selectedSubmission)}
+                                                className={`flex items-center justify-between p-4 border rounded-xl transition-all group shadow-sm cursor-pointer ${isDownloading === selectedSubmission.id ? 'bg-slate-50 border-slate-100 opacity-80' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-primary/30'}`}
                                             >
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-11 w-11 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm border border-slate-100 group-hover:scale-105 transition-transform">
+                                                <div className="flex items-center gap-4 flex-1 min-w-0">
+                                                    <div className="h-11 w-11 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm border border-slate-100 group-hover:scale-105 transition-transform shrink-0">
                                                         <LucideFileText className="h-5 w-5" />
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <p className="text-xs font-black text-slate-800 truncate max-w-[200px]">{selectedSubmission.fileName || "Ver arquivo"}</p>
-                                                        <p className="text-[9px] font-bold text-primary uppercase tracking-[0.1em] mt-0.5">Clique para visualizar</p>
+                                                        <p className="text-xs font-black text-slate-800 truncate">{selectedSubmission.fileName || "Baixar anexo"}</p>
+                                                        <p className="text-[9px] font-bold text-primary uppercase tracking-[0.1em] mt-0.5">Clique para baixar</p>
                                                     </div>
                                                 </div>
-                                                <LucideDownload className="h-5 w-5 text-slate-300 group-hover:text-primary group-hover:translate-y-0.5 transition-all" />
-                                            </a>
+                                                
+                                                <div className="h-10 w-10 flex items-center justify-center text-slate-300 group-hover:text-primary transition-all ml-2">
+                                                    {isDownloading === selectedSubmission.id ? (
+                                                        <LoadingSpinner size="sm" variant="primary" />
+                                                    ) : (
+                                                        <LucideDownload className="h-5 w-5 group-hover:translate-y-0.5 transition-all" />
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

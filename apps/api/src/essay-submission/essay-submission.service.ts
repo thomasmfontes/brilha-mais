@@ -188,4 +188,40 @@ export class EssaySubmissionService {
       },
     });
   }
+  async getDownloadInfo(submissionId: string, instructorId: string, role?: string) {
+    const isAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'SUPER_ADMIN';
+    const submission = await this.prisma.essaySubmission.findUnique({
+      where: { id: submissionId },
+      include: { 
+        user: { select: { name: true } },
+        lesson: { 
+          include: { 
+            module: { include: { course: true } } 
+          } 
+        } 
+      },
+    });
+
+    if (!submission || (!isAdmin && submission.lesson.module.course.instructorId !== instructorId)) {
+      throw new HttpException('Acesso negado ou submissão não encontrada', HttpStatus.FORBIDDEN);
+    }
+
+    const sanitizeFilename = (name: string) => {
+      return name.replace(/[<>:"/\\|?*]/g, '').trim();
+    };
+
+    const studentName = sanitizeFilename(submission.user.name || 'Aluno');
+    const moduleNum = submission.lesson.module.order + 1;
+    const lessonNum = submission.lesson.order + 1;
+    const courseTitle = sanitizeFilename(submission.lesson.module.course.title || 'Curso');
+    const originalExt = submission.fileName?.split('.').pop() || submission.fileUrl?.split('.').pop()?.split('?')[0] || 'file';
+
+    // Format: João Silva - M1 - A10 - Algoritmos.ext
+    const prettyName = `${studentName} - M${moduleNum} - A${lessonNum} - ${courseTitle}.${originalExt}`;
+
+    return {
+      fileUrl: submission.fileUrl,
+      prettyName
+    };
+  }
 }
