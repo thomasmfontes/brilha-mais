@@ -27,6 +27,7 @@ interface Submission {
     user: {
         name: string;
         email: string;
+        avatarUrl?: string;
     };
     lesson: {
         id: string;
@@ -265,8 +266,12 @@ export default function InstructorSubmissions() {
                             className="bg-card border border-border rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 hover:border-primary/30 cursor-pointer group transition-all hover:shadow-lg hover:shadow-primary/5 active:scale-[0.99]"
                         >
                             <div className="flex items-center gap-4">
-                                <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border transition-all ${sub.status === 'PENDING' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}>
-                                    <LucideUser className="h-5 w-5" />
+                                <div className={`h-11 w-11 rounded-xl flex flex-col items-center justify-center shrink-0 border transition-all overflow-hidden ${sub.status === 'PENDING' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}>
+                                    {sub.user.avatarUrl ? (
+                                        <img src={sub.user.avatarUrl} alt={sub.user.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                        <LucideUser className="h-5 w-5" />
+                                    )}
                                 </div>
                                 <div className="space-y-0.5 min-w-0">
                                     <h3 className="font-black italic uppercase tracking-tighter text-slate-800 truncate text-base leading-tight">{sub.user.name}</h3>
@@ -339,8 +344,12 @@ export default function InstructorSubmissions() {
                                                 <h2 className="text-2xl font-black italic uppercase tracking-tighter text-slate-900 leading-tight mb-2.5">{selectedSubmission.lesson.title}</h2>
                                                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-muted-foreground">
                                                     <div className="flex items-center gap-1.5">
-                                                        <div className="h-5 w-5 bg-primary/10 rounded-md flex items-center justify-center text-primary">
-                                                            <LucideUser className="h-3 w-3" />
+                                                        <div className="h-5 w-5 bg-primary/10 rounded-md flex items-center justify-center text-primary overflow-hidden">
+                                                            {selectedSubmission.user.avatarUrl ? (
+                                                                <img src={selectedSubmission.user.avatarUrl} alt={selectedSubmission.user.name} className="h-full w-full object-cover" />
+                                                            ) : (
+                                                                <LucideUser className="h-3 w-3" />
+                                                            )}
                                                         </div>
                                                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">{selectedSubmission.user.name}</span>
                                                     </div>
