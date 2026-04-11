@@ -334,8 +334,8 @@ export default function CoursePage() {
                                                 {/* Overlay top-right to block Google Viewer's pop-out button */}
                                                 {currentLesson.allowPdfDownload === false && (
                                                     <>
-                                                        <div className="absolute top-0 right-0 w-32 h-16 bg-white/0 z-50 cursor-not-allowed" />
-                                                        <div className="absolute top-6 right-6 bg-slate-900/90 backdrop-blur-md text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-2xl border border-white/10 select-none z-[60]">
+                                                        <div className="absolute top-0 right-0 w-16 h-16 md:w-32 md:h-16 bg-white/0 z-50 cursor-not-allowed" />
+                                                        <div className="absolute top-6 right-6 bg-slate-900/90 backdrop-blur-md text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hidden md:flex items-center gap-2 shadow-2xl border border-white/10 select-none z-[60]">
                                                             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" /> Apenas Visualização
                                                         </div>
                                                     </>
