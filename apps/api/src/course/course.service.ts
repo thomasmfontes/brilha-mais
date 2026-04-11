@@ -190,7 +190,7 @@ export class CourseService {
             if (user?.role === 'STUDENT') {
                 const areaIds = studentTurma?.areas.map(a => a.categoryId) || [];
                 where.categoryId = { in: areaIds };
-            } else if (user?.role === 'INSTRUCTOR' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
+            } else if (user?.role === 'INSTRUCTOR') {
                 where.categoryId = { in: instructorAreas.map(a => a.categoryId) };
             }
         }
