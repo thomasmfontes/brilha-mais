@@ -51,6 +51,7 @@ export default function InstructorSubmissions() {
     const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'REVIEWED'>('PENDING');
+    const [selectedCourseId, setSelectedCourseId] = useState<string>('ALL');
 
     // Review Modal States
     const [grade, setGrade] = useState<number>(100);
@@ -187,14 +188,19 @@ export default function InstructorSubmissions() {
         }
     };
 
+    const uniqueCourses = Array.from(
+        new Map(submissions.map(s => [s.lesson.module.course.id, s.lesson.module.course])).values()
+    );
+
     const filteredSubmissions = submissions.filter(s => 
         ((s.user.name?.toLowerCase() || "").includes(search.toLowerCase()) || 
          (s.lesson.title?.toLowerCase() || "").includes(search.toLowerCase())) &&
+        (selectedCourseId === 'ALL' || s.lesson.module.course.id === selectedCourseId) &&
         (filter === 'ALL' || s.status === filter)
     );
 
     return (
-        <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-8">
+        <div className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-6 md:space-y-8">
             {/* Header Area */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
                 <div className="space-y-1.5">
@@ -208,9 +214,9 @@ export default function InstructorSubmissions() {
                     <p className="text-muted-foreground text-xs font-medium">Avalie o desempenho dos seus alunos e envie feedbacks personalizados.</p>
                 </div>
 
-                <div className="flex items-center gap-2 bg-card p-1.5 rounded-xl border border-border shadow-sm">
-                    <button onClick={() => setFilter('PENDING')} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${filter === 'PENDING' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-muted-foreground hover:bg-muted'}`}>Pendentes</button>
-                    <button onClick={() => setFilter('REVIEWED')} className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${filter === 'REVIEWED' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-muted-foreground hover:bg-muted'}`}>Revisados</button>
+                <div className="flex items-center w-full md:w-auto p-1.5 rounded-xl border border-border bg-slate-50/50 shadow-sm">
+                    <button onClick={() => setFilter('PENDING')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${filter === 'PENDING' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>Pendentes</button>
+                    <button onClick={() => setFilter('REVIEWED')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${filter === 'REVIEWED' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>Revisados</button>
                 </div>
             </div>
 
@@ -228,9 +234,17 @@ export default function InstructorSubmissions() {
                 </div>
                 <div className="relative">
                     <LucideFilter className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
-                    <select className="w-full bg-card border border-border rounded-xl py-3 pl-11 pr-5 text-xs font-black uppercase tracking-widest appearance-none outline-none h-11">
-                        <option>Todos os Cursos</option>
+                    <select 
+                        value={selectedCourseId}
+                        onChange={(e) => setSelectedCourseId(e.target.value)}
+                        className="w-full bg-card border border-border rounded-xl py-3 pl-11 pr-10 text-xs font-black uppercase tracking-widest appearance-none outline-none h-11"
+                    >
+                        <option value="ALL">Todos os Cursos</option>
+                        {uniqueCourses.map(course => (
+                            <option key={course.id} value={course.id}>{course.title}</option>
+                        ))}
                     </select>
+                    <LucideChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/30 pointer-events-none" />
                 </div>
             </div>
 
@@ -263,44 +277,103 @@ export default function InstructorSubmissions() {
                                 setFeedbackFile(null);
                                 setShowEnunciado(false);
                             }}
-                            className="bg-card border border-border rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 hover:border-primary/30 cursor-pointer group transition-all hover:shadow-lg hover:shadow-primary/5 active:scale-[0.99]"
+                            className="bg-card border border-border rounded-2xl p-4 md:p-5 hover:border-primary/30 cursor-pointer group transition-all hover:shadow-lg hover:shadow-primary/5 active:scale-[0.99] w-full min-w-0"
                         >
-                            <div className="flex items-center gap-4">
-                                <div className={`h-11 w-11 rounded-xl flex flex-col items-center justify-center shrink-0 border transition-all overflow-hidden ${sub.status === 'PENDING' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}>
-                                    {sub.user.avatarUrl ? (
-                                        <img src={sub.user.avatarUrl} alt={sub.user.name} className="h-full w-full object-cover" />
-                                    ) : (
-                                        <LucideUser className="h-5 w-5" />
-                                    )}
+                            {/* --- MOBILE LAYOUT --- */}
+                            <div className="flex flex-col md:hidden w-full gap-3 overflow-hidden">
+                                {/* 1. User Info Row */}
+                                <div className="flex items-start justify-between min-w-0 w-full">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className={`h-10 w-10 mt-0.5 rounded-full flex flex-col items-center justify-center shrink-0 border transition-all overflow-hidden ${sub.status === 'PENDING' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}>
+                                            {sub.user.avatarUrl ? (
+                                                <img src={sub.user.avatarUrl} alt={sub.user.name} className="h-full w-full object-cover" />
+                                            ) : (
+                                                <LucideUser className="h-4 w-4" />
+                                            )}
+                                        </div>
+                                        <div className="space-y-0.5 min-w-0 flex-1">
+                                            <h3 className="font-black italic uppercase tracking-tighter text-slate-800 truncate text-sm leading-tight pr-1">
+                                                {sub.user.name}
+                                            </h3>
+                                            <div className="flex items-center gap-1.5 text-muted-foreground mt-0.5">
+                                                <LucideCalendar className="h-3 w-3 text-slate-400" />
+                                                <span className="text-[9px] font-bold uppercase tracking-widest">{format(new Date(sub.createdAt), "dd MMM, yyyy", { locale: ptBR })}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Mobile Grade Badge (Top Right) */}
+                                    <div className="shrink-0 ml-3">
+                                        {sub.status === 'REVIEWED' && (
+                                            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 px-2 py-1 rounded-md text-[10px] font-black italic tracking-tighter">
+                                                NOTA {sub.grade}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="space-y-0.5 min-w-0">
-                                    <h3 className="font-black italic uppercase tracking-tighter text-slate-800 truncate text-base leading-tight">{sub.user.name}</h3>
-                                    <div className="flex items-center gap-2.5 text-muted-foreground">
-                                        <div className="flex items-center gap-1.5 shrink-0">
-                                            <LucideCalendar className="h-3 w-3" />
-                                            <span className="text-[9px] font-bold uppercase tracking-widest">{format(new Date(sub.createdAt), "dd MMM, yyyy", { locale: ptBR })}</span>
-                                        </div>
-                                        <span className="text-border opacity-50">|</span>
-                                        <div className="flex items-center gap-2 truncate">
-                                            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-[9px] font-black shrink-0">
-                                                M{sub.lesson.module.order + 1} • A{sub.lesson.order + 1}
-                                            </span>
-                                            <span className="text-[9px] font-bold uppercase tracking-widest truncate">
-                                                {sub.lesson.module.title} • {sub.lesson.title}
-                                            </span>
-                                        </div>
+
+                                {/* 2. Lesson Box Context */}
+                                <div className="bg-slate-50 border border-slate-100 rounded-lg p-3 flex flex-col gap-2 text-muted-foreground w-full overflow-hidden min-w-0">
+                                    <div className="flex items-center gap-2 min-w-0 w-full overflow-hidden">
+                                        <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-sm text-[8px] font-black shrink-0">
+                                            M{sub.lesson.module.order + 1} • A{sub.lesson.order + 1}
+                                        </span>
+                                        <span className="text-[9px] font-bold uppercase tracking-widest truncate min-w-0 flex-1 leading-normal" title={`${sub.lesson.module.title} • ${sub.lesson.title}`}>
+                                            {sub.lesson.module.title} • {sub.lesson.title}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* 3. Action Section */}
+                                <div className="flex items-center justify-between w-full pt-3 border-t border-slate-100 shrink-0">
+                                    <span className={`text-[9px] font-bold uppercase tracking-widest ${sub.status === 'REVIEWED' ? 'text-emerald-500/70' : 'text-slate-400'}`}>
+                                        {sub.status === 'REVIEWED' ? 'Avaliação Concluída' : 'Ver Resposta'}
+                                    </span>
+                                    <div className="h-8 w-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                                        <LucideChevronRight className="h-4 w-4" />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3 shrink-0">
-                                {sub.status === 'REVIEWED' && (
-                                    <div className="bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-sm font-black italic tracking-tighter">
-                                        {sub.grade}
+                            {/* --- DESKTOP LAYOUT --- */}
+                            <div className="hidden md:flex items-center justify-between gap-5 w-full">
+                                <div className="flex items-center gap-4 flex-1 min-w-0">
+                                    <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border transition-all overflow-hidden ${sub.status === 'PENDING' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'}`}>
+                                        {sub.user.avatarUrl ? (
+                                            <img src={sub.user.avatarUrl} alt={sub.user.name} className="h-full w-full object-cover" />
+                                        ) : (
+                                            <LucideUser className="h-5 w-5" />
+                                        )}
                                     </div>
-                                )}
-                                <div className="h-8 w-8 bg-muted/50 rounded-lg flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all">
-                                    <LucideChevronRight className="h-4 w-4" />
+                                    <div className="space-y-0.5 min-w-0">
+                                        <h3 className="font-black italic uppercase tracking-tighter text-slate-800 truncate text-base leading-tight pr-1">{sub.user.name}</h3>
+                                        <div className="flex items-center gap-2.5 text-muted-foreground">
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <LucideCalendar className="h-3 w-3" />
+                                                <span className="text-[9px] font-bold uppercase tracking-widest">{format(new Date(sub.createdAt), "dd MMM, yyyy", { locale: ptBR })}</span>
+                                            </div>
+                                            <span className="text-border opacity-50">|</span>
+                                            <div className="flex items-center gap-2 truncate">
+                                                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-[9px] font-black shrink-0">
+                                                    M{sub.lesson.module.order + 1} • A{sub.lesson.order + 1}
+                                                </span>
+                                                <span className="text-[9px] font-bold uppercase tracking-widest truncate">
+                                                    {sub.lesson.module.title} • {sub.lesson.title}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3 shrink-0">
+                                    {sub.status === 'REVIEWED' && (
+                                        <div className="bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-sm font-black italic tracking-tighter">
+                                            {sub.grade}
+                                        </div>
+                                    )}
+                                    <div className="h-8 w-8 bg-muted/50 rounded-lg flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all">
+                                        <LucideChevronRight className="h-4 w-4" />
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
