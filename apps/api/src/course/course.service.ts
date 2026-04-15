@@ -255,7 +255,10 @@ export class CourseService {
                         progress: userId ? { where: { userId } } : undefined,
                         quizzes: {
                             include: {
-                                questions: { include: { options: true } }
+                                questions: { 
+                                    include: { options: true },
+                                    orderBy: { order: 'asc' }
+                                }
                             }
                         },
                         materials: true
@@ -323,9 +326,10 @@ export class CourseService {
                                         title: less.quiz.title || "Mini Teste",
                                         description: less.quiz.description,
                                         questions: {
-                                            create: (less.quiz.questions || []).map((q: any) => ({
+                                            create: (less.quiz.questions || []).map((q: any, qIdx: number) => ({
                                                 text: q.text,
                                                 explanation: q.explanation || null,
+                                                order: qIdx,
                                                 options: {
                                                     create: (q.options || []).map((o: any) => ({
                                                         text: o.text,
@@ -451,9 +455,10 @@ export class CourseService {
                                     description: less.quiz.description,
                                     lessonId: less.id,
                                     questions: {
-                                        create: (less.quiz.questions || []).map((q: any) => ({
+                                        create: (less.quiz.questions || []).map((q: any, qIdx: number) => ({
                                             text: q.text,
                                             explanation: q.explanation || null,
+                                            order: qIdx,
                                             options: {
                                                 create: (q.options || []).map((o: any) => ({
                                                     text: o.text,
@@ -489,9 +494,10 @@ export class CourseService {
                                         title: less.quiz.title || "Mini Teste",
                                         description: less.quiz.description,
                                         questions: {
-                                            create: (less.quiz.questions || []).map((q: any) => ({
+                                            create: (less.quiz.questions || []).map((q: any, qIdx: number) => ({
                                                 text: q.text,
                                                 explanation: q.explanation || null,
+                                                order: qIdx,
                                                 options: {
                                                     create: (q.options || []).map((o: any) => ({
                                                         text: o.text,

@@ -313,6 +313,33 @@ export default function InstructorSyllabus() {
         });
     };
 
+    const jumpQuestion = (mIdx: number, lIdx: number, qIdx: number) => {
+        const key = `q-${mIdx}-${lIdx}-${qIdx}`;
+        const value = jumpIndices[key];
+        if (!value) return;
+
+        let newIdx = parseInt(value) - 1;
+        if (isNaN(newIdx)) return;
+
+        const next = [...localModules];
+        const questions = [...(next[mIdx].lessons[lIdx].quiz?.questions || [])];
+
+        if (newIdx < 0) newIdx = 0;
+        if (newIdx >= questions.length) newIdx = questions.length - 1;
+
+        if (newIdx === qIdx) {
+            setJumpIndices(prev => { const n = { ...prev }; delete n[key]; return n; });
+            return;
+        }
+
+        const target = questions.splice(qIdx, 1)[0];
+        questions.splice(newIdx, 0, target);
+        next[mIdx].lessons[lIdx].quiz!.questions = questions;
+
+        setLocalModules(next);
+        setJumpIndices(prev => { const n = { ...prev }; delete n[key]; return n; });
+    };
+
     const updateQuestionText = (mIdx: number, lIdx: number, qIdx: number, text: string) => {
         const next = [...localModules];
         const quiz = next[mIdx].lessons[lIdx].quiz;
@@ -740,7 +767,25 @@ export default function InstructorSyllabus() {
                                                             <div key={qIdx} className="bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl p-3 md:p-6 space-y-4 relative group/q hover:border-slate-300 transition-all">
                                                                 <div className="flex items-center justify-between pb-4 border-b border-slate-100/50">
                                                                     <div className="flex items-center gap-2">
-                                                                        <span className="text-[8px] font-black uppercase text-slate-400">Pergunta {String(qIdx + 1).padStart(2, '0')}</span>
+                                                                        <div className="flex items-center gap-2 bg-slate-100 rounded-full px-3 h-7 border border-slate-200 focus-within:border-primary focus-within:bg-white transition-all">
+                                                                            <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wide select-none">Pergunta</span>
+                                                                            <input
+                                                                                type="number"
+                                                                                className="w-6 bg-transparent text-center font-black text-[11px] text-slate-800 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                                                value={jumpIndices[`q-${mIdx}-${lIdx}-${qIdx}`] !== undefined ? jumpIndices[`q-${mIdx}-${lIdx}-${qIdx}`] : String(qIdx + 1).padStart(2, '0')}
+                                                                                onChange={(e) => setJumpIndices(prev => ({ ...prev, [`q-${mIdx}-${lIdx}-${qIdx}`]: e.target.value }))}
+                                                                                onKeyDown={(e) => e.key === 'Enter' && jumpQuestion(mIdx, lIdx, qIdx)}
+                                                                            />
+                                                                        </div>
+                                                                        {jumpIndices[`q-${mIdx}-${lIdx}-${qIdx}`] !== undefined && parseInt(jumpIndices[`q-${mIdx}-${lIdx}-${qIdx}`]) !== (qIdx + 1) && (
+                                                                            <button
+                                                                                onClick={() => jumpQuestion(mIdx, lIdx, qIdx)}
+                                                                                className="h-7 w-7 rounded-full bg-primary text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-transform shadow-md shadow-primary/30"
+                                                                                title="Confirmar posição"
+                                                                            >
+                                                                                <LucideCheck className="h-3 w-3 stroke-[3px]" />
+                                                                            </button>
+                                                                        )}
                                                                     </div>
                                                                     <button
                                                                         onClick={() => removeQuestion(mIdx, lIdx, qIdx)}
