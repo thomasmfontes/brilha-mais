@@ -4,7 +4,7 @@ import {
     LucideX, LucideChevronRight, LucideDownload, LucideZap, LucideBookOpen
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCourseStore } from "../store/courseStore";
 import { jwtDecode } from "jwt-decode";
 import YouTubePlayer from "../components/YouTubePlayer";
@@ -50,6 +50,9 @@ export default function CoursePage() {
     const [hasResumed, setHasResumed] = useState<string | null>(null);
     const [isEnrolling, setIsEnrolling] = useState(false);
     const [isSyllabusOpen, setIsSyllabusOpen] = useState(false);
+    
+    // Tracking lesson switches to prevent navigation reset during data sync
+    const lastLessonIdRef = useRef<string | null>(null);
 
     useEffect(() => {
         const token = localStorage.getItem('auth_token');
@@ -137,19 +140,26 @@ export default function CoursePage() {
         }
     };
 
-    const markAsCompleted = () => {
-        if (currentLesson?.id) toggleLessonCompletion(currentLesson.id, true);
+    const markAsCompleted = (answers?: Record<number, number>) => {
+        if (currentLesson?.id) toggleLessonCompletion(currentLesson.id, true, answers);
     };
 
     useEffect(() => {
-        setQuizSubmitted(false);
-        setQuizAnswers({});
-        setCurrentQuestionIdx(0);
-        setShowFeedback(false);
-        setMyEssaySubmission(null);
-        if (currentLesson?.contentType === 'ESSAY') fetchMySubmission();
-        if (currentLesson?.contentType === 'PDF' && !currentLesson.completed) markAsCompleted();
-    }, [currentModuleIdx, currentLessonIdx, currentLesson?.id]);
+        // Sync quiz status and load previous answers whenever they change in the store/DB
+        setQuizSubmitted(!!currentLesson?.completed);
+        setQuizAnswers(currentLesson?.quizAnswers || {});
+
+        // Reset navigation indices ONLY if the lesson ID has actually changed
+        if (currentLesson?.id !== lastLessonIdRef.current) {
+            setCurrentQuestionIdx(0);
+            setShowFeedback(false);
+            setMyEssaySubmission(null);
+            lastLessonIdRef.current = currentLesson?.id || null;
+            
+            if (currentLesson?.contentType === 'ESSAY') fetchMySubmission();
+            if (currentLesson?.contentType === 'PDF' && !currentLesson.completed) markAsCompleted();
+        }
+    }, [currentModuleIdx, currentLessonIdx, currentLesson?.id, currentLesson?.completed, currentLesson?.quizAnswers]);
 
     if (isFetching || !indicesInitialized || !course) return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-10 overflow-hidden">
@@ -188,7 +198,7 @@ export default function CoursePage() {
         });
         setQuizCorrect(isAllCorrect);
         setQuizSubmitted(true);
-        markAsCompleted();
+        markAsCompleted(quizAnswers);
         setIsSubmittingQuiz(false);
     };
 

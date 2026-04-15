@@ -50,6 +50,7 @@ export class ProgressService {
     userId: string,
     lessonId: string,
     completed: boolean,
+    quizAnswers?: any,
   ) {
     return this.prisma.progress.upsert({
       where: {
@@ -62,9 +63,11 @@ export class ProgressService {
         userId,
         lessonId,
         isCompleted: completed,
+        quizAnswers,
       },
       update: {
         isCompleted: completed,
+        quizAnswers,
       },
     });
   }

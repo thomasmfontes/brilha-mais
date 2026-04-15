@@ -248,6 +248,7 @@ model Progress {
   lessonId     String
   isCompleted  Boolean  @default(false)
   lastPosition Int      @default(0)
+  quizAnswers  Json?
   updatedAt    DateTime @updatedAt
   lesson       Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -63,6 +63,7 @@ export class CourseService {
                 lessons: mod.lessons?.map((less: any) => ({
                     ...less,
                     completed: (less.progress?.length > 0 && less.progress[0].isCompleted),
+                    quizAnswers: less.progress?.[0]?.quizAnswers,
                     youtubeId: this.extractYoutubeId(less.videoUrl),
                     duration: this.formatDuration(less.duration),
                     description: less.description,

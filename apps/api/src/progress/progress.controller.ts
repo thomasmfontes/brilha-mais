@@ -23,13 +23,14 @@ export class ProgressController {
   @UseGuards(JwtAuthGuard)
   @Post('toggle')
   toggleLessonCompletion(
-    @Body() data: { lessonId: string; completed: boolean },
+    @Body() data: { lessonId: string; completed: boolean; quizAnswers?: any },
     @Req() req: any,
   ) {
     return this.progressService.toggleLessonCompletion(
       req.user.id,
       data.lessonId,
       data.completed,
+      data.quizAnswers,
     );
   }
 }

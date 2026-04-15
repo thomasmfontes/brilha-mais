@@ -81,7 +81,7 @@ interface CourseStore {
     updateCourse: (id: string, course: Partial<Course>) => Promise<void>;
     removeCourse: (id: string) => Promise<void>;
     enrollInCourse: (id: string) => Promise<void>;
-    toggleLessonCompletion: (lessonId: string, completed: boolean) => Promise<void>;
+    toggleLessonCompletion: (lessonId: string, completed: boolean, quizAnswers?: Record<number, number>) => Promise<void>;
 }
 
 export const useCourseStore = create<CourseStore>()(
@@ -172,7 +172,7 @@ export const useCourseStore = create<CourseStore>()(
                     console.error("Error enrolling:", error);
                 }
             },
-            toggleLessonCompletion: async (lessonId, completed) => {
+            toggleLessonCompletion: async (lessonId, completed, quizAnswers) => {
                 // Optimistic update
                 set(state => ({
                     courses: state.courses.map(course => ({
@@ -180,14 +180,14 @@ export const useCourseStore = create<CourseStore>()(
                         modules: (course.modules || []).map(mod => ({
                             ...mod,
                             lessons: (mod.lessons || []).map(lesson =>
-                                lesson.id === lessonId ? { ...lesson, completed } : lesson
+                                lesson.id === lessonId ? { ...lesson, completed, quizAnswers } : lesson
                             )
                         }))
                     }))
                 }));
 
                 try {
-                    await api.post('/progress/toggle', { lessonId, completed });
+                    await api.post('/progress/toggle', { lessonId, completed, quizAnswers });
                 } catch (error) {
                     console.error("Error toggling lesson completion:", error);
                     // Revert on error
