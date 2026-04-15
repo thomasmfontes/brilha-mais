@@ -324,8 +324,8 @@ export default function InstructorSyllabus() {
     const addOption = (mIdx: number, lIdx: number, qIdx: number) => {
         const next = [...localModules];
         const options = next[mIdx].lessons[lIdx].quiz?.questions[qIdx].options;
-        if (options && options.length >= 4) {
-            toast.error("Máximo de 4 opções permitido.");
+        if (options && options.length >= 5) {
+            toast.error("Máximo de 5 opções permitido.");
             return;
         }
         options?.push({
@@ -759,14 +759,14 @@ export default function InstructorSyllabus() {
                                                                         </div>
                                                                         <button
                                                                             onClick={() => addOption(mIdx, lIdx, qIdx)}
-                                                                            disabled={(q.options?.length || 0) >= 4}
-                                                                            className={`text-[8px] font-black uppercase tracking-[0.2em] italic flex items-center gap-1 transition-all ${(q.options?.length || 0) >= 4
+                                                                            disabled={(q.options?.length || 0) >= 5}
+                                                                            className={`text-[8px] font-black uppercase tracking-[0.2em] italic flex items-center gap-1 transition-all ${(q.options?.length || 0) >= 5
                                                                                 ? 'text-slate-300 cursor-not-allowed opacity-50'
                                                                                 : 'text-primary hover:underline'
                                                                                 }`}
                                                                         >
                                                                             <LucidePlus className="h-2 w-2" />
-                                                                            {(q.options?.length || 0) >= 4 ? 'Limite de 4 opções' : 'Opção'}
+                                                                            {(q.options?.length || 0) >= 5 ? 'Limite de 5 opções' : 'Opção'}
                                                                         </button>
                                                                     </div>
                                                                     <div className="grid gap-2 md:gap-3">
