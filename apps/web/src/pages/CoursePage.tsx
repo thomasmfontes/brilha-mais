@@ -192,6 +192,21 @@ export default function CoursePage() {
         setIsSubmittingQuiz(false);
     };
 
+    const handleNextQuestion = () => {
+        const questions = currentLesson?.quiz?.questions || [];
+        if (currentQuestionIdx < questions.length - 1) {
+            setCurrentQuestionIdx(prev => prev + 1);
+            setShowFeedback(false);
+        }
+    };
+
+    const handlePrevQuestion = () => {
+        if (currentQuestionIdx > 0) {
+            setCurrentQuestionIdx(prev => prev - 1);
+            setShowFeedback(true);
+        }
+    };
+
     const downloadMaterial = async (url: string, name: string, lessonId: string, originalUrl: string) => {
         try {
             const res = await fetch(url);
@@ -361,36 +376,208 @@ export default function CoursePage() {
                                     </div>
                                 )}
                                 {currentLesson.contentType === 'QUIZ' && (
-                                    <div className="w-full bg-card p-6 md:p-10 min-h-[400px]">
-                                        <h2 className="text-2xl font-black text-center mb-8 uppercase italic tracking-tighter">Mini Teste</h2>
-                                        {/* Quiz components could be extracted too, but leaving them simplified for now */}
-                                        <div className="max-w-2xl mx-auto space-y-6">
+                                    <div className="w-full bg-card p-6 md:p-10 min-h-[400px] flex flex-col">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <h2 className="text-2xl font-black uppercase italic tracking-tighter">Mini Teste</h2>
+                                            {currentLesson.quiz?.questions && !quizSubmitted && (!currentLesson.completed || Object.keys(quizAnswers).length > 0) && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Progresso</span>
+                                                    <div className="bg-muted px-3 h-6 rounded-full flex items-center justify-center min-w-[54px]">
+                                                        <span className="text-[10px] font-black text-primary leading-none">{currentQuestionIdx + 1} / {currentLesson.quiz.questions.length}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col">
                                             {(!quizSubmitted && (!currentLesson.completed || Object.keys(quizAnswers).length > 0)) ? (
-                                                <div className="space-y-6">
-                                                    {(() => {
-                                                        const q = (currentLesson.quiz?.questions || [])[currentQuestionIdx];
-                                                        if (!q) return null;
-                                                        return (
-                                                            <div className="space-y-4">
-                                                                <p className="font-bold text-lg">{currentQuestionIdx + 1}. {q.text}</p>
-                                                                <div className="grid gap-3">
-                                                                    {q.options.map((opt: any, oIdx: number) => (
-                                                                        <button key={oIdx} onClick={() => !showFeedback && setQuizAnswers({ ...quizAnswers, [currentQuestionIdx]: oIdx })} className={`p-4 rounded-xl border text-left font-bold text-xs uppercase tracking-tight transition-all ${quizAnswers[currentQuestionIdx] === oIdx ? 'bg-primary/10 border-primary text-primary' : 'bg-muted border-border'}`}>
-                                                                            {opt.text}
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })()}
-                                                    <button onClick={handleQuizSubmit} className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-primary/20">Finalizar Teste</button>
+                                                <div className="flex-1 flex flex-col">
+                                                    <div className="flex-1">
+                                                        {(() => {
+                                                            const questions = currentLesson.quiz?.questions || [];
+                                                            const q = questions[currentQuestionIdx];
+                                                            if (!q) return null;
+                                                            return (
+                                                                <motion.div 
+                                                                    key={currentQuestionIdx}
+                                                                    initial={{ opacity: 0, x: 20 }}
+                                                                    animate={{ opacity: 1, x: 0 }}
+                                                                    className="space-y-6"
+                                                                >
+                                                                    <p className="font-bold text-lg leading-snug">{q.text}</p>
+                                                                    <div className="grid gap-3">
+                                                                        {q.options.map((opt: any, oIdx: number) => {
+                                                                            const isSelected = quizAnswers[currentQuestionIdx] === oIdx;
+                                                                            const isCorrect = opt.isCorrect;
+                                                                            
+                                                                            let borderColor = 'border-slate-100';
+                                                                            let bgColor = 'bg-white';
+                                                                            let textColor = 'text-slate-600';
+                                                                            let iconBg = 'border-slate-200';
+                                                                            let iconInner = null;
+
+                                                                            if (showFeedback) {
+                                                                                if (isCorrect) {
+                                                                                    borderColor = 'border-emerald-500';
+                                                                                    bgColor = 'bg-emerald-50';
+                                                                                    textColor = 'text-emerald-700';
+                                                                                    iconBg = 'border-emerald-500 bg-emerald-500';
+                                                                                    iconInner = <LucideCheck className="h-4 w-4 text-white" />;
+                                                                                } else if (isSelected && !isCorrect) {
+                                                                                    borderColor = 'border-rose-500';
+                                                                                    bgColor = 'bg-rose-50';
+                                                                                    textColor = 'text-rose-700';
+                                                                                    iconBg = 'border-rose-500 bg-rose-500';
+                                                                                    iconInner = <LucideX className="h-4 w-4 text-white" />;
+                                                                                } else {
+                                                                                    borderColor = 'border-slate-50';
+                                                                                    bgColor = 'bg-slate-50/50';
+                                                                                    textColor = 'text-slate-300';
+                                                                                    iconBg = 'border-slate-100';
+                                                                                }
+                                                                            } else if (isSelected) {
+                                                                                borderColor = 'border-primary';
+                                                                                bgColor = 'bg-primary/10';
+                                                                                textColor = 'text-primary';
+                                                                                iconBg = 'border-primary bg-primary';
+                                                                                iconInner = <LucideCheck className="h-4 w-4 text-white" />;
+                                                                            }
+
+                                                                            return (
+                                                                                <button 
+                                                                                    key={oIdx} 
+                                                                                    disabled={showFeedback}
+                                                                                    onClick={() => {
+                                                                                        setQuizAnswers({ ...quizAnswers, [currentQuestionIdx]: oIdx });
+                                                                                    }} 
+                                                                                    className={`p-5 rounded-2xl border-2 text-left font-bold text-sm tracking-tight transition-all flex items-center justify-between group ${borderColor} ${bgColor} ${textColor} ${
+                                                                                        (!showFeedback && !isSelected) ? 'hover:border-slate-200 hover:bg-slate-50' : ''
+                                                                                    } ${isSelected && !showFeedback ? 'shadow-lg shadow-primary/20 scale-[1.02] border-primary' : 'active:scale-[0.98]'}`}
+                                                                                >
+                                                                                    <span className="flex-1 pr-4">{opt.text}</span>
+                                                                                    <div className={`h-6 w-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-all ${iconBg}`}>
+                                                                                        {iconInner}
+                                                                                    </div>
+                                                                                </button>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                </motion.div>
+                                                            );
+                                                        })()}
+                                                    </div>
+
+                                                    <div className="flex items-center gap-4 mt-12 pt-8 border-t border-slate-50">
+                                                        {!showFeedback ? (
+                                                            <button 
+                                                                onClick={() => setShowFeedback(true)}
+                                                                disabled={quizAnswers[currentQuestionIdx] === undefined}
+                                                                className="w-full py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-3 group"
+                                                            >
+                                                                Confirmar Resposta
+                                                                <LucideCheck className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                                            </button>
+                                                        ) : (
+                                                            <>
+                                                                <button 
+                                                                    onClick={handlePrevQuestion}
+                                                                    disabled={currentQuestionIdx === 0}
+                                                                    className="flex-1 py-4 px-6 border border-slate-200 rounded-2xl font-black uppercase tracking-widest text-xs text-slate-400 hover:text-slate-600 hover:bg-slate-50 disabled:opacity-0 transition-all flex items-center justify-center gap-2"
+                                                                >
+                                                                    <LucideChevronLeft className="h-4 w-4" />
+                                                                    Anterior
+                                                                </button>
+                                                                
+                                                                {currentQuestionIdx < (currentLesson.quiz?.questions?.length || 0) - 1 ? (
+                                                                    <button 
+                                                                        onClick={handleNextQuestion}
+                                                                        className="flex-[2] py-4 px-6 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-slate-900/10 hover:brightness-125 active:scale-95 transition-all flex items-center justify-center gap-2 group"
+                                                                    >
+                                                                        Próxima Questão
+                                                                        <LucideChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                                                    </button>
+                                                                ) : (
+                                                                    <button 
+                                                                        onClick={handleQuizSubmit} 
+                                                                        disabled={isSubmittingQuiz || Object.keys(quizAnswers).length < (currentLesson.quiz?.questions?.length || 0)}
+                                                                        className="flex-[2] py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                                                    >
+                                                                        {isSubmittingQuiz ? (
+                                                                            <>
+                                                                                <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                                                                                Processando...
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                Finalizar Teste
+                                                                                <LucideZap className="h-4 w-4 fill-current" />
+                                                                            </>
+                                                                        )}
+                                                                    </button>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             ) : (
-                                                <div className="text-center py-20">
-                                                    <div className="h-20 w-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                                <div className="text-center py-10 flex flex-col items-center justify-center">
+                                                    <motion.div 
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        className="h-20 w-20 bg-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-emerald-500/20"
+                                                    >
                                                         <LucideCheck className="h-10 w-10 text-white" />
+                                                    </motion.div>
+                                                    <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-1">Parabéns!</h3>
+                                                    <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest mb-8">Você concluiu este mini teste</p>
+                                                    
+                                                    <div className="w-full max-w-xl mx-auto bg-white shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] rounded-[40px] p-8 md:p-10 mb-10 text-left border border-slate-50">
+                                                        <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-50 px-2">
+                                                            <div className="space-y-1">
+                                                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Desempenho Geral</h4>
+                                                                <p className="text-sm font-bold text-slate-900 italic">Resumo do Teste</p>
+                                                            </div>
+                                                            <div className="bg-primary/10 text-primary px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest leading-none border border-primary/5">
+                                                                {(currentLesson.quiz?.questions || []).filter((q: any, idx: number) => quizAnswers[idx] === q.options.findIndex((o: any) => o.isCorrect)).length} / {currentLesson.quiz?.questions?.length} Acertos
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="divide-y divide-slate-50 max-h-[360px] overflow-y-auto pr-4 custom-scrollbar -mr-4">
+                                                            {(currentLesson.quiz?.questions || []).map((q: any, idx: number) => {
+                                                                const selectedIdx = quizAnswers[idx];
+                                                                const correctIdx = q.options.findIndex((o: any) => o.isCorrect);
+                                                                const isCorrect = selectedIdx === correctIdx;
+                                                                
+                                                                return (
+                                                                    <motion.div 
+                                                                        key={idx}
+                                                                        initial={{ opacity: 0, x: -10 }}
+                                                                        animate={{ opacity: 1, x: 0 }}
+                                                                        transition={{ delay: idx * 0.05 }}
+                                                                        className="py-6 flex items-start gap-5 first:pt-0 last:pb-0"
+                                                                    >
+                                                                        <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center border ${
+                                                                            isCorrect ? 'bg-emerald-50 border-emerald-100 text-emerald-500' : 'bg-rose-50 border-rose-100 text-rose-500'
+                                                                        }`}>
+                                                                            {isCorrect ? <LucideCheck className="h-3.5 w-3.5" /> : <LucideX className="h-3.5 w-3.5" />}
+                                                                        </div>
+                                                                        <div className="flex-1 min-w-0 space-y-3">
+                                                                            <p className="text-sm font-bold text-slate-900 leading-relaxed">{q.text}</p>
+                                                                            <div className="flex flex-col gap-1">
+                                                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                                                                                    {isCorrect ? 'Você acertou! A resposta é:' : 'A resposta correta é:'}
+                                                                                </span>
+                                                                                <span className={`text-[11px] font-black uppercase tracking-wide ${isCorrect ? 'text-emerald-600/80' : 'text-emerald-600'}`}>
+                                                                                    {q.options[correctIdx]?.text}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </motion.div>
+                                                                );
+                                                            })}
+                                                        </div>
                                                     </div>
-                                                    <h3 className="text-2xl font-black uppercase">Teste Concluído</h3>
+
                                                 </div>
                                             )}
                                         </div>
