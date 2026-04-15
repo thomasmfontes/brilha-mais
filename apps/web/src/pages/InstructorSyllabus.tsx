@@ -26,6 +26,7 @@ interface QuizOption {
 interface QuizQuestion {
     id?: string;
     text: string;
+    explanation?: string;
     options: QuizOption[];
 }
 
@@ -317,6 +318,15 @@ export default function InstructorSyllabus() {
         const quiz = next[mIdx].lessons[lIdx].quiz;
         if (quiz) {
             quiz.questions[qIdx].text = text;
+            setLocalModules(next);
+        }
+    };
+
+    const updateQuestionExplanation = (mIdx: number, lIdx: number, qIdx: number, explanation: string) => {
+        const next = [...localModules];
+        const quiz = next[mIdx].lessons[lIdx].quiz;
+        if (quiz) {
+            quiz.questions[qIdx].explanation = explanation;
             setLocalModules(next);
         }
     };
@@ -748,6 +758,16 @@ export default function InstructorSyllabus() {
                                                                         value={q.text}
                                                                         onChange={(e) => updateQuestionText(mIdx, lIdx, qIdx, e.target.value)}
                                                                         placeholder="EX: QUAL O PRINCIPAL BENEFÍCIO DO MÉTODO?"
+                                                                    />
+                                                                </div>
+
+                                                                <div className="space-y-2">
+                                                                    <label className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400 block px-2 italic border-l-2 border-emerald-500">Explicação da resposta correta <span className="normal-case text-slate-300">(opcional)</span></label>
+                                                                    <textarea
+                                                                        className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-emerald-400 transition-all font-bold text-slate-700 text-xs placeholder:text-slate-300 min-h-[72px] resize-none"
+                                                                        value={q.explanation || ''}
+                                                                        onChange={(e) => updateQuestionExplanation(mIdx, lIdx, qIdx, e.target.value)}
+                                                                        placeholder="Ex: A resposta correta é porque..."
                                                                     />
                                                                 </div>
 

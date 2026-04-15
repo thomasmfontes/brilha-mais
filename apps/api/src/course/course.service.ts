@@ -325,6 +325,7 @@ export class CourseService {
                                         questions: {
                                             create: (less.quiz.questions || []).map((q: any) => ({
                                                 text: q.text,
+                                                explanation: q.explanation || null,
                                                 options: {
                                                     create: (q.options || []).map((o: any) => ({
                                                         text: o.text,
@@ -452,6 +453,7 @@ export class CourseService {
                                     questions: {
                                         create: (less.quiz.questions || []).map((q: any) => ({
                                             text: q.text,
+                                            explanation: q.explanation || null,
                                             options: {
                                                 create: (q.options || []).map((o: any) => ({
                                                     text: o.text,
@@ -489,6 +491,7 @@ export class CourseService {
                                         questions: {
                                             create: (less.quiz.questions || []).map((q: any) => ({
                                                 text: q.text,
+                                                explanation: q.explanation || null,
                                                 options: {
                                                     create: (q.options || []).map((o: any) => ({
                                                         text: o.text,

@@ -453,22 +453,35 @@ export default function CoursePage() {
                                                                                 iconInner = <LucideCheck className="h-4 w-4 text-white" />;
                                                                             }
 
+                                                                            const showExplanation = showFeedback && isCorrect && q.explanation;
                                                                             return (
-                                                                                <button 
-                                                                                    key={oIdx} 
-                                                                                    disabled={showFeedback}
+                                                                                <div
+                                                                                    key={oIdx}
                                                                                     onClick={() => {
-                                                                                        setQuizAnswers({ ...quizAnswers, [currentQuestionIdx]: oIdx });
-                                                                                    }} 
-                                                                                    className={`p-5 rounded-2xl border-2 text-left font-bold text-sm tracking-tight transition-all flex items-center justify-between group ${borderColor} ${bgColor} ${textColor} ${
-                                                                                        (!showFeedback && !isSelected) ? 'hover:border-slate-200 hover:bg-slate-50' : ''
-                                                                                    } ${isSelected && !showFeedback ? 'shadow-lg shadow-primary/20 scale-[1.02] border-primary' : 'active:scale-[0.98]'}`}
+                                                                                        if (!showFeedback) setQuizAnswers({ ...quizAnswers, [currentQuestionIdx]: oIdx });
+                                                                                    }}
+                                                                                    className={`rounded-2xl border-2 text-left font-bold text-sm tracking-tight transition-all ${borderColor} ${bgColor} ${textColor} ${
+                                                                                        (!showFeedback && !isSelected) ? 'hover:border-slate-200 hover:bg-slate-50 cursor-pointer' : ''
+                                                                                    } ${isSelected && !showFeedback ? 'shadow-lg shadow-primary/20 scale-[1.02] border-primary' : ''} ${!showFeedback ? 'active:scale-[0.98]' : ''}`}
                                                                                 >
-                                                                                    <span className="flex-1 pr-4">{opt.text}</span>
-                                                                                    <div className={`h-6 w-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-all ${iconBg}`}>
-                                                                                        {iconInner}
+                                                                                    <div className="p-5 flex items-center justify-between">
+                                                                                        <span className="flex-1 pr-4">{opt.text}</span>
+                                                                                        <div className={`h-6 w-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-all ${iconBg}`}>
+                                                                                            {iconInner}
+                                                                                        </div>
                                                                                     </div>
-                                                                                </button>
+                                                                                    {showExplanation && (
+                                                                                        <div className="px-5 pb-4 border-t border-emerald-200/60">
+                                                                                            <div className="flex items-start gap-2.5 pt-3">
+                                                                                                <LucideBookOpen className="h-3.5 w-3.5 shrink-0 text-emerald-500 mt-0.5" />
+                                                                                                <div>
+                                                                                                    <p className="text-[8px] font-black uppercase tracking-[0.25em] text-emerald-500 mb-1">Explicação</p>
+                                                                                                    <p className="text-xs font-semibold text-emerald-800 leading-relaxed">{q.explanation}</p>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
                                                                             );
                                                                         })}
                                                                     </div>
@@ -581,6 +594,12 @@ export default function CoursePage() {
                                                                                     {q.options[correctIdx]?.text}
                                                                                 </span>
                                                                             </div>
+                                                                            {q.explanation && (
+                                                                                <div className="flex items-start gap-2 pt-1 border-t border-slate-100">
+                                                                                    <LucideBookOpen className="h-3 w-3 shrink-0 text-amber-400 mt-0.5" />
+                                                                                    <p className="text-[10px] font-bold text-slate-500 leading-relaxed">{q.explanation}</p>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                     </motion.div>
                                                                 );

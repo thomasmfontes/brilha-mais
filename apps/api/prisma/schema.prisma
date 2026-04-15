@@ -214,11 +214,12 @@ model Quiz {
 }
 
 model Question {
-  id      String   @id @default(uuid())
-  text    String
-  quizId  String
-  options Option[]
-  quiz    Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  id          String   @id @default(uuid())
+  text        String
+  explanation String?
+  quizId      String
+  options     Option[]
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
 }
 
 model Option {
