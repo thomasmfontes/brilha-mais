@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideSearch, LucideX } from "lucide-react";
+import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEye, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideSearch, LucideX } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
@@ -273,12 +273,19 @@ export default function InstructorDashboard() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:px-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:px-0">
                 <StatCard
                     title="Total Alunos"
                     value={stats?.totalStudents?.toString() || "0"}
                     change={stats?.studentsTrend || "0% este mês"}
                     icon={<LucideUsers className="h-4 w-4" />}
+                    isLoading={isLoadingStats}
+                />
+                <StatCard
+                    title="Minutos Assistidos"
+                    value={stats?.totalMinutes || "0"}
+                    change={stats?.minutesTrend || "0% este mês"}
+                    icon={<LucideEye className="h-4 w-4" />}
                     isLoading={isLoadingStats}
                 />
                 <StatCard
