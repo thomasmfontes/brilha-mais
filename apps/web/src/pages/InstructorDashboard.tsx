@@ -158,7 +158,7 @@ export default function InstructorDashboard() {
         setUploadProgress(0);
         
         try {
-            const fileToUpload = await compressImage(file, 1280, 720, 500);
+            const fileToUpload = await compressImage(file, 1280, 720, 0.8);
             
             // Gerar preview local imediato
             if (file.type.startsWith('image/')) {
