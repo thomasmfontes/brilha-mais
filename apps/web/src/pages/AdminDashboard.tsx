@@ -260,8 +260,8 @@ export default function AdminDashboard() {
         setIsUpdatingAvatarFor(userId);
         
         try {
-            // Compress image to 512x512
-            const compressedFile = await compressImage(file, 512, 512, 0.85);
+            // Compress image to 1024px (High Quality)
+            const compressedFile = await compressImage(file, 1024, 1024, 0.9);
 
             const formData = new FormData();
             formData.append('file', compressedFile, 'avatar.jpg');

@@ -137,7 +137,7 @@ export function AppLayout() {
         
         try {
             // 1. Compress image (Avatars are usually small, 512x512 is more than enough)
-            const compressedFile = await compressImage(file, 512, 512, 0.85);
+            const compressedFile = await compressImage(file, 1024, 1024, 0.9);
 
             const formData = new FormData();
             formData.append('file', compressedFile, 'avatar.jpg');
