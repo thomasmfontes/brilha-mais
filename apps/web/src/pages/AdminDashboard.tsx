@@ -2209,7 +2209,7 @@ export default function AdminDashboard() {
                                     }}
                                     className="flex items-center gap-2 md:gap-2.5 px-4 md:px-6 py-3 md:py-4 bg-primary text-white rounded-xl md:rounded-[1.25rem] text-[10px] md:text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 shrink-0 border border-white/20"
                                 >
-                                    <LucideCamera className="h-3.5 w-3.5 md:h-4 w-4" />
+                                    <LucideCamera className="h-3.5 w-3.5 md:h-4 md:w-4" />
                                     Trocar Foto
                                 </button>
                             </div>
