@@ -99,7 +99,12 @@ export class CourseController {
   create(@Req() req: any, @Body() data: any) {
     // If admin has a location, force it. Otherwise, use what was sent or null (global).
     const locationId = req.user.locationId || data.locationId;
-    return this.courseService.create({ ...data, instructorId: req.user.id, locationId });
+    
+    // Allow admins to set instructorId. Otherwise force to req.user.id
+    const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN';
+    const instructorId = (isAdmin && data.instructorId) ? data.instructorId : req.user.id;
+    
+    return this.courseService.create({ ...data, instructorId, locationId });
   }
 
   @UseGuards(JwtAuthGuard)

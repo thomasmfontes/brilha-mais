@@ -275,12 +275,11 @@ export class CourseService {
     async create(data: any) {
         const { modules, ...courseData } = data;
 
-        // Filtrar apenas campos que existem no modelo Course do Prisma
         const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'instructorId', 'categoryId', 'locationId'];
         const filteredData: any = {};
         validFields.forEach(field => {
-            if (courseData[field] !== undefined) {
-                filteredData[field] = courseData[field];
+            if (data[field] !== undefined) {
+                filteredData[field] = data[field];
             }
         });
         
@@ -363,7 +362,7 @@ export class CourseService {
 
     async update(id: string, data: any, actorId?: string) {
         const { modules, ...courseData } = data;
-        const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'categoryId', 'locationId'];
+        const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'categoryId', 'locationId', 'instructorId'];
         const filteredUpdateData: any = {};
 
         validFields.forEach(field => {

@@ -37,8 +37,11 @@ export default function InstructorDashboard() {
         title: "",
         category: "",
         thumbnail: "",
-        youtubeUrl: ""
+        youtubeUrl: "",
+        instructorId: ""
     });
+
+    const [instructors, setInstructors] = useState<any[]>([]);
 
     const [assignedCategories, setAssignedCategories] = useState<any[]>([]);
 
@@ -84,18 +87,29 @@ export default function InstructorDashboard() {
                 setUserRole(userData.role);
                 
                 // If it's a Super Admin, they should see all categories
-                if (userData.role === 'SUPER_ADMIN') {
-                    const { data: allCategories } = await api.get('/categories');
+                if (userData.role === 'SUPER_ADMIN' || userData.role === 'ADMIN') {
+                    const [{ data: allCategories }, { data: allUsers }] = await Promise.all([
+                        api.get('/categories'),
+                        api.get('/users')
+                    ]);
                     setAssignedCategories(allCategories);
+                    
+                    const instructorList = allUsers.filter((u: any) => u.role === 'INSTRUCTOR' || u.role === 'ADMIN' || u.role === 'SUPER_ADMIN');
+                    setInstructors(instructorList);
+
                     if (allCategories.length > 0) {
                         setNewCourse(prev => ({ ...prev, category: allCategories[0].id }));
                     }
+                    
+                    // Set default instructor to current user
+                    setNewCourse(prev => ({ ...prev, instructorId: userData.id }));
                 } else if (userData.assignedAreas) {
                     const categories = userData.assignedAreas.map((area: any) => area.category);
                     setAssignedCategories(categories);
                     if (categories.length > 0) {
                         setNewCourse(prev => ({ ...prev, category: categories[0].id }));
                     }
+                    setNewCourse(prev => ({ ...prev, instructorId: userData.id }));
                 }
             }
         } catch (error) {
@@ -118,14 +132,16 @@ export default function InstructorDashboard() {
                     title: newCourse.title,
                     categoryId: newCourse.category,
                     thumbnail: newCourse.thumbnail,
-                    youtubeUrl: newCourse.youtubeUrl
+                    youtubeUrl: newCourse.youtubeUrl,
+                    instructorId: newCourse.instructorId
                 });
             } else {
                 await addCourse({
                     title: newCourse.title,
                     categoryId: newCourse.category,
                     thumbnail: newCourse.thumbnail,
-                    youtubeUrl: newCourse.youtubeUrl // Backend handles extraction via extractYoutubeId
+                    youtubeUrl: newCourse.youtubeUrl,
+                    instructorId: newCourse.instructorId
                 });
             }
 
@@ -227,7 +243,8 @@ export default function InstructorDashboard() {
             title: course.title,
             category: course.categoryId || course.category?.id || "",
             thumbnail: course.thumbnail || "",
-            youtubeUrl: course.youtubeUrl || (course.youtubeId ? `https://www.youtube.com/watch?v=${course.youtubeId}` : "")
+            youtubeUrl: course.youtubeUrl || (course.youtubeId ? `https://www.youtube.com/watch?v=${course.youtubeId}` : ""),
+            instructorId: course.instructorId || ""
         });
         setIsCreateModalOpen(true);
     };
@@ -235,7 +252,7 @@ export default function InstructorDashboard() {
     const handleCloseModal = () => {
         setIsCreateModalOpen(false);
         setEditingCourse(null);
-        setNewCourse({ title: "", category: assignedCategories[0]?.id || "", thumbnail: "", youtubeUrl: "" });
+        setNewCourse({ title: "", category: assignedCategories[0]?.id || "", thumbnail: "", youtubeUrl: "", instructorId: "" });
         setUploadPreview(null);
     };
 
@@ -531,89 +548,118 @@ export default function InstructorDashboard() {
 
                     <form className="flex-1 flex flex-col min-h-0" onSubmit={handleSave}>
                         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6 pb-6">
-                        <div className="space-y-3">
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Título do Curso</label>
-                            <input
-                                required
-                                type="text"
-                                value={newCourse.title}
-                                onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
-                                placeholder="Ex: Domine o Mercado de Capitais"
-                                className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 shadow-sm"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-6">
                             <div className="space-y-3">
-                                <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Área / Categoria</label>
-                                <div className="relative">
-                                    <select
-                                        required
-                                        value={newCourse.category}
-                                        onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer shadow-sm"
-                                    >
-                                        <option value="" disabled>Selecione uma categoria</option>
-                                        {assignedCategories.length > 0 ? (
-                                            assignedCategories.map((cat) => (
-                                                <option key={cat.id} value={cat.id} className="text-slate-900">
-                                                    {cat.name}
-                                                </option>
-                                            ))
+                                <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Título do Curso</label>
+                                <input
+                                    required
+                                    type="text"
+                                    value={newCourse.title}
+                                    onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+                                    placeholder="Ex: Domine o Mercado de Capitais"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 shadow-sm"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                <div className="space-y-3">
+                                    <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Área / Categoria</label>
+                                    <div className="relative">
+                                        <select
+                                            required
+                                            value={newCourse.category}
+                                            onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer shadow-sm"
+                                        >
+                                            <option value="" disabled>Selecione uma categoria</option>
+                                            {assignedCategories.length > 0 ? (
+                                                assignedCategories.map((cat) => (
+                                                    <option key={cat.id} value={cat.id} className="text-slate-900">
+                                                        {cat.name}
+                                                    </option>
+                                                ))
+                                            ) : (
+                                                <option value="" disabled>Nenhuma área atribuída</option>
+                                            )}
+                                        </select>
+                                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                            <LucidePlus className="h-4 w-4 rotate-45" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
+                                    <div className="space-y-3">
+                                        <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Instrutor Responsável</label>
+                                        <div className="relative">
+                                            <select
+                                                required
+                                                value={newCourse.instructorId}
+                                                onChange={(e) => setNewCourse({ ...newCourse, instructorId: e.target.value })}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer shadow-sm"
+                                            >
+                                                <option value="" disabled>Selecione um instrutor</option>
+                                                {instructors.length > 0 ? (
+                                                    instructors.map((inst) => (
+                                                        <option key={inst.id} value={inst.id} className="text-slate-900">
+                                                            {inst.name || inst.email} ({inst.role})
+                                                        </option>
+                                                    ))
+                                                ) : (
+                                                    <option value="" disabled>Carregando instrutores...</option>
+                                                )}
+                                            </select>
+                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <LucideUsers className="h-4 w-4" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="space-y-3">
+                                    <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Capa do Curso</label>
+                                    <div className="w-full h-40 bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center gap-3 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden text-center group shadow-sm">
+                                        {isUploading ? (
+                                            <div className="flex flex-col items-center gap-3 w-full px-10">
+                                                <LoadingSpinner size="md" />
+                                                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        className="bg-primary h-full"
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${uploadProgress}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-[10px] font-black text-primary uppercase">
+                                                    {uploadProgress === 100 ? 'Processando...' : `${uploadProgress}%`}
+                                                </span>
+                                            </div>
                                         ) : (
-                                            <option value="" disabled>Nenhuma área atribuída</option>
+                                            newCourse.thumbnail || uploadPreview ? (
+                                                <>
+                                                    <img
+                                                        src={uploadPreview || resolveThumbnail(newCourse.thumbnail!)}
+                                                        alt="Thumbnail"
+                                                        className="absolute inset-0 w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm rounded-[2rem]">
+                                                        <LucideImage className="h-6 w-6 text-white" />
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Trocar Imagem</span>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="p-4 rounded-2xl bg-white border border-slate-100 text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all shadow-sm">
+                                                        <LucideImage className="h-6 w-6" />
+                                                    </div>
+                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-primary transition-colors">Subir Imagem</span>
+                                                </>
+                                            )
                                         )}
-                                    </select>
-                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                        <LucidePlus className="h-4 w-4 rotate-45" />
+                                        <input type="file" accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
                                     </div>
                                 </div>
                             </div>
-                            <div className="space-y-3">
-                                <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Capa do Curso</label>
-                                <div className="w-full h-40 bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center gap-3 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden text-center group shadow-sm">
-                                    {isUploading ? (
-                                        <div className="flex flex-col items-center gap-3 w-full px-10">
-                                            <LoadingSpinner size="md" />
-                                            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                                                <motion.div 
-                                                    className="bg-primary h-full" 
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${uploadProgress}%` }}
-                                                />
-                                            </div>
-                                            <span className="text-[10px] font-black text-primary uppercase">
-                                                {uploadProgress === 100 ? 'Processando...' : `${uploadProgress}%`}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        newCourse.thumbnail || uploadPreview ? (
-                                            <>
-                                                <img 
-                                                    src={uploadPreview || resolveThumbnail(newCourse.thumbnail!)} 
-                                                    alt="Thumbnail" 
-                                                    className="absolute inset-0 w-full h-full object-cover" 
-                                                />
-                                                <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm rounded-[2rem]">
-                                                    <LucideImage className="h-6 w-6 text-white" />
-                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Trocar Imagem</span>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div className="p-4 rounded-2xl bg-white border border-slate-100 text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all shadow-sm">
-                                                    <LucideImage className="h-6 w-6" />
-                                                </div>
-                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-primary transition-colors">Subir Imagem</span>
-                                            </>
-                                        )
-                                    )}
-                                    <input type="file" accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
-                                </div>
-                            </div>
                         </div>
 
-                        </div>
                         <div className="pt-6 border-t border-slate-100 shrink-0 bg-white">
                             <button
                                 disabled={isSaving}
