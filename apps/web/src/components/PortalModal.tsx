@@ -33,11 +33,13 @@ export function PortalModal({ isOpen, onClose, children, preventCloseOnOverlayCl
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                     className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
+                    style={{ willChange: "opacity" }}
                 >
                     <div
                         onClick={() => !preventCloseOnOverlayClick && onClose()}
-                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                        className="absolute inset-0 bg-slate-950/40 backdrop-blur-md transition-all"
                     />
                     {children}
                 </motion.div>

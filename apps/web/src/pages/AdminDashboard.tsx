@@ -2176,55 +2176,52 @@ export default function AdminDashboard() {
             {/* Lightbox for Avatars */}
             <AnimatePresence>
                 {previewAvatar && (
-                    <div className="fixed inset-0 z-[20000] flex items-center justify-center p-4">
+                    <PortalModal isOpen={true} onClose={() => setPreviewAvatar(null)}>
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setPreviewAvatar(null)}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer"
-                        />
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative z-[20001] w-full max-w-lg aspect-square bg-white rounded-[2.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white animate-in zoom-in duration-300 group"
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            className="relative w-full max-w-lg aspect-square bg-white rounded-[3rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border-[12px] border-white group"
                         >
                             {previewAvatar.url ? (
-                                <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover" />
+                                <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-300 font-black text-6xl uppercase">
                                     {previewAvatar.name.charAt(0)}
                                 </div>
                             )}
 
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 transition-opacity" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-80" />
 
-                            <div className="absolute bottom-0 left-0 w-full p-8 md:p-10 flex items-end justify-between gap-4">
+                            <div className="absolute bottom-0 left-0 w-full p-8 md:p-10 flex items-end justify-between gap-4 md:gap-6">
                                 <div className="min-w-0">
-                                    <p className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter shadow-sm truncate">{previewAvatar.name}</p>
-                                    <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white/50 mt-1">Foto de Perfil</p>
+                                    <p className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter shadow-sm truncate mb-1">{previewAvatar.name}</p>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                                        <p className="text-[9px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white/50">Foto de Perfil</p>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={() => {
                                         handleListAvatarEditClick(previewAvatar.id);
                                         setPreviewAvatar(null);
                                     }}
-                                    className="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 shrink-0"
+                                    className="flex items-center gap-2 md:gap-2.5 px-4 md:px-6 py-3 md:py-4 bg-primary text-white rounded-xl md:rounded-[1.25rem] text-[10px] md:text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 shrink-0 border border-white/20"
                                 >
-                                    <LucideCamera className="h-4 w-4" />
+                                    <LucideCamera className="h-3.5 w-3.5 md:h-4 w-4" />
                                     Trocar Foto
                                 </button>
                             </div>
                             
                             <button
                                 onClick={() => setPreviewAvatar(null)}
-                                className="absolute top-6 right-6 h-10 w-10 md:h-12 md:w-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110 active:scale-95 border border-white/10"
+                                className="absolute top-6 md:top-8 right-6 md:right-8 h-10 w-10 md:h-12 md:w-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110 active:scale-95 border border-white/20"
                             >
                                 <LucideXCircle className="h-5 w-5 md:h-6 md:w-6" />
                             </button>
                         </motion.div>
-                    </div>
+                    </PortalModal>
                 )}
             </AnimatePresence>
         </div>
