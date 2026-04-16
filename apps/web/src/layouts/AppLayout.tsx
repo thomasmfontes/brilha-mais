@@ -50,6 +50,7 @@ export function AppLayout() {
     const scrollRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+    const [isLoadingUserData, setIsLoadingUserData] = useState(true);
 
     useEffect(() => {
         // Reset internal scroll on route change
@@ -67,6 +68,7 @@ export function AppLayout() {
         }
 
         const syncUser = async () => {
+            setIsLoadingUserData(true);
             try {
                 // Decodificação básica inicial para UI rápida
                 const decoded: any = jwtDecode(token);
@@ -91,6 +93,8 @@ export function AppLayout() {
                     localStorage.removeItem('auth_token');
                     navigate('/login', { replace: true });
                 }
+            } finally {
+                setIsLoadingUserData(false);
             }
         };
 
@@ -251,10 +255,19 @@ export function AppLayout() {
                     <div className="flex items-center gap-4 md:gap-6">
                         <div className="flex items-center gap-3">
                             <div className="text-right hidden sm:block">
-                                <p className="text-[11px] font-black uppercase tracking-tight text-slate-900 leading-tight">{userName || 'Usuário'}</p>
-                                <p className="text-[9px] text-primary uppercase font-black tracking-widest leading-tight">
-                                    {userRole === 'super_admin' ? 'Super Admin' : userRole === 'admin' ? 'Administrador' : userRole === 'instructor' ? 'Instrutor' : 'Aluno'}
-                                </p>
+                                {isLoadingUserData ? (
+                                    <div className="space-y-1">
+                                        <div className="h-3 w-24 bg-slate-100 animate-pulse rounded-full ml-auto" />
+                                        <div className="h-2 w-16 bg-slate-50 animate-pulse rounded-full ml-auto" />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p className="text-[11px] font-black uppercase tracking-tight text-slate-900 leading-tight">{userName || 'Usuário'}</p>
+                                        <p className="text-[9px] text-primary uppercase font-black tracking-widest leading-tight">
+                                            {userRole === 'super_admin' ? 'Super Admin' : userRole === 'admin' ? 'Administrador' : userRole === 'instructor' ? 'Instrutor' : 'Aluno'}
+                                        </p>
+                                    </>
+                                )}
                             </div>
                             
                             {/* Hidden File Input */}
@@ -268,11 +281,13 @@ export function AppLayout() {
 
                             <button 
                                 onClick={handleAvatarClick}
-                                disabled={isUpdatingAvatar}
-                                className="relative h-10 w-10 md:h-9 md:w-9 bg-slate-100 rounded-xl md:rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm uppercase font-black text-slate-400 text-xs shrink-0 group/avatar transition-all hover:border-primary/30 active:scale-95"
+                                disabled={isUpdatingAvatar || isLoadingUserData}
+                                className={`relative h-10 w-10 md:h-9 md:w-9 bg-slate-100 rounded-xl md:rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm uppercase font-black text-slate-400 text-xs shrink-0 group/avatar transition-all hover:border-primary/30 active:scale-95 ${isLoadingUserData ? 'animate-pulse' : ''}`}
                                 title="Alterar foto de perfil"
                             >
-                                {userAvatar ? (
+                                {isLoadingUserData ? (
+                                    <div className="h-full w-full bg-slate-200" />
+                                ) : userAvatar ? (
                                     <img 
                                         src={userAvatar.startsWith('http') ? userAvatar : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${userAvatar}`} 
                                         alt={userName} 
@@ -397,36 +412,48 @@ export function AppLayout() {
 
                                 <div className="p-8 border-t border-slate-50 bg-slate-50/30">
                                     <div className="flex items-center gap-4 p-4 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm">
-                                        <button 
-                                            onClick={handleAvatarClick}
-                                            disabled={isUpdatingAvatar}
-                                            className="h-12 w-12 bg-slate-50 rounded-2xl border-2 border-slate-100 flex items-center justify-center overflow-hidden font-black text-slate-400 text-lg shadow-inner relative group/avatar-mobile"
-                                        >
-                                            {userAvatar ? (
-                                                <img 
-                                                    src={userAvatar} 
-                                                    className={`h-full w-full object-cover transition-all ${isUpdatingAvatar ? 'opacity-30' : ''}`}
-                                                    onError={(e) => {
-                                                        (e.target as HTMLImageElement).style.display = 'none';
-                                                        (e.target as HTMLImageElement).parentElement!.innerText = userName ? userName.charAt(0) : '';
-                                                    }}
-                                                />
-                                            ) : (
-                                                userName.charAt(0)
-                                            )}
-                                            {isUpdatingAvatar && (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-white/60">
-                                                    <LucideLoader2 className="h-5 w-5 text-primary animate-spin" />
+                                        {isLoadingUserData ? (
+                                            <>
+                                                <div className="h-12 w-12 bg-slate-100 animate-pulse rounded-2xl" />
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="h-3 w-24 bg-slate-100 animate-pulse rounded-full" />
+                                                    <div className="h-2 w-16 bg-slate-50 animate-pulse rounded-full" />
                                                 </div>
-                                            )}
-                                        </button>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-black uppercase tracking-tight text-slate-900 truncate leading-none mb-1">{userName || 'Usuário'}</p>
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                                                <p className="text-[10px] text-primary font-black uppercase tracking-widest">{userRole === 'super_admin' ? 'Super Admin' : userRole}</p>
-                                            </div>
-                                        </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button 
+                                                    onClick={handleAvatarClick}
+                                                    disabled={isUpdatingAvatar}
+                                                    className="h-12 w-12 bg-slate-50 rounded-2xl border-2 border-slate-100 flex items-center justify-center overflow-hidden font-black text-slate-400 text-lg shadow-inner relative group/avatar-mobile"
+                                                >
+                                                    {userAvatar ? (
+                                                        <img 
+                                                            src={userAvatar} 
+                                                            className={`h-full w-full object-cover transition-all ${isUpdatingAvatar ? 'opacity-30' : ''}`}
+                                                            onError={(e) => {
+                                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                                (e.target as HTMLImageElement).parentElement!.innerText = userName ? userName.charAt(0) : '';
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        userName.charAt(0)
+                                                    )}
+                                                    {isUpdatingAvatar && (
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+                                                            <LucideLoader2 className="h-5 w-5 text-primary animate-spin" />
+                                                        </div>
+                                                    )}
+                                                </button>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-black uppercase tracking-tight text-slate-900 truncate leading-none mb-1">{userName || 'Usuário'}</p>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                                                        <p className="text-[10px] text-primary font-black uppercase tracking-widest">{userRole === 'super_admin' ? 'Super Admin' : userRole}</p>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </motion.div>

@@ -3,6 +3,7 @@ import { getIconComponent } from "../utils/icons";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
+import { compressImage } from "@/utils/image";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { PortalModal } from "../components/PortalModal";
@@ -257,10 +258,14 @@ export default function AdminDashboard() {
         }
 
         setIsUpdatingAvatarFor(userId);
-        const formData = new FormData();
-        formData.append('file', file);
-
+        
         try {
+            // Compress image to 512x512
+            const compressedFile = await compressImage(file, 512, 512, 0.85);
+
+            const formData = new FormData();
+            formData.append('file', compressedFile, 'avatar.jpg');
+
             const uploadRes = await api.post('/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
@@ -2165,7 +2170,7 @@ export default function AdminDashboard() {
                 ref={listFileInputRef} 
                 onChange={handleListAvatarFileChange} 
                 className="hidden" 
-                accept="image/*" 
+                accept="image/*;capture=camera" 
             />
 
             {/* Lightbox for Avatars */}
