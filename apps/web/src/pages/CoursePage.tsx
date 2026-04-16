@@ -269,19 +269,95 @@ export default function CoursePage() {
     const hasPrev = currentLessonIdx > 0 || currentModuleIdx > 0;
 
     if (!isEnrolled) return (
-        <div className="bg-background text-foreground min-h-screen flex flex-col lg:flex-row lg:items-stretch">
-            <div className="relative w-full lg:sticky lg:top-0 lg:h-screen lg:w-[55%] flex-shrink-0 overflow-hidden bg-slate-900">
-                <img src={resolveThumbnail(course.thumbnail)} alt={course.title} className="w-full h-auto lg:h-full lg:object-cover aspect-video lg:aspect-auto" />
-                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent lg:hidden" />
-                <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-r from-transparent to-background hidden lg:block" />
-            </div>
-            <div className="flex-1 flex flex-col justify-center px-10 py-16">
-                <h1 className="text-5xl lg:text-7xl font-black leading-none tracking-tighter mb-8 uppercase italic text-slate-900">{course.title}</h1>
-                <p className="text-muted-foreground text-lg mb-12 max-w-xl">{course.description}</p>
-                <button onClick={handleEnroll} disabled={isEnrolling} className="w-full max-w-sm bg-primary text-primary-foreground py-6 rounded-2xl font-black uppercase tracking-widest text-lg shadow-2xl shadow-primary/30 border-b-6 border-primary-foreground/10 hover:brightness-110 active:scale-95 transition-all">
-                    {isEnrolling ? 'Iniciando...' : 'Iniciar Curso'}
-                </button>
-            </div>
+        <div className="relative min-h-screen w-full bg-[#FAFAFA] flex flex-col lg:items-center lg:justify-center p-6 pt-16 md:p-12 overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(255,165,0,0.05),transparent)] pointer-events-none" />
+
+            <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="relative z-10 w-full max-w-6xl flex flex-col lg:flex-row items-center gap-10 lg:gap-16"
+            >
+                {/* Visual Side */}
+                <div className="relative w-full lg:w-[42%] group">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1, duration: 0.8 }}
+                        className="relative z-10 aspect-video lg:aspect-[4/5] rounded-3xl overflow-hidden shadow-xl shadow-black/5 border-4 border-white group-hover:shadow-2xl transition-all duration-500"
+                    >
+                        <img 
+                            src={resolveThumbnail(course.thumbnail)} 
+                            alt={course.title} 
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+                        />
+                    </motion.div>
+                    
+                    {/* Subtle Glow */}
+                    <div className="absolute inset-x-8 -bottom-4 h-32 bg-primary/20 blur-3xl -z-10 group-hover:bg-primary/30 transition-colors" />
+                </div>
+
+                {/* Content Side */}
+                <div className="flex-1 flex flex-col space-y-8 text-center lg:text-left">
+                    <div className="space-y-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                            className="flex items-center justify-center lg:justify-start gap-2"
+                        >
+                            <div className="h-[1px] w-6 bg-primary/30" />
+                            <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Brilha Mais</span>
+                            <div className="h-[1px] w-6 bg-primary/30" />
+                        </motion.div>
+
+                        <motion.h1 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight uppercase text-slate-900"
+                        >
+                            {course.title}
+                        </motion.h1>
+                        
+                        <motion.p 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                            className="text-slate-500 text-sm md:text-base font-medium leading-relaxed max-w-lg mx-auto lg:mx-0"
+                        >
+                            {course.description}
+                        </motion.p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
+                        <motion.button 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.5 }}
+                            onClick={handleEnroll} 
+                            disabled={isEnrolling} 
+                            className="group relative overflow-hidden bg-primary text-white py-4 px-10 rounded-2xl font-black uppercase tracking-widest text-sm shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-50"
+                        >
+                            <span className="relative z-10 flex items-center justify-center gap-2">
+                                {isEnrolling ? (
+                                    <>
+                                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Iniciando...
+                                    </>
+                                ) : (
+                                    <>
+                                        Começar agora
+                                        <LucidePlay className="h-4 w-4 fill-current transition-transform group-hover:scale-110" />
+                                    </>
+                                )}
+                            </span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
+                        </motion.button>
+                    </div>
+
+                </div>
+            </motion.div>
         </div>
     );
 

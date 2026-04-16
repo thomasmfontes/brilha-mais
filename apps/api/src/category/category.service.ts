@@ -35,29 +35,31 @@ export class CategoryService {
     const where: any = {};
 
     if (userId) {
-      // Fetch user role and assigned areas in parallel
-      const [user, instructorAreas, studentTurma] = await Promise.all([
-        this.prisma.user.findUnique({ where: { id: userId }, select: { role: true, locationId: true } }),
-        this.prisma.instructorArea.findMany({ where: { userId }, select: { categoryId: true } }),
-        this.prisma.turma.findFirst({
-          where: { users: { some: { id: userId } } },
-          include: { areas: true }
-        })
-      ]);
+      const user = await this.prisma.user.findUnique({ 
+        where: { id: userId }, 
+        include: { 
+          turmas: { include: { areas: true } },
+          studentAreas: true 
+        }
+      });
 
       if (user?.role === 'STUDENT') {
-        const areaIds = studentTurma?.areas.map(a => a.categoryId) || [];
-        where.id = { ...where.id, in: areaIds };
-      } else if (user?.role === 'INSTRUCTOR') {
-        where.id = { ...where.id, in: instructorAreas.map((a) => a.categoryId) };
-      }
+        const areaIds = Array.from(new Set([
+          ...user.turmas.flatMap(t => t.areas.map(a => a.categoryId)),
+          ...user.studentAreas.map(a => a.categoryId)
+        ]));
 
-      // Scope by location: (Category.locationId === user.locationId OR Category.locationId === null)
-      if (user?.locationId) {
-        where.OR = [
-          { locationId: user.locationId },
-          { locationId: null }
-        ];
+        where.id = { in: areaIds };
+        // We do NOT filter categories by locationId for students here 
+        // because the assignment to the Category via Turma/Area is the source of truth.
+        // This allows shared categories (like RH) to work across units.
+      } else if (user?.role === 'INSTRUCTOR') {
+        const instructorAreas = await this.prisma.instructorArea.findMany({ 
+          where: { userId }, 
+          select: { categoryId: true } 
+        });
+        where.id = { in: instructorAreas.map((a) => a.categoryId) };
+        // Same for instructors: if they are assigned to an area, they should see it.
       }
     }
 

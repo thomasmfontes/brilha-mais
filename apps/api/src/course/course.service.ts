@@ -172,28 +172,33 @@ export class CourseService {
         const where: any = { isPublished: true };
 
         if (userId) {
-            const [user, instructorAreas, studentTurma] = await Promise.all([
-                this.prisma.user.findUnique({ where: { id: userId }, select: { role: true, locationId: true } }),
-                this.prisma.instructorArea.findMany({ where: { userId }, select: { categoryId: true } }),
-                this.prisma.turma.findFirst({
-                    where: { users: { some: { id: userId } } },
-                    include: { areas: true }
-                })
-            ]);
+            const user = await this.prisma.user.findUnique({ 
+                where: { id: userId }, 
+                include: { 
+                    turmas: { include: { areas: true } },
+                    studentAreas: true 
+                }
+            });
 
-            // Scope by location: (Course.locationId === user.locationId OR Course.locationId === null)
-            if (user?.locationId) {
-                where.OR = [
-                    { locationId: user.locationId },
-                    { locationId: null }
-                ];
-            }
+            if (user?.role === 'STUDENT' || user?.role === 'INSTRUCTOR') {
+                // Strict Location Match: No 'Global' (null) courses unless the user themselves is Global
+                // Based on user feedback: "Não deve ter curso global"
+                where.locationId = user.locationId;
 
-            if (user?.role === 'STUDENT') {
-                const areaIds = studentTurma?.areas.map(a => a.categoryId) || [];
-                where.categoryId = { in: areaIds };
-            } else if (user?.role === 'INSTRUCTOR') {
-                where.categoryId = { in: instructorAreas.map(a => a.categoryId) };
+                if (user.role === 'STUDENT') {
+                    const areaIds = Array.from(new Set([
+                        ...user.turmas.flatMap(t => t.areas.map(a => a.categoryId)),
+                        ...user.studentAreas.map(a => a.categoryId)
+                    ]));
+                    
+                    where.categoryId = { in: areaIds };
+                } else if (user.role === 'INSTRUCTOR') {
+                    const instructorAreas = await this.prisma.instructorArea.findMany({ 
+                        where: { userId }, 
+                        select: { categoryId: true } 
+                    });
+                    where.categoryId = { in: instructorAreas.map(a => a.categoryId) };
+                }
             }
         }
 

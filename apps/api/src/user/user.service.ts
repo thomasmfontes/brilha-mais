@@ -208,6 +208,9 @@ export class UserService {
       }
     );
 
+    // Invalidate the category cache so newly assigned areas/turmas appear immediately
+    this.categoryService.invalidateCache();
+
     return updatedUser;
   }
 

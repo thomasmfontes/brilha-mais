@@ -31,22 +31,29 @@ const SyllabusList = ({
             const isExpanded = !!expandedModules[mIdx];
             const dur = totalModuleDuration(module);
             return (
-                <div key={`module-${mIdx}-${module.id || mIdx}`} className="border-b border-border/50 last:border-none relative">
+                <div key={`module-${mIdx}-${module.id || mIdx}`} className="border-b border-slate-50 last:border-none relative">
                     <button
                         onClick={() => setExpandedModules(prev => ({ ...prev, [mIdx]: !prev[mIdx] }))}
-                        className={`w-full flex items-center justify-between px-5 py-4 text-left hover:bg-muted/50 transition-all sticky top-0 z-20 bg-card/90 backdrop-blur-md border-b border-transparent ${isExpanded ? 'border-border/30 shadow-sm' : ''}`}
+                        className={`w-full flex items-center justify-between px-6 py-5 text-left hover:bg-slate-50/50 transition-all sticky top-0 z-20 bg-white/90 backdrop-blur-lg border-b border-transparent ${isExpanded ? 'border-primary/5 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]' : ''}`}
                     >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
                             <motion.div
                                 animate={{ rotate: isExpanded ? 0 : -90 }}
                                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                                className="shrink-0 flex items-center justify-center"
+                                className={`shrink-0 h-6 w-6 flex items-center justify-center rounded-lg ${isExpanded ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'}`}
                             >
-                                <LucideChevronDown className="h-4 w-4 text-muted-foreground" />
+                                <LucideChevronDown className="h-4 w-4" />
                             </motion.div>
-                            <span className="text-sm font-bold text-foreground truncate">{module.title}</span>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Módulo {mIdx + 1}</span>
+                                <span className="text-sm font-black text-slate-900 tracking-tight leading-tight">{module.title}</span>
+                            </div>
                         </div>
-                        {dur && <span className="shrink-0 text-xs text-muted-foreground ml-3">{dur}</span>}
+                        {dur && (
+                            <div className="shrink-0 bg-slate-100 px-2 py-1 rounded-md">
+                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{dur}</span>
+                            </div>
+                        )}
                     </button>
 
                     <AnimatePresence>
@@ -60,7 +67,7 @@ const SyllabusList = ({
                                     height: { type: "spring", stiffness: 300, damping: 30 },
                                     opacity: { duration: 0.2 }
                                 }}
-                                className="overflow-hidden"
+                                className="overflow-hidden bg-slate-50/30"
                             >
                                 {(module.lessons || []).map((lesson: any, lIdx: number) => {
                                     const isFirst = mIdx === 0 && lIdx === 0;
@@ -75,24 +82,41 @@ const SyllabusList = ({
                                             key={`lesson-${lIdx}-${lesson.id || lIdx}`}
                                             disabled={!isEnrolled || !!isLocked}
                                             onClick={() => { if (!isLocked) goToLesson(mIdx, lIdx); }}
-                                            className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors ${isActive ? 'bg-primary/20' : 'hover:bg-muted/50'} ${isLocked ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                            className={`w-full flex items-center gap-4 px-6 py-4 text-left transition-all group relative ${isActive ? 'bg-primary/5' : 'hover:bg-slate-100/50'} ${isLocked ? 'opacity-40 cursor-not-allowed' : ''}`}
                                         >
-                                            <div className={`shrink-0 h-6 w-6 rounded-full flex items-center justify-center ${lesson.completed ? 'bg-primary' : isActive ? 'border-2 border-primary' : 'border border-border'}`}>
-                                                {isLocked ? <LucideLock className="h-3 w-3 text-muted-foreground" />
-                                                    : lesson.completed ? <LucideCheck className="h-3 w-3 text-primary-foreground" />
-                                                        : isActive ? <LucidePlay className="h-2.5 w-2.5 text-primary fill-primary" />
-                                                            : <span className="text-[9px] text-muted-foreground font-black">{lIdx + 1}</span>}
+                                            {isActive && (
+                                                <motion.div 
+                                                    layoutId="active-indicator"
+                                                    className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full shadow-[0_0_15px_rgba(255,165,0,0.5)]" 
+                                                />
+                                            )}
+                                            
+                                            <div className={`shrink-0 h-7 w-7 rounded-full flex items-center justify-center transition-all ${
+                                                lesson.completed ? 'bg-primary shadow-md shadow-primary/20' 
+                                                : isActive ? 'border-2 border-primary bg-primary/5' 
+                                                : 'bg-white border border-slate-200'
+                                            }`}>
+                                                {isLocked ? <LucideLock className="h-3 w-3 text-slate-300" />
+                                                    : lesson.completed ? <LucideCheck className="h-4 w-4 text-white" />
+                                                        : isActive ? <LucidePlay className="h-3 w-3 text-primary fill-primary ml-0.5" />
+                                                            : <span className="text-[10px] text-slate-400 font-black">{lIdx + 1}</span>}
                                             </div>
+
                                             <div className="flex-1 min-w-0">
-                                                <p className={`text-xs font-bold truncate ${isActive ? 'text-primary' : lesson.completed ? 'text-muted-foreground' : 'text-foreground'}`}>
+                                                <p className={`text-xs font-bold leading-tight ${isActive ? 'text-primary' : lesson.completed ? 'text-slate-400' : 'text-slate-700'}`}>
                                                     {lesson.title}
                                                 </p>
                                             </div>
-                                            <span className="shrink-0 text-[10px] text-muted-foreground uppercase font-black tracking-widest">
-                                                {lesson.contentType === 'VIDEO'
-                                                    ? (lesson.duration && lesson.duration !== '0:00' ? formatDuration(lesson.duration) : 'Vídeo')
-                                                    : lesson.contentType === 'PDF' ? 'PDF' : lesson.contentType === 'QUIZ' ? 'Quiz' : 'Desafio'}
-                                            </span>
+
+                                            <div className="shrink-0">
+                                                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${
+                                                    isActive ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'
+                                                }`}>
+                                                    {lesson.contentType === 'VIDEO'
+                                                        ? (lesson.duration && lesson.duration !== '0:00' ? formatDuration(lesson.duration) : 'Vídeo')
+                                                        : lesson.contentType === 'PDF' ? 'PDF' : lesson.contentType === 'QUIZ' ? 'Questões' : 'Desafio'}
+                                                </span>
+                                            </div>
                                         </button>
                                     );
                                 })}

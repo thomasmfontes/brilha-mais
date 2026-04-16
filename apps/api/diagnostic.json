@@ -1,0 +1,16 @@
+{
+  "id": "29e0956a-ad57-4e00-89ea-7fae5d0380c1",
+  "email": "thomas@fontes.ca",
+  "name": "Thomas Fontes",
+  "password": null,
+  "role": "SUPER_ADMIN",
+  "avatarUrl": "https://clqhuohpybnoefmjusxs.supabase.co/storage/v1/object/public/course-images/courses/1776309754544-sgia2b.jpg",
+  "provider": "google",
+  "providerId": "111162058606734657876",
+  "isVerified": false,
+  "createdAt": "2026-02-21T16:08:07.546Z",
+  "updatedAt": "2026-04-16T19:10:35.246Z",
+  "hasSeenWelcomeVideo": false,
+  "locationId": null,
+  "turmas": []
+}

@@ -1,0 +1,32 @@
+{
+  "id": "acfa9684-f1dd-4d79-88fe-b8520726878e",
+  "email": "thomasmfontes7@gmail.com",
+  "name": "Thomas Fontes",
+  "password": null,
+  "role": "STUDENT",
+  "avatarUrl": "https://clqhuohpybnoefmjusxs.supabase.co/storage/v1/object/public/course-images/courses/1776311570325-4k8tf.jpg",
+  "provider": "google",
+  "providerId": "104615440571153813021",
+  "isVerified": false,
+  "createdAt": "2026-04-16T01:37:30.260Z",
+  "updatedAt": "2026-04-16T19:18:46.336Z",
+  "hasSeenWelcomeVideo": true,
+  "locationId": "6813373b-319e-4acf-8e47-baf6d32e4a1b",
+  "turmas": [
+    {
+      "id": "0af003bd-66bf-4d7d-b35b-974f1ab1e6eb",
+      "name": "Rio Preto",
+      "description": "Teste",
+      "createdAt": "2026-04-16T18:17:45.075Z",
+      "updatedAt": "2026-04-16T18:17:45.075Z",
+      "locationId": "6813373b-319e-4acf-8e47-baf6d32e4a1b",
+      "areas": [
+        {
+          "id": "11a4425b-76ee-483b-9bf6-aa9d011e3b8d",
+          "turmaId": "0af003bd-66bf-4d7d-b35b-974f1ab1e6eb",
+          "categoryId": "16561bc8-5098-4f0d-8685-e9c163ce6474"
+        }
+      ]
+    }
+  ]
+}

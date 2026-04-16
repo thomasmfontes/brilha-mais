@@ -1785,7 +1785,7 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                    <div className="space-y-6 overflow-y-auto pr-2 md:pr-4 custom-scrollbar flex-1">
+                    <div className="space-y-6 overflow-y-auto custom-scrollbar flex-1">
                         {isFetchingCategories ? (
                             <div className="flex flex-col items-center justify-center py-12 space-y-4 w-full">
                                 <LoadingSpinner size="md" />
@@ -1872,8 +1872,8 @@ export default function AdminDashboard() {
                                     </div>
                                     Atribuir Turma
                                 </h2>
-                                <div className="mt-4 flex items-center gap-2">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60 leading-none">Editando turma de</span>
+                                <div className="mt-4 flex flex-wrap items-center gap-2">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60 leading-none">Editando turmas de</span>
                                     <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[9px] font-black tracking-widest uppercase border border-primary/20">
                                         {selectedUser?.name}
                                     </span>
@@ -1882,31 +1882,67 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                    <div className="space-y-6 overflow-y-auto pr-2 md:pr-4 custom-scrollbar flex-1">
+                    <div className="space-y-6 overflow-y-auto custom-scrollbar flex-1">
                         {isFetchingTurmas ? (
-                            <div className="flex flex-col items-center justify-center py-12 space-y-4 w-full">
+                            <div className="flex flex-col items-center justify-center py-20 space-y-4 w-full">
                                 <LoadingSpinner size="md" />
                                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Carregando turmas...</p>
                             </div>
                         ) : turmas.length === 0 ? (
-                            <p className="w-full text-center py-10 text-xs text-muted-foreground italic bg-slate-50 rounded-3xl border border-dashed border-slate-200">Nenhuma turma cadastrada.</p>
+                            <div className="text-center py-20 bg-slate-50 rounded-[2.5rem] border border-dashed border-slate-200">
+                                <LucideUsers className="h-10 w-10 text-slate-200 mx-auto mb-4" />
+                                <p className="text-sm font-bold text-slate-400">Nenhuma turma cadastrada.</p>
+                            </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full auto-rows-fr">
                                 {turmas.map(t => {
                                     const isAssigned = tempUserTurmas.includes(t.id);
                                     return (
                                         <button
                                             key={t.id}
                                             onClick={() => handleToggleTurma(t.id, isAssigned)}
-                                            className={`p-4 rounded-2xl border transition-all text-left flex items-center justify-between group ${isAssigned ? 'bg-primary/5 border-primary shadow-sm' : 'bg-slate-50 border-slate-100 hover:border-slate-300'}`}
+                                            className={`group p-5 rounded-3xl border text-left flex items-start justify-between gap-4 transition-all duration-300 relative overflow-hidden h-full ${
+                                                isAssigned 
+                                                ? 'bg-primary/5 border-primary shadow-[0_8px_30px_-12px_rgba(249,115,22,0.2)]' 
+                                                : 'bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50/50 hover:shadow-sm'
+                                            }`}
                                         >
-                                            <div className="min-w-0">
-                                                <p className={`font-bold text-xs truncate ${isAssigned ? 'text-primary' : 'text-slate-700'}`}>{t.name}</p>
-                                                {t.description && <p className="text-[9px] text-muted-foreground truncate">{t.description}</p>}
+                                            <div className="min-w-0 flex-1 relative z-10">
+                                                <p className={`font-black text-sm uppercase tracking-tight mb-1.5 transition-colors ${isAssigned ? 'text-primary' : 'text-slate-900 group-hover:text-primary'}`}>
+                                                    {t.name}
+                                                </p>
+                                                {t.description ? (
+                                                    <p className={`text-[10px] font-bold leading-relaxed line-clamp-2 transition-colors ${isAssigned ? 'text-primary/60' : 'text-slate-400'}`}>
+                                                        {t.description}
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-[9px] font-bold italic text-slate-300">Sem descrição</p>
+                                                )}
+                                                
+                                                <div className="mt-3 flex items-center gap-2">
+                                                    <div className="flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-md">
+                                                        <LucideMapPin className="h-2.5 w-2.5 text-slate-400" />
+                                                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">{t.location?.name || 'Geral'}</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className={`h-5 w-5 rounded-full border flex items-center justify-center transition-all ${isAssigned ? 'bg-primary border-primary text-white scale-110' : 'bg-white border-slate-200 text-transparent'}`}>
-                                                <LucideCheck className="h-3 w-3" />
+
+                                            <div className="shrink-0 pt-0.5 relative z-10">
+                                                <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                                                    isAssigned 
+                                                    ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20' 
+                                                    : 'bg-white border-slate-200 text-transparent group-hover:border-primary/30 group-hover:scale-105'
+                                                }`}>
+                                                    <LucideCheck className={`h-3.5 w-3.5 transition-transform duration-300 ${isAssigned ? 'scale-100' : 'scale-0'}`} />
+                                                </div>
                                             </div>
+
+                                            {isAssigned && (
+                                                <motion.div 
+                                                    layoutId={`active-bg-${t.id}`}
+                                                    className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" 
+                                                />
+                                            )}
                                         </button>
                                     );
                                 })}
@@ -2031,7 +2067,7 @@ export default function AdminDashboard() {
                         </div>
                         {editingCategory ? 'Editar Área' : 'Nova Área'}
                     </h2>
-                    <div className="space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-6 overflow-y-auto custom-scrollbar">
                         <div>
                             <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Área</label>
                             <input className="w-full bg-slate-50 border border-slate-200 rounded-[1.5rem] px-6 py-4 outline-none font-bold mt-2 text-slate-900 shadow-sm focus:ring-2 focus:ring-primary/20 transition-all"
@@ -2074,7 +2110,7 @@ export default function AdminDashboard() {
                         </div>
                         {editingTurma ? 'Editar Turma' : 'Nova Turma'}
                     </h2>
-                    <div className="space-y-8 overflow-y-auto pr-4 custom-scrollbar">
+                    <div className="space-y-8 overflow-y-auto custom-scrollbar">
                         <div>
                             <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Turma</label>
                             <input className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm"
@@ -2096,7 +2132,7 @@ export default function AdminDashboard() {
                             </div>
                         )}
                     </div>
-                    <div className="grid grid-cols-2 gap-4 mt-10 pt-8 border-t border-white/5">
+                    <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-100">
                         <button onClick={() => setIsTurmaModalOpen(false)} className="bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest transition-all hover:bg-slate-200 text-xs">Cancelar</button>
                         <button onClick={handleSaveTurma} disabled={isSavingTurma} className="bg-primary text-primary-foreground py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-xs">
                             {isSavingTurma ? (
