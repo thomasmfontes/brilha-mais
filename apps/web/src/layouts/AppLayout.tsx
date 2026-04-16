@@ -58,24 +58,6 @@ export function AppLayout() {
     }, [location.pathname]);
 
     useEffect(() => {
-        // Log para debug (ajuda a identificar qual API o navegador está tentando usar)
-        console.log("🚀 API Base URL:", api.defaults.baseURL);
-
-        // Anti-Zumbi: Se por erro de cache o portal estiver usando a API antiga, limpamos e recarregamos
-        const currentBaseURL = api.defaults.baseURL || "";
-        if (currentBaseURL.includes("brilha-api.vercel.app")) {
-            console.error("⚠️ URL da API antiga detectada! Limpando cache...");
-            localStorage.clear();
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(registrations => {
-                    for (let registration of registrations) registration.unregister();
-                });
-            }
-            window.location.reload();
-        }
-    }, []);
-
-    useEffect(() => {
         const token = localStorage.getItem('auth_token');
         
         if (!token) {
