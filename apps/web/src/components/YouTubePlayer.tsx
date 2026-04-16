@@ -20,6 +20,7 @@ interface YouTubePlayerProps {
     initialSeconds?: number;
     isPrivileged?: boolean;
     isCompleted?: boolean;
+    allowSeeking?: boolean;
 }
 
 const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
@@ -28,7 +29,8 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     onEnded,
     initialSeconds = 0,
     isPrivileged = false,
-    isCompleted = false
+    isCompleted = false,
+    allowSeeking = true
 }) => {
     const playerRef = useRef<any>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -247,7 +249,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
         const targetTime = pct * duration;
 
-        if (!isPrivileged && !isCompleted && targetTime > maxReachedRef.current + 5) {
+        if (!canSeekFreely && targetTime > maxReachedRef.current + 1) {
             playerRef.current.seekTo(maxReachedRef.current, true);
             return;
         }
@@ -319,7 +321,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 
     const progress = duration ? (currentTime / duration) * 100 : 0;
     const maxProgress = duration ? (maxReachedRef.current / duration) * 100 : 0;
-    const canSeekFreely = isPrivileged || isCompleted;
+    const canSeekFreely = isPrivileged || isCompleted || allowSeeking;
     const speeds = canSeekFreely ? [0.5, 0.75, 1, 1.25, 1.5, 2] : [0.5, 0.75, 1, 1.25, 1.5];
 
     const VolumeIcon = isMuted || volume === 0 ? LucideVolumeX : volume < 50 ? LucideVolume1 : LucideVolume2;

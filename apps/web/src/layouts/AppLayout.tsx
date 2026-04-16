@@ -65,26 +65,36 @@ export function AppLayout() {
             return;
         }
 
-        // Only decode token if it's new or user info is missing
-        if (!userName) {
+        const syncUser = async () => {
             try {
+                // Decodificação básica inicial para UI rápida
                 const decoded: any = jwtDecode(token);
-                const role = decoded.role?.toLowerCase();
-                if (role) setUserRole(role as any);
-                if (decoded.name) setUserName(decoded.name);
-                if (decoded.avatarUrl) setUserAvatar(decoded.avatarUrl);
+                const role = (decoded.role || 'STUDENT').toLowerCase();
+                setUserRole(role as any);
 
-                // Auto-open welcome video for students who haven't seen it
-                if (role === 'student' && decoded.hasSeenWelcomeVideo === false) {
-                    setIsWelcomeVideoOpen(true);
+                // Carrega dados reais do servidor para evitar estado desatualizado do token
+                const res = await api.get('/users/me');
+                const user = res.data;
+                
+                if (user.name) setUserName(user.name);
+                if (user.avatarUrl) setUserAvatar(user.avatarUrl);
+                
+                // Abre o vídeo apenas se o banco de dados confirmar que ainda não foi visto
+                // Comparamos com false explicitamente para evitar abrir se o campo for nulo/indefinido
+                if (user.role === 'STUDENT' && user.hasSeenWelcomeVideo === false) {
+                     setIsWelcomeVideoOpen(true);
                 }
-            } catch (error) {
-                console.error("Invalid token:", error);
-                localStorage.removeItem('auth_token');
-                navigate('/login', { replace: true });
+            } catch (error: any) {
+                console.error("Auth sync error:", error);
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('auth_token');
+                    navigate('/login', { replace: true });
+                }
             }
-        }
-    }, [navigate, userName]); // Added dependencies for safety
+        };
+
+        syncUser();
+    }, [navigate]);
 
     const handleCloseWelcomeVideo = async () => {
         setIsWelcomeVideoOpen(false);

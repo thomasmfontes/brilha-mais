@@ -168,6 +168,7 @@ model Lesson {
   order            Int
   isFree           Boolean           @default(false)
   moduleId         String
+  allowSeeking     Boolean           @default(false)
   allowPdfDownload Boolean           @default(true)
   essaySubmissions EssaySubmission[]
   module           Module            @relation(fields: [moduleId], references: [id], onDelete: Cascade)

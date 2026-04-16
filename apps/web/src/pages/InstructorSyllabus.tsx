@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { LucideChevronLeft, LucidePlus, LucideTrash2, LucideLayout, LucidePlay, LucideClock, LucideSave, LucideLink, LucideChevronDown, LucideChevronUp, LucideMoreVertical, LucideFileText, LucideDownload, LucideGlobe, LucideFileJson, LucideUploadCloud, LucideX, LucideCheck, LucideCircle, LucideHelpCircle } from "lucide-react";
+import { LucideChevronLeft, LucidePlus, LucideTrash2, LucideLayout, LucidePlay, LucideLock, LucideUnlock, LucideClock, LucideSave, LucideLink, LucideChevronDown, LucideChevronUp, LucideMoreVertical, LucideFileText, LucideDownload, LucideGlobe, LucideFileJson, LucideUploadCloud, LucideX, LucideCheck, LucideCircle, LucideHelpCircle, LucideZap } from "lucide-react";
 import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
@@ -50,6 +50,7 @@ interface DraftLesson {
     order?: number;
     materials?: Material[];
     allowPdfDownload?: boolean;
+    allowSeeking?: boolean;
 }
 
 interface DraftModule {
@@ -207,6 +208,7 @@ export default function InstructorSyllabus() {
             completed: false,
             contentType: 'VIDEO',
             youtubeId: "",
+            allowSeeking: false,
             materials: []
         });
         setLocalModules(next);
@@ -884,25 +886,50 @@ export default function InstructorSyllabus() {
                                             </div>
 
                                             {lesson.contentType === 'PDF' && (
-                                                <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm group/toggle hover:border-primary/20 transition-all">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all ${lesson.allowPdfDownload !== false ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-slate-100 text-slate-400'}`}>
-                                                            <LucideDownload className="h-4 w-4" />
+                                                <div className={`flex flex-col gap-4 p-5 rounded-[1.5rem] border-2 transition-all duration-300 ${lesson.allowPdfDownload !== false ? 'bg-emerald-50/30 border-emerald-500/20 shadow-lg shadow-emerald-500/5' : 'bg-slate-50 border-slate-200'}`}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-500 ${lesson.allowPdfDownload !== false ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-white border border-slate-200 text-slate-400'}`}>
+                                                            <LucideDownload className="h-5 w-5" />
                                                         </div>
-                                                        <div className="min-w-0">
-                                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-800">Liberar Download</p>
-                                                            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-tight">Permitir salvar arquivo</p>
-                                                        </div>
+                                                        <button
+                                                            onClick={() => updateLesson(mIdx, lIdx, { allowPdfDownload: lesson.allowPdfDownload === false })}
+                                                            className={`w-11 h-6 rounded-full relative transition-all duration-500 ${lesson.allowPdfDownload !== false ? 'bg-emerald-500 shadow-md shadow-emerald-100' : 'bg-slate-300'}`}
+                                                        >
+                                                            <motion.div
+                                                                animate={{ x: lesson.allowPdfDownload !== false ? 22 : 4 }}
+                                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                                                className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                                                            />
+                                                        </button>
                                                     </div>
-                                                    <button
-                                                        onClick={() => updateLesson(mIdx, lIdx, { allowPdfDownload: lesson.allowPdfDownload === false })}
-                                                        className={`w-10 h-5 rounded-full relative transition-all ${lesson.allowPdfDownload !== false ? 'bg-primary' : 'bg-slate-200'}`}
-                                                    >
-                                                        <motion.div
-                                                            animate={{ x: lesson.allowPdfDownload !== false ? 22 : 2 }}
-                                                            className="absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm"
-                                                        />
-                                                    </button>
+                                                    <div className="min-w-0">
+                                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 leading-none">Liberar Download</p>
+                                                        <p className="text-[7.5px] font-bold text-slate-400 uppercase tracking-tight mt-1.5 leading-tight">Permitir salvar arquivo</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {lesson.contentType === 'VIDEO' && (
+                                                <div className={`flex flex-col gap-4 p-5 rounded-[1.5rem] border-2 transition-all duration-300 ${lesson.allowSeeking !== false ? 'bg-primary/5 border-primary/20 shadow-lg shadow-primary/5' : 'bg-slate-50 border-slate-200'}`}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-500 ${lesson.allowSeeking !== false ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-200 text-slate-400'}`}>
+                                                            {lesson.allowSeeking !== false ? <LucideUnlock className="h-5 w-5" /> : <LucideLock className="h-5 w-5" />}
+                                                        </div>
+                                                        <button
+                                                            onClick={() => updateLesson(mIdx, lIdx, { allowSeeking: lesson.allowSeeking === false })}
+                                                            className={`w-11 h-6 rounded-full relative transition-all duration-500 ${lesson.allowSeeking !== false ? 'bg-primary shadow-md shadow-primary/10' : 'bg-slate-300'}`}
+                                                        >
+                                                            <motion.div
+                                                                animate={{ x: lesson.allowSeeking !== false ? 22 : 4 }}
+                                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                                                className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                                                            />
+                                                        </button>
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 leading-none">Liberar Avanço</p>
+                                                        <p className="text-[7.5px] font-bold text-slate-400 uppercase tracking-tight mt-1.5 leading-tight">Pular partes do vídeo</p>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

@@ -114,6 +114,11 @@ export class UserController {
     return this.userService.updateProfile(req.user.id, data);
   }
 
+  @Patch('me/welcome-video')
+  markWelcomeVideoAsSeen(@Req() req: any) {
+    return this.userService.markWelcomeVideoAsSeen(req.user.id);
+  }
+
   @Patch(':id')
   @Roles(Role.ADMIN)
   updateAnyUser(@Param('id') id: string, @Body() data: { name?: string; avatarUrl?: string }, @Req() req: any) {

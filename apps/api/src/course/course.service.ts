@@ -68,7 +68,8 @@ export class CourseService {
                     duration: this.formatDuration(less.duration),
                     description: less.description,
                     quiz: less.quizzes?.[0],
-                    materials: less.materials
+                    materials: less.materials,
+                    allowSeeking: less.allowSeeking
                 }))
             })) || []
         };
@@ -320,6 +321,7 @@ export class CourseService {
                                 duration: typeof less.duration === 'number' ? less.duration : 0,
                                 order: lIdx,
                                 isFree: less.isFree || false,
+                                allowSeeking: !!less.allowSeeking,
                                 allowPdfDownload: less.allowPdfDownload !== false,
                                 quizzes: less.quiz ? {
                                     create: {
@@ -434,6 +436,7 @@ export class CourseService {
                         description: less.description,
                         order: lIdx,
                         isFree: less.isFree || false,
+                        allowSeeking: !!less.allowSeeking,
                         allowPdfDownload: less.allowPdfDownload !== false,
                     };
 
