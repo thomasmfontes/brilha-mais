@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
+import { compressImage } from "@/utils/image";
 import {
     LucideLayoutDashboard,
     LucidePlayCircle,
@@ -129,10 +130,14 @@ export function AppLayout() {
         }
 
         setIsUpdatingAvatar(true);
-        const formData = new FormData();
-        formData.append('file', file);
-
+        
         try {
+            // 1. Compress image (Avatars are usually small, 512x512 is more than enough)
+            const compressedFile = await compressImage(file, 512, 512, 0.85);
+
+            const formData = new FormData();
+            formData.append('file', compressedFile, 'avatar.jpg');
+
             // 1. Upload to storage
             const uploadRes = await api.post('/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
