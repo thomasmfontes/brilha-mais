@@ -164,14 +164,28 @@ export class UserService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('User not found');
 
+    // Auto-update locationId from the first assigned turma
+    let locationId = user.locationId;
+    if (turmaIds.length > 0) {
+      const firstTurma = await this.prisma.turma.findUnique({
+        where: { id: turmaIds[0] },
+        select: { locationId: true }
+      });
+      if (firstTurma?.locationId) {
+        locationId = firstTurma.locationId;
+      }
+    }
+
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: {
+        locationId,
         turmas: {
           set: turmaIds.map((id) => ({ id })),
         },
       },
       include: {
+        location: true,
         turmas: {
           include: {
             areas: { include: { category: true } }
@@ -189,7 +203,8 @@ export class UserService {
       {
         userName: user.name,
         turmasCount: turmaIds.length,
-        turmas: updatedUser.turmas.map(t => t.name).join(', ')
+        turmas: updatedUser.turmas.map(t => t.name).join(', '),
+        locationName: updatedUser.location?.name || 'Global'
       }
     );
 
