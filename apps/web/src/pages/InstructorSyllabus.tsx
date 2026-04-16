@@ -872,17 +872,39 @@ export default function InstructorSyllabus() {
                                         {/* Type Selector (Desktop right-side) */}
                                         <div className="lg:col-span-4 space-y-4">
                                             <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
-                                                <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block text-left border-l-2 border-slate-200 pl-2 italic">Tipo de conteúdo</label>
-                                                <select
-                                                    className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-primary transition-all font-black text-slate-900 appearance-none cursor-pointer text-center uppercase tracking-widest text-[10px]"
-                                                    value={lesson.contentType || 'VIDEO'}
-                                                    onChange={(e) => updateLesson(mIdx, lIdx, { contentType: e.target.value as any })}
-                                                >
-                                                    <option value="VIDEO">Vídeo YouTube</option>
-                                                    <option value="PDF">Arquivo PDF</option>
-                                                    <option value="QUIZ">Mini Teste</option>
-                                                    <option value="ESSAY">Desafio Dissertativo</option>
-                                                </select>
+                                                <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-3 block text-left border-l-2 border-slate-200 pl-2 italic">Tipo de conteúdo</label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {([
+                                                        { value: 'VIDEO', label: 'Vídeo', icon: <LucidePlay className="h-4 w-4" />, color: 'text-red-500', activeBg: 'bg-red-500', activeRing: 'ring-red-200', activeShadow: 'shadow-red-100' },
+                                                        { value: 'PDF', label: 'PDF', icon: <LucideFileText className="h-4 w-4" />, color: 'text-blue-500', activeBg: 'bg-blue-500', activeRing: 'ring-blue-200', activeShadow: 'shadow-blue-100' },
+                                                        { value: 'QUIZ', label: 'Teste', icon: <LucideHelpCircle className="h-4 w-4" />, color: 'text-violet-500', activeBg: 'bg-violet-500', activeRing: 'ring-violet-200', activeShadow: 'shadow-violet-100' },
+                                                        { value: 'ESSAY', label: 'Desafio', icon: <LucideZap className="h-4 w-4" />, color: 'text-amber-500', activeBg: 'bg-amber-500', activeRing: 'ring-amber-200', activeShadow: 'shadow-amber-100' },
+                                                    ] as const).map((opt) => {
+                                                        const isActive = (lesson.contentType || 'VIDEO') === opt.value;
+                                                        return (
+                                                            <button
+                                                                key={opt.value}
+                                                                type="button"
+                                                                onClick={() => updateLesson(mIdx, lIdx, { contentType: opt.value as any })}
+                                                                className={`relative flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border-2 transition-all duration-200 font-black text-[9px] uppercase tracking-wider overflow-hidden
+                                                                    ${isActive
+                                                                        ? `${opt.activeBg} text-white border-transparent shadow-lg ${opt.activeShadow} scale-[1.03]`
+                                                                        : `bg-white border-slate-200 ${opt.color} hover:border-slate-300 hover:scale-[1.02] hover:shadow-sm`
+                                                                    }`}
+                                                            >
+                                                                {isActive && (
+                                                                    <motion.div
+                                                                        layoutId={`content-type-bg-${mIdx}-${lIdx}`}
+                                                                        className="absolute inset-0 rounded-xl"
+                                                                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                                                    />
+                                                                )}
+                                                                <span className="relative z-10">{opt.icon}</span>
+                                                                <span className="relative z-10 leading-none">{opt.label}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
 
                                             {lesson.contentType === 'PDF' && (
