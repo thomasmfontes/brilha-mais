@@ -29,20 +29,27 @@ export function PortalModal({ isOpen, onClose, children, preventCloseOnOverlayCl
     return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="fixed inset-0 z-[9999] flex items-center justify-center px-4"
-                    style={{ willChange: "opacity" }}
-                >
-                    <div
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden">
+                    {/* Fundo com efeito de vidro simplificado */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         onClick={() => !preventCloseOnOverlayClick && onClose()}
-                        className="absolute inset-0 bg-slate-950/40 backdrop-blur-md transition-all"
+                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+                        style={{ WebkitBackdropFilter: 'blur(8px)' }}
                     />
-                    {children}
-                </motion.div>
+                    
+                    {/* Conteúdo do Modal */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="relative z-[100000] w-full max-w-lg mx-4"
+                    >
+                        {children}
+                    </motion.div>
+                </div>
             )}
         </AnimatePresence>,
         document.body
