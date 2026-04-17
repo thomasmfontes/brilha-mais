@@ -739,10 +739,12 @@ export default function AdminDashboard() {
         const matchesSearch = u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             u.email?.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesRole = filterRole === 'ALL' || u.role === filterRole;
-        const matchesTurma = filterTurma === 'ALL' || u.turmas?.some(t => t.id === filterTurma);
+        const matchesTurma = filterTurma === 'ALL' || (u.role !== 'SUPER_ADMIN' && u.role !== 'ADMIN' && u.turmas?.some(t => t.id === filterTurma));
         const matchesArea = filterArea === 'ALL' ||
-            u.assignedAreas?.some(a => a.category.id === filterArea) ||
-            u.turmas?.some(t => t.areas?.some(a => a.category.id === filterArea));
+            (u.role !== 'SUPER_ADMIN' && u.role !== 'ADMIN' && (
+                u.assignedAreas?.some(a => a.category.id === filterArea) ||
+                u.turmas?.some(t => t.areas?.some(a => a.category.id === filterArea))
+            ));
         
         // Security filter: Unit admin only sees their location. Super admin follows the location filter.
         const isWithinAdminScope = !userLocationId || u.locationId === userLocationId;
@@ -904,7 +906,7 @@ export default function AdminDashboard() {
                     className="space-y-8"
                 >
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:px-0">
-                        <h2 className="text-xl md:text-2xl font-black tracking-tight uppercase">Gestão de Localidades (Pólos)</h2>
+                        <h2 className="text-xl md:text-2xl font-black tracking-tight uppercase">Gestão de Localidades</h2>
                         <button
                             onClick={() => { setEditingLocation(null); setLocationName(""); setIsLocationModalOpen(true); }}
                             className="w-full md:w-auto bg-primary text-primary-foreground px-6 py-3.5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-all text-xs"
@@ -1211,9 +1213,9 @@ export default function AdminDashboard() {
                 >
 
 
-                    <div className="hidden md:block bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-sm">
+                    <div className="hidden xl:block bg-card border border-border rounded-[2.5rem] shadow-sm relative z-20">
                         {/* Header Interno com Filtros */}
-                        <div className="px-8 py-5 border-b border-border bg-slate-50/20">
+                        <div className="px-8 py-5 border-b border-border bg-slate-50/20 rounded-t-[2.4rem]">
                             <div className="flex items-center justify-between gap-6">
                                 <div className="flex flex-col md:flex-row gap-3 items-center">
                                     <div className="relative w-full md:w-72 group">
@@ -1279,15 +1281,16 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                         </div>
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b border-border text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground bg-muted/20">
-                                    <th className="px-8 py-5">Usuário</th>
-                                    <th className="px-8 py-5">Role</th>
-                                    <th className="px-8 py-5">Turmas</th>
-                                    <th className="px-8 py-5">Áreas</th>
-                                    <th className="px-8 py-5">Localidade</th>
-                                    <th className="px-8 py-5 text-right">Ações</th>
+                        <div className="w-full overflow-x-auto custom-scrollbar">
+                            <table className="w-full text-left min-w-[1000px]">
+                                <thead>
+                                <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 bg-slate-50/50">
+                                    <th className="px-5 py-3.5 w-[25%] min-w-[200px]">Usuário</th>
+                                    <th className="px-5 py-3.5 w-[15%]">Role</th>
+                                    <th className="px-5 py-3.5 w-[15%]">Turmas</th>
+                                    <th className="px-5 py-3.5 w-[15%]">Áreas</th>
+                                    <th className="px-5 py-3.5 w-[15%]">Localidade</th>
+                                    <th className="px-5 py-3.5 w-[15%] text-right">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1298,9 +1301,9 @@ export default function AdminDashboard() {
                                         <UserSkeleton />
                                     </>
                                 ) : filteredUsers.length > 0 ? filteredUsers.map((user) => (
-                                    <tr key={user.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition-colors">
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-4">
+                                    <tr key={user.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition-colors group">
+                                        <td className="px-5 py-3.5 group-last:rounded-bl-[2.4rem]">
+                                            <div className="flex items-center gap-3">
                                                 <button 
                                                     onClick={() => setPreviewAvatar({ 
                                                         id: user.id,
@@ -1347,29 +1350,20 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
+                                        <td className="px-5 py-3.5">
                                             {updatingRoleFor === user.id ? (
                                                 <div className="flex items-center justify-center h-8 w-24">
                                                     <LoadingSpinner size="sm" />
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-3 py-2 w-44 shadow-sm group-hover/role:bg-white transition-all focus-within:ring-4 focus-within:ring-primary/10 focus-within:border-primary cursor-pointer">
-                                                    <select
-                                                        value={user.role}
-                                                        onChange={(e) => handleUpdateRole(user.id, e.target.value)}
-                                                        className={`appearance-none bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer w-full ${user.role === 'SUPER_ADMIN' ? 'text-indigo-600' : user.role === 'ADMIN' ? 'text-purple-600' : user.role === 'INSTRUCTOR' ? 'text-blue-600' : 'text-emerald-600'}`}
-                                                    >
-                                                        <option value="STUDENT">Aluno</option>
-                                                        <option value="INSTRUCTOR">Instrutor</option>
-                                                        <option value="ADMIN">Admin</option>
-                                                        <option value="SUPER_ADMIN">Super</option>
-                                                    </select>
-                                                    <LucideUserCog className="h-3.5 w-3.5 opacity-30 pointer-events-none shrink-0" />
-                                                </div>
+                                                <RoleSelect
+                                                    value={user.role}
+                                                    onChange={(val) => handleUpdateRole(user.id, val)}
+                                                />
                                             )}
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex flex-wrap gap-2">
+                                        <td className="px-5 py-3.5">
+                                            <div className="flex flex-wrap gap-1.5">
                                                 {user.turmas?.map((t, i) => (
                                                     <span key={`turma-${i}`} className="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">
                                                         {t.name}
@@ -1388,8 +1382,8 @@ export default function AdminDashboard() {
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex flex-wrap gap-2">
+                                        <td className="px-5 py-3.5">
+                                            <div className="flex flex-wrap gap-1.5">
                                                             {updatingRoleFor === user.id ? (
                                                                 <div className="flex items-center">
                                                                     <LoadingSpinner size="xs" />
@@ -1427,26 +1421,21 @@ export default function AdminDashboard() {
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-8 py-6">
+                                                    <td className="px-5 py-3.5">
                                                         {!userLocationId && user.role !== 'SUPER_ADMIN' ? (
-                                                            <select
-                                                                value={user.locationId || ""}
-                                                                onChange={(e) => handleUpdateUserLocation(user.id, e.target.value || null)}
-                                                                className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[10px] font-bold outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
-                                                            >
-                                                                <option value="">Global</option>
-                                                                {locations.map(loc => (
-                                                                    <option key={loc.id} value={loc.id}>{loc.name}</option>
-                                                                ))}
-                                                            </select>
+                                                            <LocationSelect
+                                                                value={user.locationId || null}
+                                                                onChange={(val) => handleUpdateUserLocation(user.id, val)}
+                                                                options={locations}
+                                                            />
                                                         ) : (
                                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                                                 {user.location?.name || 'Global'}
                                                             </span>
                                                         )}
                                                     </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <div className="flex justify-end gap-2 text-right">
+                                        <td className="px-5 py-3.5 text-right group-last:rounded-br-[2.4rem]">
+                                            <div className="flex justify-end gap-1 text-right">
                                                 {user.role === 'STUDENT' && (
                                                     <button
                                                         onClick={() => {
@@ -1470,17 +1459,18 @@ export default function AdminDashboard() {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan={5} className="px-8 py-10 text-center text-muted-foreground font-medium">
+                                        <td colSpan={6} className="px-5 py-8 text-center text-muted-foreground font-medium text-xs">
                                             Nenhum usuário encontrado.
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
-                        </table>
+                            </table>
+                        </div>
                     </div>
 
                     {/* Mobile Card List */}
-                    <div className="md:hidden space-y-4">
+                    <div className="xl:hidden space-y-4">
                         <div className="bg-card border border-border rounded-[2.5rem] p-4 shadow-sm space-y-3">
                             <div className="relative group">
                                 <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
@@ -2123,7 +2113,7 @@ export default function AdminDashboard() {
                         </div>
                         {!userLocationId && (
                             <div>
-                                <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Localidade (Pólo)</label>
+                                <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Localidade</label>
                                 <select className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm"
                                     value={tempLocationId || ""} onChange={(e) => setTempLocationId(e.target.value || null)}>
                                     <option value="">Selecione uma localidade (Obrigatório)</option>
@@ -2158,7 +2148,7 @@ export default function AdminDashboard() {
                     </h2>
                     <div className="space-y-6">
                         <div>
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Localidade (Pólo)</label>
+                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Localidade</label>
                             <input className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm"
                                 placeholder="Ex: Água Rasa, Cubatão..." value={locationName} onChange={(e) => setLocationName(e.target.value)} />
                         </div>
@@ -2294,6 +2284,205 @@ function timeAgo(dateString: string) {
     return "agora mesmo";
 }
 
+function RoleSelect({
+    value,
+    onChange,
+    disabled = false
+}: {
+    value: string,
+    onChange: (val: string) => void,
+    disabled?: boolean
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const options = [
+        { id: 'STUDENT', name: 'Aluno', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+        { id: 'INSTRUCTOR', name: 'Instrutor', color: 'text-blue-600', bg: 'bg-blue-50' },
+        { id: 'ADMIN', name: 'Admin', color: 'text-purple-600', bg: 'bg-purple-50' },
+        { id: 'SUPER_ADMIN', name: 'Super', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    ];
+
+    const selectedOption = options.find(o => o.id === value) || options[0];
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    return (
+        <div className="relative w-32" ref={dropdownRef}>
+            <button
+                type="button"
+                onClick={() => !disabled && setIsOpen(!isOpen)}
+                className={`
+                    w-full flex items-center justify-between pl-3 pr-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider outline-none transition-all duration-300
+                    ${isOpen 
+                        ? 'bg-white border border-primary shadow-[0_4px_15px_-5px_rgba(249,115,22,0.15)] z-10 relative' 
+                        : 'bg-slate-50 border border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-sm shadow-sm'
+                    }
+                    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                `}
+            >
+                <div className={`truncate text-left flex-1 ${selectedOption.color} transition-colors`}>
+                    {selectedOption.name}
+                </div>
+                <div className={`shrink-0 transition-colors duration-300 ${isOpen ? 'text-primary' : 'text-slate-300 opacity-50'}`}>
+                    <LucideUserCog className="h-3.5 w-3.5" />
+                </div>
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -5, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -5, scale: 0.98 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute z-50 top-full left-0 mt-2 w-full bg-card border border-border rounded-[1.25rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden"
+                    >
+                        <div className="p-1.5 flex flex-col gap-1 relative bg-white">
+                            {options.map(opt => {
+                                const isSelected = value === opt.id;
+                                return (
+                                    <button
+                                        key={opt.id}
+                                        type="button"
+                                        onClick={() => { onChange(opt.id); setIsOpen(false); }}
+                                        className={`
+                                            w-full text-left px-2.5 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all
+                                            ${isSelected 
+                                                ? `${opt.bg} ${opt.color}` 
+                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                            }
+                                        `}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 flex items-center justify-center shrink-0">
+                                                {isSelected && <LucideCheck className={`h-3 w-3 ${opt.color}`} />}
+                                            </div>
+                                            <span className="truncate">{opt.name}</span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+function LocationSelect({
+    value,
+    onChange,
+    options
+}: {
+    value: string | null,
+    onChange: (val: string | null) => void,
+    options: { id: string, name: string }[],
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const isActive = value !== null && value !== "";
+    const selectedOption = isActive ? options.find(o => o.id === value) : null;
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    return (
+        <div className="relative w-40" ref={dropdownRef}>
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className={`
+                    w-full flex items-center justify-between pl-3 pr-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest outline-none transition-all duration-300
+                    ${isOpen 
+                        ? 'bg-white border border-primary/30 shadow-[0_4px_15px_-5px_rgba(249,115,22,0.15)] z-10 relative' 
+                        : 'bg-slate-50 border border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-sm'
+                    }
+                    ${isActive ? 'text-primary' : 'text-slate-600'}
+                `}
+            >
+                <div className="truncate text-left flex-1 transition-colors">
+                    {selectedOption ? selectedOption.name : "Global"}
+                </div>
+                <div className={`shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : 'text-slate-400'}`}>
+                    <LucideChevronDown className="h-3 w-3" />
+                </div>
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -5, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -5, scale: 0.98 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute z-50 top-full right-0 mt-1.5 w-48 bg-card border border-border rounded-xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden"
+                    >
+                        <div className="p-1 flex flex-col gap-0.5 relative bg-white max-h-48 overflow-y-auto custom-scrollbar">
+                            <button
+                                type="button"
+                                onClick={() => { onChange(null); setIsOpen(false); }}
+                                className={`
+                                    w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all
+                                    ${!isActive ? 'bg-primary/5 text-primary' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
+                                `}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 flex items-center justify-center shrink-0">
+                                        {!isActive && <LucideCheck className="h-3 w-3 text-primary" />}
+                                    </div>
+                                    <span className="truncate">Global</span>
+                                </div>
+                            </button>
+                            
+                            {options.map(opt => {
+                                const isSelected = value === opt.id;
+                                return (
+                                    <button
+                                        key={opt.id}
+                                        type="button"
+                                        onClick={() => { onChange(opt.id); setIsOpen(false); }}
+                                        className={`
+                                            w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all
+                                            ${isSelected 
+                                                ? 'bg-primary/5 text-primary' 
+                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                            }
+                                        `}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 flex items-center justify-center shrink-0">
+                                                {isSelected && <LucideCheck className="h-3 w-3 text-primary" />}
+                                            </div>
+                                            <span className="truncate">{opt.name}</span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
 function FilterSelect({
     icon: Icon,
     value,
@@ -2307,32 +2496,102 @@ function FilterSelect({
     options: { id: string, name: string }[],
     placeholder: string
 }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
     const isActive = value !== 'ALL';
+    const selectedOption = value === 'ALL' ? null : options.find(o => o.id === value);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     return (
-        <div className={`relative flex items-center group transition-all duration-300 cursor-pointer`}>
-            <div className={`absolute left-3.5 z-10 transition-colors duration-300 ${isActive ? 'text-primary' : 'text-slate-400 group-hover:text-black'}`}>
-                <Icon className="h-3.5 w-3.5" />
-            </div>
-            <select
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
+        <div className="relative" ref={dropdownRef}>
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
                 className={`
-                    appearance-none pl-10 pr-9 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest outline-none transition-all duration-300 cursor-pointer min-w-[130px] w-full lg:w-auto
+                    w-full lg:w-auto min-w-[140px] flex items-center justify-between pl-4 pr-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest outline-none transition-all duration-300
                     ${isActive
-                        ? `bg-white border border-primary shadow-lg shadow-primary/5 text-slate-900`
-                        : 'bg-transparent border border-transparent text-slate-900 hover:bg-slate-50 hover:border-slate-200'
+                        ? `bg-white border border-primary/30 shadow-[0_4px_15px_-5px_rgba(249,115,22,0.15)] text-slate-900 group`
+                        : isOpen ? 'bg-slate-50 border border-slate-300 text-slate-900 shadow-sm' : 'bg-transparent border border-transparent hover:bg-slate-50 hover:border-slate-200 text-slate-600'
                     }
                 `}
             >
-                <option value="ALL" className="text-slate-500">{placeholder}</option>
-                {options.map(opt => (
-                    <option key={opt.id} value={opt.id} className="text-slate-900 font-bold">{opt.name}</option>
-                ))}
-            </select>
-            <div className={`absolute right-3.5 pointer-events-none transition-colors duration-300 ${isActive ? 'text-primary' : 'text-slate-300'}`}>
-                <LucideChevronDown className="h-3 w-3" />
-            </div>
+                <div className="flex items-center gap-2.5 flex-1 min-w-0 pr-4">
+                    <div className={`transition-colors duration-300 shrink-0 ${isActive ? 'text-primary' : isOpen ? 'text-slate-900' : 'text-slate-400'}`}>
+                        <Icon className="h-3.5 w-3.5" />
+                    </div>
+                    <span className={`truncate text-left flex-1 ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>
+                        {isActive && selectedOption ? selectedOption.name : placeholder}
+                    </span>
+                </div>
+                <div className={`shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-slate-900' : isActive ? 'text-primary' : 'text-slate-300'}`}>
+                    <LucideChevronDown className="h-3 w-3" />
+                </div>
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -5, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -5, scale: 0.98 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute z-50 top-full left-0 mt-2 w-[220px] bg-card border border-border rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden"
+                    >
+                        <div className="max-h-[280px] overflow-y-auto custom-scrollbar p-1.5 flex flex-col gap-1">
+                            <button
+                                type="button"
+                                onClick={() => { onChange('ALL'); setIsOpen(false); }}
+                                className={`
+                                    w-full text-left px-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all
+                                    ${value === 'ALL' 
+                                        ? 'bg-slate-100 text-slate-900' 
+                                        : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
+                                    }
+                                `}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3" />
+                                    {placeholder}
+                                </div>
+                            </button>
+                            
+                            {options.map(opt => {
+                                const isSelected = value === opt.id;
+                                return (
+                                    <button
+                                        key={opt.id}
+                                        type="button"
+                                        onClick={() => { onChange(opt.id); setIsOpen(false); }}
+                                        className={`
+                                            w-full text-left px-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all
+                                            ${isSelected 
+                                                ? 'bg-primary/5 text-primary' 
+                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                            }
+                                        `}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 flex items-center justify-center shrink-0">
+                                                {isSelected && <LucideCheck className="h-3 w-3 text-primary" />}
+                                            </div>
+                                            <span className="truncate">{opt.name}</span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

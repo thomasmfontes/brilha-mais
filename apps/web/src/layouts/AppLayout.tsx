@@ -40,9 +40,27 @@ const adminItems = [
 
 export function AppLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [userRole, setUserRole] = useState<'student' | 'instructor' | 'admin' | 'super_admin'>('student');
-    const [userName, setUserName] = useState<string>('');
-    const [userAvatar, setUserAvatar] = useState<string>('');
+    const [userRole, setUserRole] = useState<'student' | 'instructor' | 'admin' | 'super_admin'>(() => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (token) return (jwtDecode<any>(token).role || 'STUDENT').toLowerCase() as any;
+        } catch (e) {}
+        return 'student';
+    });
+    const [userName, setUserName] = useState<string>(() => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (token) return jwtDecode<any>(token).name || '';
+        } catch (e) {}
+        return '';
+    });
+    const [userAvatar, setUserAvatar] = useState<string>(() => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (token) return jwtDecode<any>(token).avatarUrl || '';
+        } catch (e) {}
+        return '';
+    });
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isWelcomeVideoOpen, setIsWelcomeVideoOpen] = useState(false);
     const location = useLocation();
@@ -50,7 +68,13 @@ export function AppLayout() {
     const scrollRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
-    const [isLoadingUserData, setIsLoadingUserData] = useState(true);
+    const [isLoadingUserData, setIsLoadingUserData] = useState(() => {
+        try {
+            return !localStorage.getItem('auth_token');
+        } catch (e) {
+            return true;
+        }
+    });
 
     useEffect(() => {
         // Reset internal scroll on route change
@@ -68,22 +92,15 @@ export function AppLayout() {
         }
 
         const syncUser = async () => {
-            setIsLoadingUserData(true);
+            // Background sync - do not trigger loading skeleton
             try {
-                // Decodificação básica inicial para UI rápida
-                const decoded: any = jwtDecode(token);
-                const role = (decoded.role || 'STUDENT').toLowerCase();
-                setUserRole(role as any);
-
-                // Carrega dados reais do servidor para evitar estado desatualizado do token
                 const res = await api.get('/users/me');
                 const user = res.data;
                 
                 if (user.name) setUserName(user.name);
                 if (user.avatarUrl) setUserAvatar(user.avatarUrl);
+                if (user.role) setUserRole(user.role.toLowerCase() as any);
                 
-                // Abre o vídeo apenas se o banco de dados confirmar que ainda não foi visto
-                // Comparamos com false explicitamente para evitar abrir se o campo for nulo/indefinido
                 if (user.role === 'STUDENT' && user.hasSeenWelcomeVideo === false) {
                      setIsWelcomeVideoOpen(true);
                 }
