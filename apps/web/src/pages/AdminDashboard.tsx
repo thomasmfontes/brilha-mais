@@ -735,23 +735,28 @@ export default function AdminDashboard() {
         });
     };
 
-    const filteredUsers = users.filter(u => {
-        const matchesSearch = u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.email?.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesRole = filterRole === 'ALL' || u.role === filterRole;
-        const matchesTurma = filterTurma === 'ALL' || (u.role !== 'SUPER_ADMIN' && u.role !== 'ADMIN' && u.turmas?.some(t => t.id === filterTurma));
-        const matchesArea = filterArea === 'ALL' ||
-            (u.role !== 'SUPER_ADMIN' && u.role !== 'ADMIN' && (
-                u.assignedAreas?.some(a => a.category.id === filterArea) ||
-                u.turmas?.some(t => t.areas?.some(a => a.category.id === filterArea))
-            ));
-        
-        // Security filter: Unit admin only sees their location. Super admin follows the location filter.
-        const isWithinAdminScope = !userLocationId || u.locationId === userLocationId;
-        const matchesLocationFilter = selectedLocationId === 'ALL' || u.locationId === selectedLocationId;
+    const filteredUsers = users
+        .filter(u => {
+            const matchesSearch = u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                u.email?.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesRole = filterRole === 'ALL' || u.role === filterRole;
+            const matchesTurma = filterTurma === 'ALL' || (
+                (u.role === 'STUDENT' || u.role === 'INSTRUCTOR') && 
+                u.turmas?.some(t => t.id === filterTurma)
+            );
+            
+            const matchesArea = filterArea === 'ALL' || (
+                (u.role === 'INSTRUCTOR' && u.assignedAreas?.some(a => a.category.id === filterArea)) ||
+                (u.role === 'STUDENT' && u.turmas?.some(t => t.areas?.some(a => a.category.id === filterArea)))
+            );
+            
+            // Security filter: Unit admin only sees their location. Super admin follows the location filter.
+            const isWithinAdminScope = !userLocationId || u.locationId === userLocationId;
+            const matchesLocationFilter = selectedLocationId === 'ALL' || u.locationId === selectedLocationId;
 
-        return matchesSearch && matchesRole && matchesTurma && matchesArea && isWithinAdminScope && matchesLocationFilter;
-    });
+            return matchesSearch && matchesRole && matchesTurma && matchesArea && isWithinAdminScope && matchesLocationFilter;
+        })
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
     const filteredTurmas = turmas.filter(t => {
         const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -1363,24 +1368,30 @@ export default function AdminDashboard() {
                                             )}
                                         </td>
                                         <td className="px-5 py-3.5">
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {user.turmas?.map((t, i) => (
-                                                    <span key={`turma-${i}`} className="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">
-                                                        {t.name}
-                                                    </span>
-                                                ))}
-                                                {user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
-                                                    <button
-                                                        onClick={() => handleOpenTurmaModal(user)}
-                                                        className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground transition-colors"
-                                                    >
-                                                        <LucidePlus className="h-3 w-3" />
-                                                    </button>
-                                                )}
-                                                {(!user.turmas || user.turmas.length === 0) && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
-                                                    <span className="text-[10px] text-muted-foreground/50 italic">N/A</span>
-                                                )}
-                                            </div>
+                                            {updatingRoleFor === user.id ? (
+                                                <div className="flex items-center">
+                                                    <LoadingSpinner size="xs" />
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {user.turmas?.map((t, i) => (
+                                                        <span key={`turma-${i}`} className="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">
+                                                            {t.name}
+                                                        </span>
+                                                    ))}
+                                                    {user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
+                                                        <button
+                                                            onClick={() => handleOpenTurmaModal(user)}
+                                                            className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground transition-colors"
+                                                        >
+                                                            <LucidePlus className="h-3 w-3" />
+                                                        </button>
+                                                    )}
+                                                    {(!user.turmas || user.turmas.length === 0) && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
+                                                        <span className="text-[10px] text-muted-foreground/50 italic">N/A</span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="px-5 py-3.5">
                                             <div className="flex flex-wrap gap-1.5">
@@ -1422,17 +1433,21 @@ export default function AdminDashboard() {
                                                         </div>
                                                     </td>
                                                     <td className="px-5 py-3.5">
-                                                        {!userLocationId && user.role !== 'SUPER_ADMIN' ? (
-                                                            <LocationSelect
-                                                                value={user.locationId || null}
-                                                                onChange={(val) => handleUpdateUserLocation(user.id, val)}
-                                                                options={locations}
-                                                            />
-                                                        ) : (
-                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                                {user.location?.name || 'Global'}
-                                                            </span>
-                                                        )}
+                                                        <div className="flex items-center gap-3">
+                                                            {updatingRoleFor === user.id ? (
+                                                                <LoadingSpinner size="sm" />
+                                                            ) : !userLocationId && user.role !== 'SUPER_ADMIN' ? (
+                                                                <LocationSelect
+                                                                    value={user.locationId || null}
+                                                                    onChange={(val) => handleUpdateUserLocation(user.id, val)}
+                                                                    options={locations}
+                                                                />
+                                                            ) : (
+                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                                    {user.location?.name || 'Global'}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </td>
                                         <td className="px-5 py-3.5 text-right group-last:rounded-br-[2.4rem]">
                                             <div className="flex justify-end gap-1 text-right">

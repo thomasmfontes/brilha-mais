@@ -43,20 +43,47 @@ export class UserService {
   }
 
   async updateRole(userId: string, role: string, actorId?: string) {
-    const updateData: any = { role: role as Role };
-    if (role === 'SUPER_ADMIN') {
-      updateData.locationId = null;
-    }
+    const roleEnum = role as Role;
+    
+    // Execute everything in a transaction to ensure data integrity
+    const user = await this.prisma.$transaction(async (tx) => {
+      const updateData: any = { role: roleEnum };
+      
+      if (roleEnum === 'SUPER_ADMIN') {
+        updateData.locationId = null;
+      }
 
-    const user = await this.prisma.user.update({
-      where: { id: userId },
-      data: updateData,
+      // Cleanup logic based on role transitions
+      if (roleEnum === 'ADMIN' || roleEnum === 'SUPER_ADMIN') {
+        // Admins start with a clean slate: no assigned instructor areas and no student classes
+        await tx.instructorArea.deleteMany({ where: { userId } });
+        // Clear many-to-many relationship with Turmas
+        updateData.turmas = { set: [] };
+        // Clear student enrollments
+        await tx.enrollment.deleteMany({ where: { userId } });
+      } else if (roleEnum === 'STUDENT') {
+        // Students cannot have instructor-specific knowledge areas
+        await tx.instructorArea.deleteMany({ where: { userId } });
+        // Clear previous turmas and enrollments (starting fresh as a student)
+        updateData.turmas = { set: [] };
+        await tx.enrollment.deleteMany({ where: { userId } });
+      } else if (roleEnum === 'INSTRUCTOR') {
+        // When becoming an instructor, the user is removed from their student classes
+        updateData.turmas = { set: [] };
+        // Clear student enrollments
+        await tx.enrollment.deleteMany({ where: { userId } });
+      }
+
+      return tx.user.update({
+        where: { id: userId },
+        data: updateData,
+      });
     });
 
     const roleLabel = role === 'SUPER_ADMIN' ? 'Super Admin' : role === 'ADMIN' ? 'Administrador' : role === 'INSTRUCTOR' ? 'Instrutor' : 'Aluno';
 
     await this.audit.log(
-      `Alteração de Role → ${roleLabel}`,
+      `Alteração de Role → ${roleLabel} (com limpeza de dados)`,
       user.name ?? 'Usuário',
       userId,
       actorId,
