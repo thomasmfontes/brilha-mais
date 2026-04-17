@@ -83,7 +83,7 @@ export class UserService {
     const roleLabel = role === 'SUPER_ADMIN' ? 'Super Admin' : role === 'ADMIN' ? 'Administrador' : role === 'INSTRUCTOR' ? 'Instrutor' : 'Aluno';
 
     await this.audit.log(
-      `Alteração de Role → ${roleLabel} (com limpeza de dados)`,
+      `Alteração de Role → ${roleLabel}`,
       user.name ?? 'Usuário',
       userId,
       actorId,

@@ -1,13 +1,14 @@
 import { LucideShield, LucideUsers, LucideBookOpen, LucideAlertTriangle, LucideShieldCheck, LucidePlus, LucideLayoutGrid, LucideSearch, LucideUserCog, LucideCheck, LucideTrash2, LucideEdit2, LucidePencil, LucideFolder, LucideChevronDown, LucideXCircle, LucideUserCircle, LucideMaximize2, LucideLoader2, LucideCamera, LucideMapPin, LucideLayoutDashboard, LucideGraduationCap } from "lucide-react";
 import { getIconComponent } from "../utils/icons";
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import api from "../utils/api";
 import { compressImage } from "@/utils/image";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { PortalModal } from "../components/PortalModal";
 import UserMaterialsModal from "../components/UserMaterialsModal";
+import CountUp from "../components/CountUp";
 
 interface Category {
     id: string;
@@ -741,8 +742,9 @@ export default function AdminDashboard() {
                 u.email?.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesRole = filterRole === 'ALL' || u.role === filterRole;
             const matchesTurma = filterTurma === 'ALL' || (
-                (u.role === 'STUDENT' || u.role === 'INSTRUCTOR') && 
-                u.turmas?.some(t => t.id === filterTurma)
+                filterTurma === 'NONE' 
+                    ? (!u.turmas || u.turmas.length === 0) && u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN'
+                    : (u.role === 'STUDENT' || u.role === 'INSTRUCTOR') && u.turmas?.some(t => t.id === filterTurma)
             );
             
             const matchesArea = filterArea === 'ALL' || (
@@ -844,9 +846,9 @@ export default function AdminDashboard() {
                             </>
                         ) : (
                             <>
-                                <AdminStat icon={<LucideUsers />} label="Usuários" value={stats.totalUsers.toString()} />
-                                <AdminStat icon={<LucideBookOpen />} label="Cursos" value={stats.totalCourses.toString()} />
-                                <AdminStat icon={<LucideShieldCheck />} label="Matrículas" value={stats.totalEnrollments.toString()} />
+                                <AdminStat icon={<LucideUsers />} label="Usuários" value={stats.totalUsers} />
+                                <AdminStat icon={<LucideBookOpen />} label="Cursos" value={stats.totalCourses} />
+                                <AdminStat icon={<LucideShieldCheck />} label="Matrículas" value={stats.totalEnrollments} />
                             </>
                         )}
                     </div>
@@ -1235,18 +1237,6 @@ export default function AdminDashboard() {
                                     </div>
 
                                     <div className="flex flex-wrap gap-2 items-center">
-                                        {userLocationId === undefined ? (
-                                            <FilterSkeleton />
-                                        ) : userLocationId === null && (
-                                            <FilterSelect
-                                                icon={LucideMapPin}
-                                                value={selectedLocationId}
-                                                onChange={setSelectedLocationId}
-                                                placeholder="Localidade"
-                                                options={locations.map(l => ({ id: l.id, name: l.name }))}
-                                            />
-                                        )}
-
                                         <FilterSelect
                                             icon={LucideUserCircle}
                                             value={filterRole}
@@ -1265,7 +1255,10 @@ export default function AdminDashboard() {
                                             value={filterTurma}
                                             onChange={setFilterTurma}
                                             placeholder="Turma"
-                                            options={turmas.map(t => ({ id: t.id, name: t.name }))}
+                                            options={[
+                                                { id: 'NONE', name: 'Sem Turma' },
+                                                ...turmas.map(t => ({ id: t.id, name: t.name }))
+                                            ]}
                                         />
 
                                         <FilterSelect
@@ -1276,12 +1269,23 @@ export default function AdminDashboard() {
                                             options={categories.map(c => ({ id: c.id, name: c.name }))}
                                         />
 
+                                        {userLocationId === undefined ? (
+                                            <FilterSkeleton />
+                                        ) : userLocationId === null && (
+                                            <FilterSelect
+                                                icon={LucideMapPin}
+                                                value={selectedLocationId}
+                                                onChange={setSelectedLocationId}
+                                                placeholder="Localidade"
+                                                options={locations.map(l => ({ id: l.id, name: l.name }))}
+                                            />
+                                        )}
                                     </div>
                                 </div>
 
                                 <div className="hidden md:flex items-center shrink-0">
                                     <span className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-900 bg-slate-100/50 px-4 py-2 rounded-xl border border-slate-100 whitespace-nowrap">
-                                        TOTAL: <span className="text-primary ml-1">{filteredUsers.length}</span>
+                                        TOTAL: <span className="text-primary ml-1"><CountUp value={filteredUsers.length} /></span>
                                     </span>
                                 </div>
                             </div>
@@ -1291,9 +1295,9 @@ export default function AdminDashboard() {
                                 <thead>
                                 <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 bg-slate-50/50">
                                     <th className="px-5 py-3.5 w-[25%] min-w-[200px]">Usuário</th>
-                                    <th className="px-5 py-3.5 w-[15%]">Role</th>
-                                    <th className="px-5 py-3.5 w-[15%]">Turmas</th>
-                                    <th className="px-5 py-3.5 w-[15%]">Áreas</th>
+                                    <th className="px-5 py-3.5 w-[15%]">Função</th>
+                                    <th className="px-5 py-3.5 w-[15%]">Turma</th>
+                                    <th className="px-5 py-3.5 w-[15%]">Área</th>
                                     <th className="px-5 py-3.5 w-[15%]">Localidade</th>
                                     <th className="px-5 py-3.5 w-[15%] text-right">Ações</th>
                                 </tr>
@@ -2269,13 +2273,13 @@ export default function AdminDashboard() {
     );
 }
 
-function AdminStat({ icon, label, value, color = "text-primary" }: { icon: React.ReactNode, label: string, value: string, color?: string }) {
+function AdminStat({ icon, label, value, color = "text-primary" }: { icon: React.ReactNode, label: string, value: number, color?: string }) {
     return (
         <div className="p-6 rounded-3xl bg-card border border-border group hover:border-primary/20 transition-colors shadow-sm">
             <div className={`p-3 rounded-xl bg-white/5 ${color} w-fit mb-4 group-hover:scale-110 transition-transform`}>
                 {icon}
             </div>
-            <p className="text-3xl font-black mb-1">{value}</p>
+            <p className="text-3xl font-black mb-1"><CountUp value={value} /></p>
             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{label}</p>
         </div>
     );

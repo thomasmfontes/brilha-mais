@@ -11,6 +11,7 @@ import { resolveThumbnail } from "../utils/url";
 import api from "../utils/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { PortalModal } from "../components/PortalModal";
+import CountUp from "../components/CountUp";
 
 export default function InstructorDashboard() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -276,14 +277,14 @@ export default function InstructorDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:px-0">
                 <StatCard
                     title="Total Alunos"
-                    value={stats?.totalStudents?.toString() || "0"}
+                    value={stats?.totalStudents || 0}
                     change={stats?.studentsTrend || "0% este mês"}
                     icon={<LucideUsers className="h-4 w-4" />}
                     isLoading={isLoadingStats}
                 />
                 <StatCard
                     title="Cursos Ativos"
-                    value={stats?.totalCourses?.toString() || "0"}
+                    value={stats?.totalCourses || 0}
                     change="Mantido"
                     icon={<LucideLayout className="h-4 w-4" />}
                     isLoading={isLoadingStats}
@@ -714,7 +715,7 @@ export default function InstructorDashboard() {
     );
 }
 
-function StatCard({ title, value, change, icon, isLoading }: { title: string, value: string, change: string, icon: React.ReactNode, isLoading?: boolean }) {
+function StatCard({ title, value, change, icon, isLoading }: { title: string, value: number, change: string, icon: React.ReactNode, isLoading?: boolean }) {
     if (isLoading) {
         return (
             <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-sm space-y-4">
@@ -743,7 +744,7 @@ function StatCard({ title, value, change, icon, isLoading }: { title: string, va
             </div>
             <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1 border-l-2 border-primary pl-2">{title}</p>
-                <p className="text-3xl font-black text-slate-900 tracking-tight">{value}</p>
+                <p className="text-3xl font-black text-slate-900 tracking-tight"><CountUp value={value} /></p>
             </div>
         </div>
     );
