@@ -80,32 +80,37 @@ export class EssaySubmissionService {
   }
 
   async getSubmissionsByLesson(lessonId: string, instructorId: string, role?: string, status?: SubmissionStatus) {
-    const isAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'SUPER_ADMIN';
+    const isSuperAdmin = role?.toUpperCase() === 'SUPER_ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN';
+
     const where: any = { 
       lessonId,
       user: { role: 'STUDENT' }
     };
     if (status) where.status = status;
 
-    if (!isAdmin) {
+    if (!isSuperAdmin) {
       const { locationId, areaIds } = await this.getInstructorPermissionData(instructorId);
       
-      // Check if instructor has access to the course at all
-      const lesson = await this.prisma.lesson.findUnique({
-        where: { id: lessonId },
-        include: { module: { include: { course: true } } },
-      });
+      // Check if user has access to the course (Admins see everything in their location, 
+      // Instructors need ownership or global category match)
+      if (!isAdmin) {
+        const lesson = await this.prisma.lesson.findUnique({
+          where: { id: lessonId },
+          include: { module: { include: { course: true } } },
+        });
 
-      if (!lesson) throw new HttpException('Aula não encontrada', HttpStatus.NOT_FOUND);
+        if (!lesson) throw new HttpException('Aula não encontrada', HttpStatus.NOT_FOUND);
 
-      const isOwner = lesson.module.course.instructorId === instructorId;
-      const isGlobalInArea = lesson.module.course.isGlobal && lesson.module.course.categoryId && areaIds.includes(lesson.module.course.categoryId);
+        const isOwner = lesson.module.course.instructorId === instructorId;
+        const isGlobalInArea = lesson.module.course.isGlobal && lesson.module.course.categoryId && areaIds.includes(lesson.module.course.categoryId);
 
-      if (!isOwner && !isGlobalInArea) {
-        throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+        if (!isOwner && !isGlobalInArea) {
+          throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+        }
       }
 
-      // Restrict submissions to students from the instructor's location
+      // Restrict submissions to students from the user's location
       where.user.locationId = locationId;
     }
 
@@ -119,33 +124,41 @@ export class EssaySubmissionService {
   }
 
   async getAllSubmissions(instructorId: string, role?: string, status?: SubmissionStatus) {
-    const isAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'SUPER_ADMIN';
+    const isSuperAdmin = role?.toUpperCase() === 'SUPER_ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN';
+    
     const where: any = {
       user: { role: 'STUDENT' }
     };
     if (status) where.status = status;
 
-    if (!isAdmin) {
+    if (!isSuperAdmin) {
       const { locationId, areaIds } = await this.getInstructorPermissionData(instructorId);
       
-      where.AND = [
-        { user: { locationId: locationId } }, // Location constraint
-        {
-          OR: [
-            { lesson: { module: { course: { instructorId: instructorId } } } }, // Owner
-            { 
-              lesson: { 
-                module: { 
-                  course: { 
-                    isGlobal: true, 
-                    categoryId: { in: areaIds } 
+      if (isAdmin) {
+        // Admins see all students from their location
+        where.user.locationId = locationId;
+      } else {
+        // Instructors see students from their location AND must have access to the course
+        where.AND = [
+          { user: { locationId: locationId } },
+          {
+            OR: [
+              { lesson: { module: { course: { instructorId: instructorId } } } },
+              { 
+                lesson: { 
+                  module: { 
+                    course: { 
+                      isGlobal: true, 
+                      categoryId: { in: areaIds } 
+                    } 
                   } 
                 } 
-              } 
-            } // Global course in assigned area
-          ]
-        }
-      ];
+              }
+            ]
+          }
+        ];
+      }
     }
 
     return this.prisma.essaySubmission.findMany({
@@ -173,7 +186,9 @@ export class EssaySubmissionService {
   }
 
   async review(submissionId: string, instructorId: string, dto: ReviewEssayDto, role?: string) {
-    const isAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'SUPER_ADMIN';
+    const isSuperAdmin = role?.toUpperCase() === 'SUPER_ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN';
+
     const submission = await this.prisma.essaySubmission.findUnique({
       where: { id: submissionId },
       include: { 
@@ -184,16 +199,23 @@ export class EssaySubmissionService {
 
     if (!submission) throw new HttpException('Submissão não encontrada', HttpStatus.NOT_FOUND);
 
-    if (!isAdmin) {
+    if (!isSuperAdmin) {
       const { locationId, areaIds } = await this.getInstructorPermissionData(instructorId);
       const course = submission.lesson.module.course;
 
       const isSameLocation = submission.user.locationId === locationId;
-      const isOwner = course.instructorId === instructorId;
-      const isGlobalInArea = course.isGlobal && course.categoryId && areaIds.includes(course.categoryId);
 
-      if (!isSameLocation || (!isOwner && !isGlobalInArea)) {
-        throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+      if (!isSameLocation) {
+        throw new HttpException('Acesso negado: Aluno de outra localidade', HttpStatus.FORBIDDEN);
+      }
+
+      if (!isAdmin) {
+        const isOwner = course.instructorId === instructorId;
+        const isGlobalInArea = course.isGlobal && course.categoryId && areaIds.includes(course.categoryId);
+
+        if (!isOwner && !isGlobalInArea) {
+          throw new HttpException('Acesso negado: Você não é o instrutor deste curso', HttpStatus.FORBIDDEN);
+        }
       }
     }
 
@@ -210,7 +232,8 @@ export class EssaySubmissionService {
   }
 
   async requestRedo(submissionId: string, instructorId: string, dto?: ReviewEssayDto, role?: string) {
-    const isAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'SUPER_ADMIN';
+    const isSuperAdmin = role?.toUpperCase() === 'SUPER_ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN';
     
     const submission = await this.prisma.essaySubmission.findUnique({
       where: { id: submissionId },
@@ -224,16 +247,23 @@ export class EssaySubmissionService {
       throw new HttpException('Submissão não encontrada', HttpStatus.NOT_FOUND);
     }
 
-    if (!isAdmin) {
+    if (!isSuperAdmin) {
       const { locationId, areaIds } = await this.getInstructorPermissionData(instructorId);
       const course = submission.lesson.module.course;
 
       const isSameLocation = submission.user.locationId === locationId;
-      const isOwner = course.instructorId === instructorId;
-      const isGlobalInArea = course.isGlobal && course.categoryId && areaIds.includes(course.categoryId);
 
-      if (!isSameLocation || (!isOwner && !isGlobalInArea)) {
-        throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+      if (!isSameLocation) {
+        throw new HttpException('Acesso negado: Aluno de outra localidade', HttpStatus.FORBIDDEN);
+      }
+
+      if (!isAdmin) {
+        const isOwner = course.instructorId === instructorId;
+        const isGlobalInArea = course.isGlobal && course.categoryId && areaIds.includes(course.categoryId);
+
+        if (!isOwner && !isGlobalInArea) {
+          throw new HttpException('Acesso negado: Você não é o instrutor deste curso', HttpStatus.FORBIDDEN);
+        }
       }
     }
 
@@ -254,7 +284,9 @@ export class EssaySubmissionService {
   }
 
   async getDownloadInfo(submissionId: string, instructorId: string, role?: string) {
-    const isAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'SUPER_ADMIN';
+    const isSuperAdmin = role?.toUpperCase() === 'SUPER_ADMIN';
+    const isAdmin = role?.toUpperCase() === 'ADMIN';
+
     const submission = await this.prisma.essaySubmission.findUnique({
       where: { id: submissionId },
       include: { 
@@ -269,16 +301,23 @@ export class EssaySubmissionService {
 
     if (!submission) throw new HttpException('Submissão não encontrada', HttpStatus.NOT_FOUND);
 
-    if (!isAdmin) {
+    if (!isSuperAdmin) {
       const { locationId, areaIds } = await this.getInstructorPermissionData(instructorId);
       const course = submission.lesson.module.course;
 
       const isSameLocation = submission.user.locationId === locationId;
-      const isOwner = course.instructorId === instructorId;
-      const isGlobalInArea = course.isGlobal && course.categoryId && areaIds.includes(course.categoryId);
 
-      if (!isSameLocation || (!isOwner && !isGlobalInArea)) {
-        throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+      if (!isSameLocation) {
+        throw new HttpException('Acesso negado: Aluno de outra localidade', HttpStatus.FORBIDDEN);
+      }
+
+      if (!isAdmin) {
+        const isOwner = course.instructorId === instructorId;
+        const isGlobalInArea = course.isGlobal && course.categoryId && areaIds.includes(course.categoryId);
+
+        if (!isOwner && !isGlobalInArea) {
+          throw new HttpException('Acesso negado: Você não é o instrutor deste curso', HttpStatus.FORBIDDEN);
+        }
       }
     }
 
