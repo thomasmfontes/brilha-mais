@@ -52,7 +52,7 @@ export class CourseService {
             ...course,
             isEnrolled,
             instructor: course.instructor?.name || 'Instrutor',
-            category: course.category?.name || 'Geral',
+            categoryName: course.category?.name || 'Geral',
             students: course._count?.enrollments || 0,
             views: 0,
             progress: isEnrolled ? progress : 0,
@@ -76,7 +76,14 @@ export class CourseService {
     }
 
     async findAdminCourses(locationId?: string) {
-        const where = locationId ? { locationId } : {};
+        // If locationId is provided, we restrict to that location OR global courses.
+        // If not (Super Admin), we show everything.
+        const where = locationId ? {
+            OR: [
+                { locationId },
+                { isGlobal: true }
+            ]
+        } : {};
         const courses = await this.prisma.course.findMany({
             where,
             include: {
@@ -96,15 +103,32 @@ export class CourseService {
         return courses.map(course => ({
             ...course,
             status: course.isPublished ? 'Publicado' : 'Privado',
+            globalStatus: course.isGlobal ? 'Global' : 'Local',
             students: course._count?.enrollments || 0,
             category: course.category?.name || 'Sem categoria',
-            locationName: course.location?.name || 'Global'
+            locationName: course.isGlobal ? 'Global' : (course.location?.name || 'Não definida')
         }));
     }
 
     async findByInstructor(instructorId: string, role?: string) {
-        const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
-        const where = isAdmin ? {} : { instructorId };
+        const user = await this.prisma.user.findUnique({ where: { id: instructorId } });
+        const isSuperAdmin = role === 'SUPER_ADMIN';
+        const isAdmin = role === 'ADMIN';
+
+        let where: any = {};
+        
+        if (isSuperAdmin) {
+            where = {};
+        } else if (isAdmin) {
+            // Unit Admin sees everything in their unit OR global courses
+            where.OR = [
+                { locationId: user?.locationId },
+                { isGlobal: true }
+            ];
+        } else {
+            // Instructor ONLY sees their own courses
+            where.instructorId = instructorId;
+        }
 
         const courses = await this.prisma.course.findMany({
             where,
@@ -127,8 +151,9 @@ export class CourseService {
         return courses.map(course => ({
             ...course,
             status: course.isPublished ? 'Publicado' : 'Privado',
+            isGlobal: course.isGlobal,
             students: course._count?.enrollments || 0,
-            category: course.category?.name || 'Sem categoria',
+            categoryName: course.category?.name || 'Sem categoria',
             instructorName: course.instructor?.name || 'Instrutor'
         }));
     }
@@ -180,10 +205,16 @@ export class CourseService {
                 }
             });
 
-            if (user?.role === 'STUDENT' || user?.role === 'INSTRUCTOR') {
-                // Strict Location Match: No 'Global' (null) courses unless the user themselves is Global
-                // Based on user feedback: "Não deve ter curso global"
-                where.locationId = user.locationId;
+            if (user && user.role !== 'SUPER_ADMIN') {
+                // Visibility restriction: Match location OR mark as Global
+                where.AND = [
+                    {
+                        OR: [
+                            { locationId: user.locationId },
+                            { isGlobal: true }
+                        ]
+                    }
+                ];
 
                 if (user.role === 'STUDENT') {
                     const areaIds = Array.from(new Set([
@@ -280,7 +311,7 @@ export class CourseService {
     async create(data: any) {
         const { modules, ...courseData } = data;
 
-        const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'instructorId', 'categoryId', 'locationId'];
+        const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'isGlobal', 'instructorId', 'categoryId', 'locationId'];
         const filteredData: any = {};
         validFields.forEach(field => {
             if (data[field] !== undefined) {
@@ -367,7 +398,7 @@ export class CourseService {
 
     async update(id: string, data: any, actorId?: string) {
         const { modules, ...courseData } = data;
-        const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'categoryId', 'locationId', 'instructorId'];
+        const validFields = ['title', 'description', 'thumbnail', 'price', 'isPublished', 'isGlobal', 'categoryId', 'locationId', 'instructorId'];
         const filteredUpdateData: any = {};
 
         validFields.forEach(field => {

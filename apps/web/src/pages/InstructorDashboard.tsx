@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideSearch, LucideX } from "lucide-react";
+import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideGlobe, LucideSearch, LucideX } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
@@ -39,7 +39,8 @@ export default function InstructorDashboard() {
         category: "",
         thumbnail: "",
         youtubeUrl: "",
-        instructorId: ""
+        instructorId: "",
+        isGlobal: false
     });
 
     const [instructors, setInstructors] = useState<any[]>([]);
@@ -134,7 +135,8 @@ export default function InstructorDashboard() {
                     categoryId: newCourse.category,
                     thumbnail: newCourse.thumbnail,
                     youtubeUrl: newCourse.youtubeUrl,
-                    instructorId: newCourse.instructorId
+                    instructorId: newCourse.instructorId,
+                    isGlobal: newCourse.isGlobal
                 });
             } else {
                 await addCourse({
@@ -142,7 +144,8 @@ export default function InstructorDashboard() {
                     categoryId: newCourse.category,
                     thumbnail: newCourse.thumbnail,
                     youtubeUrl: newCourse.youtubeUrl,
-                    instructorId: newCourse.instructorId
+                    instructorId: newCourse.instructorId,
+                    isGlobal: newCourse.isGlobal
                 });
             }
 
@@ -245,7 +248,8 @@ export default function InstructorDashboard() {
             category: course.categoryId || course.category?.id || "",
             thumbnail: course.thumbnail || "",
             youtubeUrl: course.youtubeUrl || (course.youtubeId ? `https://www.youtube.com/watch?v=${course.youtubeId}` : ""),
-            instructorId: course.instructorId || ""
+            instructorId: course.instructorId || "",
+            isGlobal: !!course.isGlobal
         });
         setIsCreateModalOpen(true);
     };
@@ -253,7 +257,7 @@ export default function InstructorDashboard() {
     const handleCloseModal = () => {
         setIsCreateModalOpen(false);
         setEditingCourse(null);
-        setNewCourse({ title: "", category: assignedCategories[0]?.id || "", thumbnail: "", youtubeUrl: "", instructorId: "" });
+        setNewCourse({ title: "", category: assignedCategories[0]?.id || "", thumbnail: "", youtubeUrl: "", instructorId: "", isGlobal: false });
         setUploadPreview(null);
     };
 
@@ -350,9 +354,14 @@ export default function InstructorDashboard() {
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="font-black text-sm text-slate-900 group-hover:text-primary transition-colors uppercase tracking-tight leading-snug">{course.title}</span>
-                                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
-                                                        {typeof course.category === 'object' ? (course.category as any)?.name : (course.category || 'Sem categoria')}
-                                                    </span>
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                                            {course.categoryName || (course.categoryName || (typeof course.category === 'object' ? (course.category as any)?.name : (course.category || 'Sem categoria')))}
+                                                        </span>
+                                                        {course.isGlobal && (
+                                                            <span className="text-[8px] font-black bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-md border border-indigo-100 uppercase tracking-tighter">Global</span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
@@ -464,9 +473,14 @@ export default function InstructorDashboard() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-black text-sm text-slate-900 line-clamp-2 uppercase tracking-tight">{course.title}</h3>
-                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">
-                                            {typeof course.category === 'object' ? (course.category as any)?.name : (course.category || 'Sem categoria')}
-                                        </span>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                                {course.categoryName || (course.categoryName || (typeof course.category === 'object' ? (course.category as any)?.name : (course.category || 'Sem categoria')))}
+                                            </span>
+                                            {course.isGlobal && (
+                                                <span className="text-[8px] font-black bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-md border border-indigo-100 uppercase tracking-tighter">Global</span>
+                                            )}
+                                        </div>
                                         {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
                                             <span className="text-[8px] font-black text-primary uppercase tracking-[0.15em] mt-1 bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10 w-fit">
                                                 {(course as any).instructorName}
@@ -608,6 +622,31 @@ export default function InstructorDashboard() {
                                         </div>
                                     </div>
                                 )}
+
+                                <div className="space-y-3">
+                                    <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Configurações de Visibilidade</label>
+                                    <div 
+                                        className={`flex flex-col gap-4 p-5 rounded-[2rem] border-2 transition-all duration-300 cursor-pointer group ${newCourse.isGlobal ? 'bg-primary/5 border-primary/20 shadow-lg shadow-primary/5' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}`}
+                                        onClick={() => setNewCourse({ ...newCourse, isGlobal: !newCourse.isGlobal })}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-500 ${newCourse.isGlobal ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-100 text-slate-400'}`}>
+                                                {newCourse.isGlobal ? <LucideGlobe className="h-5 w-5" /> : <LucideLock className="h-5 w-5" />}
+                                            </div>
+                                            <div className={`w-11 h-6 rounded-full relative transition-all duration-500 ${newCourse.isGlobal ? 'bg-primary shadow-md shadow-primary/10' : 'bg-slate-300'}`}>
+                                                <motion.div 
+                                                    animate={{ x: newCourse.isGlobal ? 22 : 4 }}
+                                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                                    className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900 leading-none">Curso Global</p>
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight mt-1.5 leading-tight">Visível em todas as unidades da rede</p>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <div className="space-y-3">
                                     <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Capa do Curso</label>

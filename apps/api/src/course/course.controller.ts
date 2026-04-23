@@ -8,6 +8,7 @@ import {
   Param,
   UseGuards,
   Req,
+  Header,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CourseService } from './course.service';
@@ -36,6 +37,7 @@ export class CourseController {
 
   @UseGuards(JwtAuthGuard)
   @Get('instructor')
+  @Header('Cache-Control', 'no-store')
   getInstructorCourses(@Req() req: any) {
     return this.courseService.findByInstructor(req.user.id, req.user.role);
   }
@@ -73,6 +75,7 @@ export class CourseController {
   }
 
   @Get()
+  @Header('Cache-Control', 'no-store')
   async findAll(@Req() req: any) {
     const userId = this.extractUserId(req);
     // If not logged in, return global courses

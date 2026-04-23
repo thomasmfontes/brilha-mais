@@ -6,9 +6,9 @@ import { resolveThumbnail } from "../utils/url";
 interface CourseCardProps {
   id: string;
   title: string;
-  instructor: any;
+  instructor?: any;
   thumbnail: string;
-  category: any;
+  category?: any;
   rating?: number;
   progress?: number;
   isEnrolled?: boolean;
@@ -16,7 +16,7 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ id, title, instructor, thumbnail, category, rating = 0, progress, isEnrolled, hideProgress }: CourseCardProps) {
-  const categoryName = typeof category === 'object' ? category?.name : category;
+  const categoryName = typeof category === 'object' ? (category as any)?.categoryName || (category as any)?.name : (category || 'Sem categoria');
   const instructorName = typeof instructor === 'object' ? instructor?.name : instructor;
 
   const showProgress = !hideProgress && (isEnrolled || progress !== undefined);

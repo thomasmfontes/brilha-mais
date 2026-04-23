@@ -71,6 +71,7 @@ model Course {
   thumbnail    String?
   price        Float?
   isPublished  Boolean      @default(false)
+  isGlobal     Boolean      @default(false)
   instructorId String
   categoryId   String?
   createdAt    DateTime     @default(now())
@@ -86,6 +87,7 @@ model Course {
   @@index([instructorId])
   @@index([categoryId])
   @@index([isPublished])
+  @@index([isGlobal])
 }
 
 model Category {

@@ -46,8 +46,11 @@ export interface Course {
     id: string;
     title: string;
     instructor: string;
+    instructorObject?: { name: string };
     thumbnail: string;
-    category: string;
+    category: string; // Keep for legacy/string display
+    categoryName?: string;
+    categoryObject?: { id: string; name: string };
     rating: number;
     description: string;
     modules: Module[];
@@ -59,6 +62,7 @@ export interface Course {
     status?: string;
     views?: string;
     isPublished?: boolean;
+    isGlobal?: boolean;
     categoryId?: string;
     instructorId?: string;
     youtubeUrl?: string;
@@ -95,7 +99,7 @@ export const useCourseStore = create<CourseStore>()(
             fetchCourses: async (silent = false) => {
                 if (!silent) set({ isLoading: true });
                 try {
-                    const { data } = await api.get('/courses');
+                    const { data } = await api.get(`/courses?t=${Date.now()}`);
                     set({ courses: data });
                 } catch (error) {
                     console.error("Error fetching courses:", error);
@@ -107,7 +111,7 @@ export const useCourseStore = create<CourseStore>()(
                 // Uses a SEPARATE state slice to avoid conflicts with fetchCourses()
                 if (!silent) set({ isMyCoursesLoading: true });
                 try {
-                    const { data } = await api.get('/courses/my');
+                    const { data } = await api.get(`/courses/my?t=${Date.now()}`);
                     set({ myCourses: data });
                 } catch (error) {
                     console.error("Error fetching my courses:", error);
@@ -118,7 +122,7 @@ export const useCourseStore = create<CourseStore>()(
             fetchInstructorCourses: async (silent = false) => {
                 if (!silent) set({ isLoading: true });
                 try {
-                    const { data } = await api.get('/courses/instructor');
+                    const { data } = await api.get(`/courses/instructor?t=${Date.now()}`);
                     set({ instructorCourses: data });
                 } catch (error) {
                     console.error("Error fetching instructor courses:", error);
