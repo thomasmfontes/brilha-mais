@@ -454,38 +454,35 @@ export default function InstructorSubmissions() {
                             </div>
                         </motion.div>
                     ))}
-                </div>
-            )}
-
-            {/* Pagination Controls - Premium Redesign */}
+                   {/* Pagination Controls - Premium & Responsive Redesign */}
             {meta.lastPage > 1 && (
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-8 border-t border-slate-100/50">
-                    <div className="flex items-center gap-3">
-                        <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-full shadow-sm">
-                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-5 md:gap-6 pt-8 pb-28 md:pb-8 border-t border-slate-100/50">
+                    <div className="flex items-center justify-center md:justify-start gap-2 w-full md:w-auto">
+                        <div className="px-3 md:px-4 py-1.5 md:py-2 bg-slate-50 border border-slate-100 rounded-full shadow-sm shrink-0">
+                            <p className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                                 Resultados: <span className="text-slate-900">{meta.total}</span>
                             </p>
                         </div>
-                        <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-full shadow-sm">
-                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                                Página: <span className="text-slate-900">{meta.page} <span className="mx-1 text-slate-300">/</span> {meta.lastPage}</span>
+                        <div className="px-3 md:px-4 py-1.5 md:py-2 bg-slate-50 border border-slate-100 rounded-full shadow-sm shrink-0">
+                            <p className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                                Página: <span className="text-slate-900">{meta.page} <span className="mx-0.5 text-slate-300">/</span> {meta.lastPage}</span>
                             </p>
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center gap-2 md:gap-3 w-full md:w-auto">
                         <button 
                             disabled={page === 1}
                             onClick={() => {
                                 setPage(p => p - 1);
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
-                            className="h-11 w-11 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-slate-400 hover:border-primary hover:text-primary transition-all disabled:opacity-20 disabled:grayscale shadow-sm active:scale-90 group"
+                            className="h-10 w-10 md:h-11 md:w-11 flex items-center justify-center bg-white border border-slate-200 rounded-xl md:rounded-2xl text-slate-400 hover:border-primary hover:text-primary transition-all disabled:opacity-20 disabled:grayscale shadow-sm active:scale-90 group shrink-0"
                         >
-                            <LucideChevronRight className="h-5 w-5 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
+                            <LucideChevronRight className="h-4 w-4 md:h-5 md:w-5 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
                         </button>
                         
-                        <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-[1.25rem] border border-slate-100 shadow-inner">
+                        <div className="flex items-center gap-1 bg-slate-50 p-1 md:p-1.5 rounded-2xl border border-slate-100 shadow-inner">
                             {[...Array(meta.lastPage)].map((_, i) => {
                                 const p = i + 1;
                                 const isNeighbor = Math.abs(p - page) <= 1;
@@ -499,13 +496,13 @@ export default function InstructorSubmissions() {
                                                 setPage(p);
                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                                             }}
-                                            className={`h-9 min-w-[2.25rem] px-2 rounded-xl text-[10px] font-black transition-all ${p === page ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
+                                            className={`h-8 md:h-9 min-w-[2rem] md:min-w-[2.25rem] px-1.5 md:px-2 rounded-xl text-[9px] md:text-[10px] font-black transition-all ${p === page ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
                                         >
                                             {p}
                                         </button>
                                     );
                                 } else if (p === page - 2 || p === page + 2) {
-                                    return <span key={p} className="px-1 text-slate-300 font-black">.</span>;
+                                    return <span key={p} className="px-0.5 text-slate-300 font-black">.</span>;
                                 }
                                 return null;
                             })}
@@ -517,12 +514,13 @@ export default function InstructorSubmissions() {
                                 setPage(p => p + 1);
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
-                            className="h-11 w-11 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-slate-400 hover:border-primary hover:text-primary transition-all disabled:opacity-20 disabled:grayscale shadow-sm active:scale-90 group"
+                            className="h-10 w-10 md:h-11 md:w-11 flex items-center justify-center bg-white border border-slate-200 rounded-xl md:rounded-2xl text-slate-400 hover:border-primary hover:text-primary transition-all disabled:opacity-20 disabled:grayscale shadow-sm active:scale-90 group shrink-0"
                         >
-                            <LucideChevronRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
+                            <LucideChevronRight className="h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-0.5 transition-transform" />
                         </button>
                     </div>
                 </div>
+            )}            </div>
             )}
 
             {/* Review Modal Area via Portal */}
