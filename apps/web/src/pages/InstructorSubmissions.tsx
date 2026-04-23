@@ -50,8 +50,14 @@ export default function InstructorSubmissions() {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'REVIEWED'>('PENDING');
     const [selectedCourseId, setSelectedCourseId] = useState<string>('ALL');
+    
+    // Pagination States
+    const [page, setPage] = useState(1);
+    const [meta, setMeta] = useState({ total: 0, page: 1, lastPage: 1 });
+    const [courses, setCourses] = useState<{id: string, title: string}[]>([]);
 
     // Review Modal States
     const [grade, setGrade] = useState<number>(100);
@@ -65,8 +71,33 @@ export default function InstructorSubmissions() {
     const [showRedoConfirm, setShowRedoConfirm] = useState(false);
 
     useEffect(() => {
+        fetchCourses();
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset page on search
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    useEffect(() => {
+        setPage(1); // Reset page on filter/course change
+    }, [filter, selectedCourseId]);
+
+    useEffect(() => {
         fetchSubmissions();
-    }, [filter]);
+    }, [filter, selectedCourseId, debouncedSearch, page]);
+
+    const fetchCourses = async () => {
+        try {
+            const response = await api.get("/courses/instructor/all");
+            setCourses(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     useEffect(() => {
         if (selectedSubmission) {
@@ -86,9 +117,16 @@ export default function InstructorSubmissions() {
     const fetchSubmissions = async () => {
         setIsLoading(true);
         try {
-            const statusParam = filter === 'ALL' ? '' : `?status=${filter}`;
-            const response = await api.get(`/essay-submissions/pending${statusParam}`);
-            setSubmissions(response.data);
+            const params = new URLSearchParams();
+            if (filter !== 'ALL') params.append('status', filter);
+            if (selectedCourseId !== 'ALL') params.append('courseId', selectedCourseId);
+            if (debouncedSearch) params.append('search', debouncedSearch);
+            params.append('page', page.toString());
+            params.append('limit', '10');
+
+            const response = await api.get(`/essay-submissions/pending?${params.toString()}`);
+            setSubmissions(response.data.data);
+            setMeta(response.data.meta);
         } catch (error) {
             console.error(error);
             toast.error("Erro ao carregar submissões");
@@ -235,16 +273,7 @@ export default function InstructorSubmissions() {
         }
     };
 
-    const uniqueCourses = Array.from(
-        new Map(submissions.map(s => [s.lesson.module.course.id, s.lesson.module.course])).values()
-    );
-
-    const filteredSubmissions = submissions.filter(s => 
-        ((s.user.name?.toLowerCase() || "").includes(search.toLowerCase()) || 
-         (s.lesson.title?.toLowerCase() || "").includes(search.toLowerCase())) &&
-        (selectedCourseId === 'ALL' || s.lesson.module.course.id === selectedCourseId) &&
-        (filter === 'ALL' || s.status === filter)
-    );
+    const filteredSubmissions = submissions; // Filters are now server-side
 
     return (
         <div className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-6 md:space-y-8">
@@ -287,7 +316,7 @@ export default function InstructorSubmissions() {
                         className="w-full bg-card border border-border rounded-xl py-3 pl-11 pr-10 text-xs font-black uppercase tracking-widest appearance-none outline-none h-11"
                     >
                         <option value="ALL">Todos os Cursos</option>
-                        {uniqueCourses.map(course => (
+                        {courses.map(course => (
                             <option key={course.id} value={course.id}>{course.title}</option>
                         ))}
                     </select>
@@ -425,6 +454,74 @@ export default function InstructorSubmissions() {
                             </div>
                         </motion.div>
                     ))}
+                </div>
+            )}
+
+            {/* Pagination Controls - Premium Redesign */}
+            {meta.lastPage > 1 && (
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-8 border-t border-slate-100/50">
+                    <div className="flex items-center gap-3">
+                        <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-full shadow-sm">
+                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                                Resultados: <span className="text-slate-900">{meta.total}</span>
+                            </p>
+                        </div>
+                        <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-full shadow-sm">
+                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                                Página: <span className="text-slate-900">{meta.page} <span className="mx-1 text-slate-300">/</span> {meta.lastPage}</span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                        <button 
+                            disabled={page === 1}
+                            onClick={() => {
+                                setPage(p => p - 1);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="h-11 w-11 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-slate-400 hover:border-primary hover:text-primary transition-all disabled:opacity-20 disabled:grayscale shadow-sm active:scale-90 group"
+                        >
+                            <LucideChevronRight className="h-5 w-5 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
+                        </button>
+                        
+                        <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-[1.25rem] border border-slate-100 shadow-inner">
+                            {[...Array(meta.lastPage)].map((_, i) => {
+                                const p = i + 1;
+                                const isNeighbor = Math.abs(p - page) <= 1;
+                                const isEdge = p === 1 || p === meta.lastPage;
+
+                                if (isEdge || isNeighbor) {
+                                    return (
+                                        <button
+                                            key={p}
+                                            onClick={() => {
+                                                setPage(p);
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                            className={`h-9 min-w-[2.25rem] px-2 rounded-xl text-[10px] font-black transition-all ${p === page ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105' : 'bg-transparent text-slate-400 hover:text-slate-600'}`}
+                                        >
+                                            {p}
+                                        </button>
+                                    );
+                                } else if (p === page - 2 || p === page + 2) {
+                                    return <span key={p} className="px-1 text-slate-300 font-black">.</span>;
+                                }
+                                return null;
+                            })}
+                        </div>
+
+                        <button 
+                            disabled={page === meta.lastPage}
+                            onClick={() => {
+                                setPage(p => p + 1);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="h-11 w-11 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-slate-400 hover:border-primary hover:text-primary transition-all disabled:opacity-20 disabled:grayscale shadow-sm active:scale-90 group"
+                        >
+                            <LucideChevronRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                    </div>
                 </div>
             )}
 

@@ -123,7 +123,15 @@ export class EssaySubmissionService {
     });
   }
 
-  async getAllSubmissions(instructorId: string, role?: string, status?: SubmissionStatus) {
+  async getAllSubmissions(
+    instructorId: string, 
+    role?: string, 
+    status?: SubmissionStatus,
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    courseId?: string
+  ) {
     const isSuperAdmin = role?.toUpperCase() === 'SUPER_ADMIN';
     const isAdmin = role?.toUpperCase() === 'ADMIN';
     
@@ -136,10 +144,8 @@ export class EssaySubmissionService {
       const { locationId, areaIds } = await this.getInstructorPermissionData(instructorId);
       
       if (isAdmin) {
-        // Admins see all students from their location
         where.user.locationId = locationId;
       } else {
-        // Instructors see students from their location AND must have access to the course
         where.AND = [
           { user: { locationId: locationId } },
           {
@@ -161,28 +167,59 @@ export class EssaySubmissionService {
       }
     }
 
-    return this.prisma.essaySubmission.findMany({
-      where,
-      include: {
-        user: { select: { id: true, name: true, avatarUrl: true, locationId: true } },
-        lesson: {
-          select: {
-            id: true,
-            title: true,
-            content: true,
-            order: true,
-            module: {
-              select: {
-                title: true,
-                order: true,
-                course: { select: { id: true, title: true, isGlobal: true, categoryId: true, instructorId: true } },
+    // Apply search filter
+    if (search) {
+      where.OR = [
+        { user: { name: { contains: search, mode: 'insensitive' } } },
+        { lesson: { title: { contains: search, mode: 'insensitive' } } }
+      ];
+    }
+
+    // Apply course filter
+    if (courseId && courseId !== 'ALL') {
+      if (where.AND) {
+        where.AND.push({ lesson: { module: { courseId } } });
+      } else {
+        where.lesson = { ...where.lesson, module: { courseId } };
+      }
+    }
+
+    const [total, data] = await Promise.all([
+      this.prisma.essaySubmission.count({ where }),
+      this.prisma.essaySubmission.findMany({
+        where,
+        include: {
+          user: { select: { id: true, name: true, avatarUrl: true, locationId: true, email: true } },
+          lesson: {
+            select: {
+              id: true,
+              title: true,
+              content: true,
+              order: true,
+              module: {
+                select: {
+                  title: true,
+                  order: true,
+                  course: { select: { id: true, title: true, isGlobal: true, categoryId: true, instructorId: true } },
+                },
               },
             },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      }
+    };
   }
 
   async review(submissionId: string, instructorId: string, dto: ReviewEssayDto, role?: string) {

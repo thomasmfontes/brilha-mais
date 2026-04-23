@@ -30,9 +30,24 @@ export class EssaySubmissionController {
   }
 
   @Get('pending')
-  getAllPendingSubmissions(@Req() req: any, @Query('status') status?: string) {
+  getAllPendingSubmissions(
+    @Req() req: any, 
+    @Query('status') status?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('courseId') courseId?: string
+  ) {
     const targetStatus = status === 'ALL' ? undefined : (status || 'PENDING');
-    return this.service.getAllSubmissions(req.user.id, req.user.role, targetStatus as any);
+    return this.service.getAllSubmissions(
+      req.user.id, 
+      req.user.role, 
+      targetStatus as any,
+      Number(page) || 1,
+      Number(limit) || 10,
+      search,
+      courseId
+    );
   }
 
   @Patch(':id/review')
