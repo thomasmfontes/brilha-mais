@@ -34,6 +34,7 @@ export interface Lesson {
         questions: QuizQuestion[];
     };
     materials?: Material[];
+    deadline?: string;
 }
 
 export interface Module {

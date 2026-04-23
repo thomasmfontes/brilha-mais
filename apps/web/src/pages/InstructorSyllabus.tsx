@@ -51,6 +51,7 @@ interface DraftLesson {
     materials?: Material[];
     allowPdfDownload?: boolean;
     allowSeeking?: boolean;
+    deadline?: string;
 }
 
 interface DraftModule {
@@ -736,14 +737,25 @@ export default function InstructorSyllabus() {
                                             )}
 
                                             {lesson.contentType === 'ESSAY' && (
-                                                <div className="space-y-2">
-                                                    <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block pl-2 border-l-2 border-amber-500 italic">Enunciado / Instruções do Desafio</label>
-                                                    <textarea
-                                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 min-h-[120px] text-sm"
-                                                        value={lesson.content || ''}
-                                                        onChange={(e) => updateLesson(mIdx, lIdx, { content: e.target.value })}
-                                                        placeholder="Descreva o que o aluno deve fazer neste desafio..."
-                                                    />
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block pl-2 border-l-2 border-amber-500 italic">Enunciado / Instruções do Desafio</label>
+                                                        <textarea
+                                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 min-h-[120px] text-sm"
+                                                            value={lesson.content || ''}
+                                                            onChange={(e) => updateLesson(mIdx, lIdx, { content: e.target.value })}
+                                                            placeholder="Descreva o que o aluno deve fazer neste desafio..."
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[9px] uppercase font-black tracking-[0.2em] text-slate-600 mb-2 block pl-2 border-l-2 border-primary italic">Prazo de Entrega (Opcional)</label>
+                                                        <input
+                                                            type="datetime-local"
+                                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 text-sm"
+                                                            value={lesson.deadline ? new Date(new Date(lesson.deadline).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
+                                                            onChange={(e) => updateLesson(mIdx, lIdx, { deadline: e.target.value || undefined })}
+                                                        />
+                                                    </div>
                                                 </div>
                                             )}
 

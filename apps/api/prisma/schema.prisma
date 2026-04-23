@@ -170,6 +170,7 @@ model Lesson {
   order            Int
   isFree           Boolean           @default(false)
   moduleId         String
+  deadline         DateTime?
   allowSeeking     Boolean           @default(false)
   allowPdfDownload Boolean           @default(true)
   essaySubmissions EssaySubmission[]

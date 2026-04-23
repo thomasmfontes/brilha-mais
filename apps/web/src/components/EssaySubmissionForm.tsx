@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { LucideFileText, LucideCheck, LucideDownload, LucideX, LucideZap, LucidePlay, LucideChevronRight, LucideRefreshCw, LucidePaperclip } from "lucide-react";
+import { LucideFileText, LucideCheck, LucideDownload, LucideX, LucideZap, LucidePlay, LucideChevronRight, LucideRefreshCw, LucidePaperclip, LucideClock } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
 import api from "../utils/api";
 
@@ -143,7 +143,8 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
 
     const isReviewed = mySubmission?.status === 'REVIEWED';
     const isRedoRequired = mySubmission?.status === 'REDO_REQUIRED';
-    const isLocked = !!mySubmission && !isRedoRequired;
+    const isExpired = lesson.deadline && new Date() > new Date(lesson.deadline);
+    const isLocked = (!!mySubmission && !isRedoRequired) || (isExpired && !mySubmission);
 
     if (isLoading) {
         return (
@@ -166,10 +167,31 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                         <LucideFileText className="h-8 w-8" />
                     </div>
                     <h2 className="text-lg font-black uppercase tracking-tighter italic text-slate-900">{lesson.title || "Desafio Dissertativo"}</h2>
+                    
+                    {lesson.deadline && (
+                        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border mx-auto ${isExpired ? 'bg-red-50 text-red-600 border-red-100 shadow-sm' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>
+                            <LucideClock className="h-3.5 w-3.5" />
+                            <span>Prazo de Entrega: {new Date(lesson.deadline).toLocaleString('pt-BR')}</span>
+                            {isExpired && <span className="ml-1.5 font-black italic underline decoration-2">EXPIRADO</span>}
+                        </div>
+                    )}
+
                     <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed text-left whitespace-pre-wrap">
                         {lesson.content || "Leia as instruções e envie sua resposta ou anexo abaixo."}
                     </p>
                 </div>
+
+                {isExpired && !mySubmission && (
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-6 bg-red-50 border border-red-100 rounded-3xl text-center space-y-2">
+                        <div className="h-12 w-12 bg-red-600 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-red-600/20 mb-2">
+                            <LucideX className="h-6 w-6 stroke-[3px]" />
+                        </div>
+                        <h3 className="text-red-600 font-black uppercase tracking-tighter text-base italic">Prazo Expirado</h3>
+                        <p className="text-red-500/70 text-xs font-bold leading-relaxed max-w-sm mx-auto uppercase tracking-widest">
+                            Infelizmente o limite para envio deste desafio já passou. Entre em contato com seu instrutor se precisar de mais tempo.
+                        </p>
+                    </motion.div>
+                )}
 
                 {(isReviewed || isRedoRequired) && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-6 border rounded-2xl space-y-3 ${isRedoRequired ? 'bg-amber-500/10 border-amber-500/20' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
@@ -290,7 +312,7 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                             ) : (
                                 <>
                                     <LucideZap className={`h-5 w-5 ${(!isSubmitting && (essayResponse.trim() || essayFile) && !isLocked) ? 'fill-current' : ''}`} /> 
-                                    {isRedoRequired ? 'REENVIAR VERSÃO CORRIGIDA' : (mySubmission ? 'DESAFIO ENVIADO' : 'ENVIAR RESPOSTA')}
+                                    {isExpired && !mySubmission ? 'PRAZO EXPIRADO' : (isRedoRequired ? 'REENVIAR VERSÃO CORRIGIDA' : (mySubmission ? 'DESAFIO ENVIADO' : 'ENVIAR RESPOSTA'))}
                                 </>
                             )}
                         </button>

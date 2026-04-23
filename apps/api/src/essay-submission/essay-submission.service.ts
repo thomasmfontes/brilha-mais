@@ -27,6 +27,13 @@ export class EssaySubmissionService {
       );
     }
 
+    if (lesson.deadline && new Date() > new Date(lesson.deadline)) {
+      throw new HttpException(
+        'O prazo para entrega deste desafio expirou',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const submission = await this.prisma.essaySubmission.upsert({
       where: {
         userId_lessonId: { userId, lessonId },
