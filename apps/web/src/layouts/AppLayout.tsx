@@ -21,6 +21,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import logo from "../assets/logo.png";
 import icon from "../assets/icon.png";
 import { WelcomeVideoModal } from "../components/WelcomeVideoModal";
+import { LocationPickerModal } from "../components/LocationPickerModal";
 import api from "../utils/api";
 import { toast } from "react-hot-toast";
 
@@ -63,6 +64,7 @@ export function AppLayout() {
     });
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isWelcomeVideoOpen, setIsWelcomeVideoOpen] = useState(false);
+    const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -100,9 +102,14 @@ export function AppLayout() {
                 if (user.name) setUserName(user.name);
                 if (user.avatarUrl) setUserAvatar(user.avatarUrl);
                 if (user.role) setUserRole(user.role.toLowerCase() as any);
-                
+
+                // Prioridade 1: Vídeo de Boas-vindas
                 if (user.role === 'STUDENT' && user.hasSeenWelcomeVideo === false) {
-                     setIsWelcomeVideoOpen(true);
+                    setIsWelcomeVideoOpen(true);
+                }
+                // Prioridade 2: Seleção de Localidade (Só aparece se já viu o vídeo ou não é aluno)
+                else if (!user.locationId && user.role !== 'SUPER_ADMIN') {
+                    setIsLocationPickerOpen(true);
                 }
             } catch (error: any) {
                 console.error("Auth sync error:", error);
@@ -122,6 +129,13 @@ export function AppLayout() {
         setIsWelcomeVideoOpen(false);
         try {
             await api.patch('/users/me/welcome-video');
+            
+            // Após fechar o vídeo, verifica se precisa selecionar a localidade
+            const res = await api.get('/users/me');
+            const user = res.data;
+            if (!user.locationId && user.role !== 'SUPER_ADMIN') {
+                setIsLocationPickerOpen(true);
+            }
         } catch (error) {
             console.error("Error marking welcome video as seen:", error);
         }
@@ -515,6 +529,13 @@ export function AppLayout() {
             <WelcomeVideoModal
                 isOpen={isWelcomeVideoOpen}
                 onClose={handleCloseWelcomeVideo}
+            />
+
+            <LocationPickerModal
+                isOpen={isLocationPickerOpen}
+                onLocationSelected={(_locationId) => {
+                    setIsLocationPickerOpen(false);
+                }}
             />
         </div>
     );

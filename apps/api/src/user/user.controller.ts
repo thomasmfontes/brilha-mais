@@ -110,7 +110,7 @@ export class UserController {
   }
 
   @Patch('me')
-  updateMe(@Req() req: any, @Body() data: { name?: string; avatarUrl?: string }) {
+  updateMe(@Req() req: any, @Body() data: { name?: string; avatarUrl?: string; locationId?: string }) {
     return this.userService.updateProfile(req.user.id, data);
   }
 
