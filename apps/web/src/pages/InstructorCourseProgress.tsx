@@ -244,6 +244,14 @@ export default function InstructorCourseProgress() {
                                                                 <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl border border-emerald-100 shadow-sm">
                                                                     OK
                                                                 </span>
+                                                                {lesson.completedAt && (
+                                                                    <div className="flex items-center gap-1 mt-1.5 opacity-70">
+                                                                        <LucideClock className="h-2.5 w-2.5 text-slate-400" />
+                                                                        <span className="text-[8px] font-black uppercase tracking-[0.1em] text-slate-500 italic">
+                                                                            {new Date(lesson.completedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} • {new Date(lesson.completedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         ) : (
                                                             <div className="flex flex-col items-end">
@@ -356,16 +364,24 @@ export default function InstructorCourseProgress() {
                                                 {student.status === 'COMPLETED' ? (
                                                     <div className="flex flex-col items-end">
                                                         <span className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600/50 mb-2">Status</span>
-                                                        <div className="h-8 w-8 md:h-12 md:w-16 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-lg md:rounded-2xl border border-emerald-100 shadow-sm">
-                                                            <span className="text-[9px] md:text-xs font-black uppercase tracking-widest">OK</span>
-                                                        </div>
+                                                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl border border-emerald-100 shadow-sm">
+                                                            OK
+                                                        </span>
+                                                        {student.completedAt && (
+                                                            <div className="flex items-center gap-1 mt-2 opacity-70">
+                                                                <LucideClock className="h-2.5 w-2.5 text-slate-400" />
+                                                                <span className="text-[8px] font-black uppercase tracking-[0.1em] text-slate-500 italic">
+                                                                    {new Date(student.completedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} • {new Date(student.completedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ) : (
                                                     <div className="flex flex-col items-end">
                                                         <span className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em] text-amber-600/50 mb-2">Status</span>
-                                                        <div className="h-8 w-8 md:h-12 md:w-16 flex items-center justify-center bg-amber-50 text-amber-600 rounded-lg md:rounded-2xl border border-amber-100 shadow-sm italic">
-                                                            <span className="text-[9px] md:text-xs font-black uppercase tracking-widest">...</span>
-                                                        </div>
+                                                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl border border-amber-100 shadow-sm italic">
+                                                            ...
+                                                        </span>
                                                     </div>
                                                 )}
                                             </div>
