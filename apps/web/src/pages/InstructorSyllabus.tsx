@@ -753,7 +753,16 @@ export default function InstructorSyllabus() {
                                                             type="datetime-local"
                                                             className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-primary focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 text-sm"
                                                             value={lesson.deadline ? new Date(new Date(lesson.deadline).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
-                                                            onChange={(e) => updateLesson(mIdx, lIdx, { deadline: e.target.value || undefined })}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                if (!val) {
+                                                                    updateLesson(mIdx, lIdx, { deadline: undefined });
+                                                                    return;
+                                                                }
+                                                                // Convert local input string to actual Date object and then to ISO for storage
+                                                                const date = new Date(val);
+                                                                updateLesson(mIdx, lIdx, { deadline: date.toISOString() });
+                                                            }}
                                                         />
                                                     </div>
                                                 </div>

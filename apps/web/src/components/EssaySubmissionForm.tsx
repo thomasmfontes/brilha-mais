@@ -171,7 +171,7 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                     {lesson.deadline && (
                         <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border mx-auto ${isExpired ? 'bg-red-50 text-red-600 border-red-100 shadow-sm' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>
                             <LucideClock className="h-3.5 w-3.5" />
-                            <span>Prazo de Entrega: {new Date(lesson.deadline).toLocaleString('pt-BR')}</span>
+                            <span>Prazo de Entrega: {new Date(lesson.deadline).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                             {isExpired && <span className="ml-1.5 font-black italic underline decoration-2">EXPIRADO</span>}
                         </div>
                     )}
@@ -188,7 +188,7 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                         </div>
                         <h3 className="text-red-600 font-black uppercase tracking-tighter text-base italic">Prazo Expirado</h3>
                         <p className="text-red-500/70 text-xs font-bold leading-relaxed max-w-sm mx-auto uppercase tracking-widest">
-                            Infelizmente o limite para envio deste desafio já passou. Entre em contato com seu instrutor se precisar de mais tempo.
+                            Infelizmente o limite para envio deste desafio já passou.
                         </p>
                     </motion.div>
                 )}
@@ -247,77 +247,79 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                     </motion.div>
                 )}
 
-                <div className="space-y-6">
-                    <div className="space-y-3">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                            Sua Resposta
-                        </label>
-                        <textarea 
-                            value={essayResponse}
-                            onChange={(e) => setEssayResponse(e.target.value)}
-                            readOnly={isLocked}
-                            placeholder="Escreva sua resposta aqui..."
-                            className={`w-full bg-white border border-slate-200 rounded-3xl p-8 text-slate-700 font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all min-h-[300px] shadow-sm ${isLocked ? 'opacity-70 cursor-not-allowed bg-slate-50/50' : ''}`}
-                        />
-                    </div>
-
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="flex-1">
-                            <input type="file" id="essay-file-upload" className="hidden" onChange={handleFileUpload} disabled={isLocked} />
-                            {essayFile ? (
-                                <div className="flex items-center justify-between p-5 bg-primary/5 border border-primary/10 rounded-2xl h-16 transition-all group">
-                                    <div className="flex items-center gap-4 min-w-0">
-                                        <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm border border-primary/10 shrink-0">
-                                            <LucideFileText className="h-5 w-5" />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-xs font-black text-slate-800 truncate max-w-[150px]">{essayFile.name}</p>
-                                            <p className="text-[9px] font-bold text-primary uppercase tracking-widest mt-0.5">Arquivo Anexado</p>
-                                        </div>
-                                    </div>
-                                    {!isLocked && (
-                                        <button onClick={() => setEssayFile(null)} className="p-2 hover:bg-destructive/10 text-destructive rounded-lg transition-colors">
-                                            <LucideX className="h-4 w-4" />
-                                        </button>
-                                    )}
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={() => document.getElementById('essay-file-upload')?.click()}
-                                    disabled={isUploading || isLocked}
-                                    className="w-full h-16 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center gap-3 text-slate-400 hover:border-primary/50 hover:text-primary transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isUploading ? (
-                                        <><LoadingSpinner size="sm" variant="primary" /> {uploadProgress}%</>
-                                    ) : (
-                                        <><LucidePaperclip className="h-4 w-4 group-hover:text-primary transition-colors" /> <span className="text-[10px] font-black uppercase tracking-widest">Anexar material extra</span></>
-                                    )}
-                                </button>
-                            )}
+                {(!isExpired || !!mySubmission) && (
+                    <div className="space-y-6">
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                Sua Resposta
+                            </label>
+                            <textarea 
+                                value={essayResponse}
+                                onChange={(e) => setEssayResponse(e.target.value)}
+                                readOnly={isLocked}
+                                placeholder="Escreva sua resposta aqui..."
+                                className={`w-full bg-white border border-slate-200 rounded-3xl p-8 text-slate-700 font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all min-h-[300px] shadow-sm ${isLocked ? 'opacity-70 cursor-not-allowed bg-slate-50/50' : ''}`}
+                            />
                         </div>
 
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isSubmitting || (!essayResponse.trim() && !essayFile) || isLocked}
-                            className={`flex-1 min-h-[64px] rounded-2xl font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-xl transition-all shrink-0 
-                                ${isSubmitting || (!essayResponse.trim() && !essayFile) || isLocked 
-                                    ? 'bg-slate-100 text-slate-400 shadow-none cursor-not-allowed' 
-                                    : isRedoRequired 
-                                        ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600 active:scale-95' 
-                                        : 'bg-primary text-primary-foreground shadow-primary/20 hover:brightness-110 active:scale-95'}`}
-                        >
-                            {isSubmitting ? (
-                                <><LoadingSpinner size="sm" variant="primary" /> Enviando...</>
-                            ) : (
-                                <>
-                                    <LucideZap className={`h-5 w-5 ${(!isSubmitting && (essayResponse.trim() || essayFile) && !isLocked) ? 'fill-current' : ''}`} /> 
-                                    {isExpired && !mySubmission ? 'PRAZO EXPIRADO' : (isRedoRequired ? 'REENVIAR VERSÃO CORRIGIDA' : (mySubmission ? 'DESAFIO ENVIADO' : 'ENVIAR RESPOSTA'))}
-                                </>
-                            )}
-                        </button>
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="flex-1">
+                                <input type="file" id="essay-file-upload" className="hidden" onChange={handleFileUpload} disabled={isLocked} />
+                                {essayFile ? (
+                                    <div className="flex items-center justify-between p-5 bg-primary/5 border border-primary/10 rounded-2xl h-16 transition-all group">
+                                        <div className="flex items-center gap-4 min-w-0">
+                                            <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm border border-primary/10 shrink-0">
+                                                <LucideFileText className="h-5 w-5" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-black text-slate-800 truncate max-w-[150px]">{essayFile.name}</p>
+                                                <p className="text-[9px] font-bold text-primary uppercase tracking-widest mt-0.5">Arquivo Anexado</p>
+                                            </div>
+                                        </div>
+                                        {!isLocked && (
+                                            <button onClick={() => setEssayFile(null)} className="p-2 hover:bg-destructive/10 text-destructive rounded-lg transition-colors">
+                                                <LucideX className="h-4 w-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => document.getElementById('essay-file-upload')?.click()}
+                                        disabled={isUploading || isLocked}
+                                        className="w-full h-16 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center gap-3 text-slate-400 hover:border-primary/50 hover:text-primary transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isUploading ? (
+                                            <><LoadingSpinner size="sm" variant="primary" /> {uploadProgress}%</>
+                                        ) : (
+                                            <><LucidePaperclip className="h-4 w-4 group-hover:text-primary transition-colors" /> <span className="text-[10px] font-black uppercase tracking-widest">Anexar material extra</span></>
+                                        )}
+                                    </button>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isSubmitting || (!essayResponse.trim() && !essayFile) || isLocked}
+                                className={`flex-1 min-h-[64px] rounded-2xl font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-xl transition-all shrink-0 
+                                    ${isSubmitting || (!essayResponse.trim() && !essayFile) || isLocked 
+                                        ? 'bg-slate-100 text-slate-400 shadow-none cursor-not-allowed' 
+                                        : isRedoRequired 
+                                            ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600 active:scale-95' 
+                                            : 'bg-primary text-primary-foreground shadow-primary/20 hover:brightness-110 active:scale-95'}`}
+                            >
+                                {isSubmitting ? (
+                                    <><LoadingSpinner size="sm" variant="primary" /> Enviando...</>
+                                ) : (
+                                    <>
+                                        <LucideZap className={`h-5 w-5 ${(!isSubmitting && (essayResponse.trim() || essayFile) && !isLocked) ? 'fill-current' : ''}`} /> 
+                                        {isExpired && !mySubmission ? 'PRAZO EXPIRADO' : (isRedoRequired ? 'REENVIAR VERSÃO CORRIGIDA' : (mySubmission ? 'DESAFIO ENVIADO' : 'ENVIAR RESPOSTA'))}
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
