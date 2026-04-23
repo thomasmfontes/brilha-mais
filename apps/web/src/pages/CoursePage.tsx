@@ -252,7 +252,16 @@ export default function CoursePage() {
             ? targetModule?.lessons?.[lIdx - 1] 
             : mIdx > 0 ? modules[mIdx - 1]?.lessons?.[modules[mIdx - 1].lessons.length - 1] : null;
         
-        return !prevLesson || !prevLesson.completed;
+        if (!prevLesson) return true;
+        if (prevLesson.completed) return false;
+
+        // If previous lesson is an expired challenge, allow progress
+        if (prevLesson.contentType === 'ESSAY' && prevLesson.deadline) {
+            const isExpired = new Date() > new Date(prevLesson.deadline);
+            if (isExpired) return false;
+        }
+
+        return true;
     };
 
     const getNextLessonIndices = () => {

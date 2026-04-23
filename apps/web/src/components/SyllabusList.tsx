@@ -74,7 +74,14 @@ const SyllabusList = ({
                                     const prevLesson = lIdx > 0 ? module.lessons[lIdx - 1] : mIdx > 0 ? modules[mIdx - 1]?.lessons?.[modules[mIdx - 1].lessons.length - 1] : null;
                                     
                                     const isPrivileged = userRole === 'ADMIN' || userRole === 'INSTRUCTOR' || userRole === 'SUPER_ADMIN';
-                                    const isLocked = !isPrivileged && !isFirst && (!prevLesson || !prevLesson.completed);
+                                    let isLocked = !isPrivileged && !isFirst && (!prevLesson || !prevLesson.completed);
+
+                                    // If previous lesson is an expired challenge, allow progress
+                                    if (isLocked && prevLesson && prevLesson.contentType === 'ESSAY' && prevLesson.deadline) {
+                                        const isExpired = new Date() > new Date(prevLesson.deadline);
+                                        if (isExpired) isLocked = false;
+                                    }
+
                                     const isActive = mIdx === currentModuleIdx && lIdx === currentLessonIdx;
 
                                     return (

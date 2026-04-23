@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../utils/api';
 
-export type ContentType = 'VIDEO' | 'PDF' | 'QUIZ';
+export type ContentType = 'VIDEO' | 'PDF' | 'QUIZ' | 'ESSAY';
 
 export interface QuizOption {
     text: string;

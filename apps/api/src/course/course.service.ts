@@ -44,6 +44,10 @@ export class CourseService {
             ? interactedLessons[0].title
             : (allLessons[0]?.title || 'Começar curso');
 
+        const lastLessonId = interactedLessons.length > 0
+            ? interactedLessons[0].id
+            : (allLessons[0]?.id || undefined);
+
         const lastAccessedAt = interactedLessons.length > 0
             ? interactedLessons[0].progress[0].updatedAt
             : undefined;
@@ -57,6 +61,7 @@ export class CourseService {
             views: 0,
             progress: isEnrolled ? progress : 0,
             lastLesson: isEnrolled ? lastLessonTitle : undefined,
+            lastLessonId: isEnrolled ? lastLessonId : undefined,
             lastAccessedAt: isEnrolled ? lastAccessedAt : undefined,
             modules: course.modules?.map((mod: any) => ({
                 ...mod,
