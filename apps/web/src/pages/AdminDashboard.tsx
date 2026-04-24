@@ -354,7 +354,10 @@ export default function AdminDashboard() {
             fetchTurmas(true);
         }
         if (activeTab === 'areas') fetchCategories();
-        if (activeTab === 'turmas') fetchTurmas();
+        if (activeTab === 'turmas') {
+            fetchTurmas();
+            fetchCategories(true);
+        }
     }, [activeTab]);
 
     const fetchProfile = async () => {
@@ -391,9 +394,9 @@ export default function AdminDashboard() {
     };
 
     const fetchCategories = async (silent = false) => {
+        setIsFetchingCategories(true);
         if (!silent) {
             setIsLoading(true);
-            setIsFetchingCategories(true);
         }
         try {
             const { data } = await api.get('/categories');
@@ -401,17 +404,17 @@ export default function AdminDashboard() {
         } catch (error) {
             console.error("Error fetching categories:", error);
         } finally {
+            setIsFetchingCategories(false);
             if (!silent) {
                 setIsLoading(false);
-                setIsFetchingCategories(false);
             }
         }
     };
 
     const fetchTurmas = async (silent = false) => {
+        setIsFetchingTurmas(true);
         if (!silent) {
             setIsLoading(true);
-            setIsFetchingTurmas(true);
         }
         try {
             const { data } = await api.get('/turmas');
@@ -419,9 +422,9 @@ export default function AdminDashboard() {
         } catch (error) {
             console.error("Error fetching turmas:", error);
         } finally {
+            setIsFetchingTurmas(false);
             if (!silent) {
                 setIsLoading(false);
-                setIsFetchingTurmas(false);
             }
         }
     };
@@ -1818,7 +1821,6 @@ export default function AdminDashboard() {
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-sm tracking-tight text-slate-900">{area.name}</p>
-                                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">{area._count?.courses || 0} cursos</p>
                                                 </div>
                                             </div>
 
@@ -2027,7 +2029,6 @@ export default function AdminDashboard() {
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-sm tracking-tight text-slate-900">{area.name}</p>
-                                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">{area._count?.courses || 0} cursos</p>
                                                 </div>
                                             </div>
 
