@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideGlobe, LucideSearch, LucideX } from "lucide-react";
+import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideGlobe, LucideSearch, LucideX, LucideInfo, LucideCheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
@@ -27,6 +27,7 @@ export default function InstructorDashboard() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadPreview, setUploadPreview] = useState<string | null>(null);
     const [confirmModal, setConfirmModal] = useState<{ message: string; subtext?: string; onConfirm: () => void } | null>(null);
+    const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
 
     const courses = useCourseStore(state => state.instructorCourses);
     const addCourse = useCourseStore(state => state.addCourse);
@@ -649,7 +650,17 @@ export default function InstructorDashboard() {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Capa do Curso</label>
+                                <div className="flex items-center justify-between ml-1">
+                                    <label className="text-[11px] uppercase font-black tracking-[0.2em] text-slate-400">Identidade Visual</label>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setIsGuideModalOpen(true)}
+                                        className="text-[10px] font-black text-primary bg-primary/5 px-3 py-1 rounded-full border border-primary/10 hover:bg-primary hover:text-white transition-all flex items-center gap-1.5"
+                                    >
+                                        <LucideInfo className="h-3 w-3" />
+                                        GUIA DE CAPAS
+                                    </button>
+                                </div>
                                     <div className="w-full h-40 bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center gap-3 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden text-center group shadow-sm">
                                         {isUploading ? (
                                             <div className="flex flex-col items-center gap-3 w-full px-10">
@@ -748,6 +759,111 @@ export default function InstructorDashboard() {
                         </div>
                     </motion.div>
                 )}
+            </PortalModal>
+
+            {/* Modal de Guia de Capas - Redesign Premium */}
+            <PortalModal isOpen={isGuideModalOpen} onClose={() => setIsGuideModalOpen(false)}>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 30 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    className="relative z-10 bg-white rounded-[3rem] overflow-hidden max-w-2xl w-full shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border border-slate-100 max-h-[90vh] flex flex-col"
+                >
+                    {/* Header Premium com Gradiente Sutil */}
+                    <div className="relative p-8 md:p-10 pb-6 shrink-0">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full">
+                                    <LucideImage className="h-3.5 w-3.5" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Padrão de Qualidade</span>
+                                </div>
+                                <h2 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">
+                                    Guia de <span className="text-primary">Capas</span>
+                                </h2>
+                                <p className="text-slate-500 font-medium text-sm">
+                                    Sua capa é o primeiro contato do aluno com o curso.
+                                </p>
+                            </div>
+                            <button 
+                                onClick={() => setIsGuideModalOpen(false)} 
+                                className="p-3 rounded-2xl hover:bg-slate-50 text-slate-400 hover:text-slate-900 transition-all border border-transparent hover:border-slate-100"
+                            >
+                                <LucideX className="h-6 w-6" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto px-8 md:px-10 pb-10 custom-scrollbar space-y-10">
+                        {/* 1. O Formato e Resolução */}
+                        <section className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">01</div>
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">Formato & Resolução</h3>
+                            </div>
+                            
+                            <div className="relative aspect-video rounded-[2rem] overflow-hidden group shadow-2xl">
+                                <img 
+                                    src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200" 
+                                    alt="Exemplo de Layout" 
+                                    className="w-full h-full object-cover"
+                                />
+                                {/* Overlay de Guia Visual */}
+                                <div className="absolute inset-0 border-[16px] border-white/10 backdrop-blur-[2px]">
+                                    <div className="absolute inset-0 border border-dashed border-white/40 m-4 rounded-xl flex items-center justify-center">
+                                        <div className="bg-slate-900/80 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-center">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Área Segura</p>
+                                            <p className="text-xs font-bold text-white/60">Mantenha textos importantes aqui</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="absolute top-6 left-6 flex gap-2">
+                                    <div className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg">1920 x 1080</div>
+                                    <div className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg">16:9</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 2. Dicas de Composição */}
+                        <section className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">02</div>
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">Composição de Sucesso</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-6 rounded-[2rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl transition-all group">
+                                    <div className="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <LucideEdit className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <h4 className="text-sm font-black uppercase tracking-tight mb-2">Tipografia</h4>
+                                    <p className="text-xs text-slate-500 leading-relaxed font-medium">Use fontes legíveis com alto contraste. Evite textos muito pequenos ou decorados demais.</p>
+                                </div>
+                                <div className="p-6 rounded-[2rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl transition-all group">
+                                    <div className="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <LucideLayout className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <h4 className="text-sm font-black uppercase tracking-tight mb-2">Hierarquia</h4>
+                                    <p className="text-xs text-slate-500 leading-relaxed font-medium">O assunto principal deve ser o foco. Não polua a imagem com muitas logos ou elementos.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 3. Dica Final */}
+                        <div className="p-8 rounded-[2.5rem] bg-slate-900 text-white relative overflow-hidden group shadow-2xl">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/40 transition-colors" />
+                            <div className="relative space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-2xl bg-white/10 flex items-center justify-center">
+                                        <LucideAlertTriangle className="h-5 w-5 text-amber-400" />
+                                    </div>
+                                    <h4 className="text-[11px] font-black uppercase tracking-[0.2em]">Dica de Especialista</h4>
+                                </div>
+                                <p className="text-sm font-medium leading-relaxed text-slate-300">
+                                    O sistema aplica um leve gradiente escuro na base da imagem para garantir a leitura do título do curso. <span className="text-white font-black">Mantenha rostos e elementos cruciais na parte superior ou central.</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
             </PortalModal>
 
         </div>
