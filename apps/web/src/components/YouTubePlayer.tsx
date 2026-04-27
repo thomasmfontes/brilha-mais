@@ -310,11 +310,29 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 
     const toggleFullscreen = () => {
         if (!containerRef.current) return;
-        if (!document.fullscreenElement) {
-            containerRef.current.requestFullscreen();
+        const container = containerRef.current as any;
+        
+        if (!document.fullscreenElement && !(document as any).webkitFullscreenElement && !(document as any).msFullscreenElement) {
+            if (container.requestFullscreen) {
+                container.requestFullscreen();
+            } else if (container.webkitRequestFullscreen) {
+                container.webkitRequestFullscreen();
+            } else if (container.mozRequestFullScreen) {
+                container.mozRequestFullScreen();
+            } else if (container.msRequestFullscreen) {
+                container.msRequestFullscreen();
+            }
             setIsFullscreen(true);
         } else {
-            document.exitFullscreen();
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if ((document as any).webkitExitFullscreen) {
+                (document as any).webkitExitFullscreen();
+            } else if ((document as any).mozCancelFullScreen) {
+                (document as any).mozCancelFullScreen();
+            } else if ((document as any).msExitFullscreen) {
+                (document as any).msExitFullscreen();
+            }
             setIsFullscreen(false);
         }
     };
@@ -331,9 +349,10 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
             <iframe
                 key={playerId}
                 id={playerId}
-                src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&high_res=1&vq=${qualityPreference === 'hd' ? 'hd1080' : 'medium'}${startFromTime > 0 ? `&start=${Math.floor(startFromTime)}` : ''}`}
+                src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&playsinline=1&high_res=1&vq=${qualityPreference === 'hd' ? 'hd1080' : 'medium'}${startFromTime > 0 ? `&start=${Math.floor(startFromTime)}` : ''}`}
                 className="absolute inset-0 w-full h-full border-0"
-                allow="autoplay; encrypted-media"
+                allow="autoplay; encrypted-media; fullscreen"
+                allowFullScreen
                 title="player"
             />
 
