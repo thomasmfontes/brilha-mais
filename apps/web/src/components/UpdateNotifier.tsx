@@ -24,6 +24,18 @@ const UpdateNotifier = () => {
     });
 
     useEffect(() => {
+        const handleFocus = () => {
+            // Check for updates when user returns to the tab
+            navigator.serviceWorker.getRegistration().then(r => {
+                if (r) r.update();
+            });
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, []);
+
+    useEffect(() => {
         if (needRefresh) {
             toast((t) => (
                 <div className="flex flex-col gap-3 p-1">
