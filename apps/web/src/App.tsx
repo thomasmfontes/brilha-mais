@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
@@ -43,19 +44,34 @@ function Home() {
 }
 
 function App() {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
         <BrowserRouter>
-            <Toaster position="bottom-right" toastOptions={{
-                duration: 4000,
-                style: {
-                    background: '#fff',
-                    color: '#0f172a',
-                    fontWeight: 'bold',
-                    borderRadius: '1rem',
-                    border: '1px solid #e2e8f0',
-                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-                },
-            }} />
+            <Toaster 
+                position={isMobile ? "top-center" : "bottom-right"} 
+                containerStyle={{
+                    bottom: isMobile ? 120 : 40,
+                    top: isMobile ? 96 : 'auto',
+                }}
+                toastOptions={{
+                    duration: 4000,
+                    style: {
+                        background: '#fff',
+                        color: '#0f172a',
+                        fontWeight: 'bold',
+                        borderRadius: '1rem',
+                        border: '1px solid #e2e8f0',
+                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                    },
+                }} 
+            />
             <UpdateNotifier />
             <Routes>
                 <Route path="/" element={<Home />} />

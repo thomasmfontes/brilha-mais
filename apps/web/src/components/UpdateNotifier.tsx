@@ -63,7 +63,6 @@ const UpdateNotifier = () => {
                 </div>
             ), {
                 duration: Infinity, // Keep the toast until user clicks
-                position: 'bottom-right',
                 style: {
                     borderRadius: '1.5rem',
                     background: '#ffffff',
