@@ -308,34 +308,69 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         setIsLoading(true);
     };
 
-    const toggleFullscreen = () => {
+    const toggleFullscreen = async () => {
         if (!containerRef.current) return;
         const container = containerRef.current as any;
         
-        if (!document.fullscreenElement && !(document as any).webkitFullscreenElement && !(document as any).msFullscreenElement) {
-            if (container.requestFullscreen) {
-                container.requestFullscreen();
-            } else if (container.webkitRequestFullscreen) {
-                container.webkitRequestFullscreen();
-            } else if (container.mozRequestFullScreen) {
-                container.mozRequestFullScreen();
-            } else if (container.msRequestFullscreen) {
-                container.msRequestFullscreen();
+        try {
+            if (!document.fullscreenElement && !(document as any).webkitFullscreenElement && !(document as any).msFullscreenElement) {
+                // Try native fullscreen first
+                let success = false;
+                if (container.requestFullscreen) {
+                    await container.requestFullscreen();
+                    success = true;
+                } else if (container.webkitRequestFullscreen) {
+                    await container.webkitRequestFullscreen();
+                    success = true;
+                } else if (container.msRequestFullscreen) {
+                    await container.msRequestFullscreen();
+                    success = true;
+                }
+
+                // Try to lock orientation to landscape on mobile if in fullscreen
+                if (success && (window.screen as any)?.orientation?.lock) {
+                    try {
+                        await (window.screen.orientation as any).lock('landscape').catch(() => {});
+                    } catch (e) {}
+                }
+                
+                // Even if native fails (like iOS Safari on Divs), we set our state to true 
+                // and handle with CSS "fixed" fallback
+                setIsFullscreen(true);
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    await document.exitFullscreen().catch(() => {});
+                } else if ((document as any).webkitExitFullscreen) {
+                    (document as any).webkitExitFullscreen();
+                }
+                
+                if ((window.screen as any)?.orientation?.unlock) {
+                    try { (window.screen.orientation as any).unlock(); } catch(e) {}
+                }
+                setIsFullscreen(false);
             }
-            setIsFullscreen(true);
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if ((document as any).webkitExitFullscreen) {
-                (document as any).webkitExitFullscreen();
-            } else if ((document as any).mozCancelFullScreen) {
-                (document as any).mozCancelFullScreen();
-            } else if ((document as any).msExitFullscreen) {
-                (document as any).msExitFullscreen();
-            }
-            setIsFullscreen(false);
+        } catch (err) {
+            // If anything fails, toggle our local state to use CSS fallback
+            setIsFullscreen(!isFullscreen);
         }
     };
+
+    // Listen for escape key or browser-level fullscreen changes to keep state in sync
+    useEffect(() => {
+        const handleFsChange = () => {
+            const isFs = !!(document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).msFullscreenElement);
+            setIsFullscreen(isFs);
+        };
+        document.addEventListener('fullscreenchange', handleFsChange);
+        document.addEventListener('webkitfullscreenchange', handleFsChange);
+        document.addEventListener('msfullscreenchange', handleFsChange);
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFsChange);
+            document.removeEventListener('webkitfullscreenchange', handleFsChange);
+            document.removeEventListener('msfullscreenchange', handleFsChange);
+        };
+    }, []);
 
     const progress = duration ? (currentTime / duration) * 100 : 0;
     const maxProgress = duration ? (maxReachedRef.current / duration) * 100 : 0;
@@ -345,13 +380,20 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     const VolumeIcon = isMuted || volume === 0 ? LucideVolumeX : volume < 50 ? LucideVolume1 : LucideVolume2;
 
     return (
-        <div ref={containerRef} className="relative w-full h-full bg-black select-none overflow-hidden group">
+        <div 
+            ref={containerRef} 
+            className={`relative w-full bg-black select-none overflow-hidden group transition-all duration-300 ${
+                isFullscreen 
+                    ? 'fixed inset-0 z-[9999] h-screen w-screen' 
+                    : 'h-full aspect-video'
+            }`}
+        >
             <iframe
                 key={playerId}
                 id={playerId}
                 src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&playsinline=1&high_res=1&vq=${qualityPreference === 'hd' ? 'hd1080' : 'medium'}${startFromTime > 0 ? `&start=${Math.floor(startFromTime)}` : ''}`}
                 className="absolute inset-0 w-full h-full border-0"
-                allow="autoplay; encrypted-media; fullscreen"
+                allow="autoplay; encrypted-media; fullscreen; gyroscope"
                 allowFullScreen
                 title="player"
             />
