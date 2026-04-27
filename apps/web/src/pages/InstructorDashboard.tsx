@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideGlobe, LucideSearch, LucideX, LucideInfo, LucideCheckCircle2 } from "lucide-react";
+import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideGlobe, LucideSearch, LucideX, LucideInfo, LucideCheckCircle2, LucideMapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
@@ -41,12 +41,14 @@ export default function InstructorDashboard() {
         thumbnail: "",
         youtubeUrl: "",
         instructorId: "",
-        isGlobal: false
+        isGlobal: false,
+        locationId: null as string | null
     });
 
     const [instructors, setInstructors] = useState<any[]>([]);
 
     const [assignedCategories, setAssignedCategories] = useState<any[]>([]);
+    const [locations, setLocations] = useState<any[]>([]);
 
     const fetchInstructorCoursesWithLoading = async () => {
         setIsLoadingCourses(true);
@@ -91,11 +93,13 @@ export default function InstructorDashboard() {
                 
                 // If it's a Super Admin, they should see all categories
                 if (userData.role === 'SUPER_ADMIN' || userData.role === 'ADMIN') {
-                    const [{ data: allCategories }, { data: allUsers }] = await Promise.all([
+                    const [{ data: allCategories }, { data: allUsers }, { data: allLocations }] = await Promise.all([
                         api.get('/categories'),
-                        api.get('/users')
+                        api.get('/users'),
+                        api.get('/locations')
                     ]);
                     setAssignedCategories(allCategories);
+                    setLocations(allLocations);
                     
                     const instructorList = allUsers.filter((u: any) => u.role === 'INSTRUCTOR' || u.role === 'ADMIN' || u.role === 'SUPER_ADMIN');
                     setInstructors(instructorList);
@@ -137,7 +141,8 @@ export default function InstructorDashboard() {
                     thumbnail: newCourse.thumbnail,
                     youtubeUrl: newCourse.youtubeUrl,
                     instructorId: newCourse.instructorId,
-                    isGlobal: newCourse.isGlobal
+                    isGlobal: newCourse.isGlobal,
+                    locationId: newCourse.locationId
                 });
             } else {
                 await addCourse({
@@ -146,7 +151,8 @@ export default function InstructorDashboard() {
                     thumbnail: newCourse.thumbnail,
                     youtubeUrl: newCourse.youtubeUrl,
                     instructorId: newCourse.instructorId,
-                    isGlobal: newCourse.isGlobal
+                    isGlobal: newCourse.isGlobal,
+                    locationId: newCourse.locationId
                 });
             }
 
@@ -250,7 +256,8 @@ export default function InstructorDashboard() {
             thumbnail: course.thumbnail || "",
             youtubeUrl: course.youtubeUrl || (course.youtubeId ? `https://www.youtube.com/watch?v=${course.youtubeId}` : ""),
             instructorId: course.instructorId || "",
-            isGlobal: !!course.isGlobal
+            isGlobal: !!course.isGlobal,
+            locationId: course.locationId || null
         });
         setIsCreateModalOpen(true);
     };
@@ -258,7 +265,7 @@ export default function InstructorDashboard() {
     const handleCloseModal = () => {
         setIsCreateModalOpen(false);
         setEditingCourse(null);
-        setNewCourse({ title: "", category: assignedCategories[0]?.id || "", thumbnail: "", youtubeUrl: "", instructorId: "", isGlobal: false });
+        setNewCourse({ title: "", category: assignedCategories[0]?.id || "", thumbnail: "", youtubeUrl: "", instructorId: instructors.find(i => i.role === 'SUPER_ADMIN')?.id || "", isGlobal: false, locationId: null });
         setUploadPreview(null);
     };
 
@@ -661,6 +668,32 @@ export default function InstructorDashboard() {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Localidade Selection for Admins/Super Admins */}
+                                {!newCourse.isGlobal && (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
+                                    <div className="space-y-3">
+                                        <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Localidade do Curso</label>
+                                        <div className="relative">
+                                            <select
+                                                required={!newCourse.isGlobal}
+                                                value={newCourse.locationId || ""}
+                                                onChange={(e) => setNewCourse({ ...newCourse, locationId: e.target.value || null })}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer shadow-sm"
+                                            >
+                                                <option value="">Global / Sem Unidade</option>
+                                                {locations.map((loc) => (
+                                                    <option key={loc.id} value={loc.id}>
+                                                        {loc.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <LucideMapPin className="h-4 w-4" />
+                                            </div>
+                                        </div>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase ml-1">Define em qual unidade este curso local será exibido</p>
+                                    </div>
+                                )}
 
                                 <div className="space-y-3">
                                 <div className="flex items-center justify-between ml-1">

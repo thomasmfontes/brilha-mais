@@ -67,6 +67,7 @@ export interface Course {
     categoryId?: string;
     instructorId?: string;
     youtubeUrl?: string;
+    locationId?: string | null;
     createdAt?: string;
     updatedAt?: string;
     lastAccessedAt?: string;

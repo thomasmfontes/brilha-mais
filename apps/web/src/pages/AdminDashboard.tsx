@@ -743,7 +743,8 @@ export default function AdminDashboard() {
         .filter(u => {
             const matchesSearch = u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 u.email?.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesRole = filterRole === 'ALL' || u.role === filterRole;
+            const matchesRole = filterRole === 'ALL' || 
+                (filterRole === 'ADMIN' ? (u.role === 'ADMIN' || u.role === 'SUPER_ADMIN') : u.role === filterRole);
             const matchesTurma = filterTurma === 'ALL' || (
                 filterTurma === 'NONE' 
                     ? (!u.turmas || u.turmas.length === 0) && u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN'
@@ -1526,6 +1527,7 @@ export default function AdminDashboard() {
                                         { id: 'STUDENT', name: 'Alunos' },
                                         { id: 'INSTRUCTOR', name: 'Instrutores' },
                                         { id: 'ADMIN', name: 'Administradores' },
+                                        { id: 'SUPER_ADMIN', name: 'Super Admins' },
                                     ]}
                                 />
                                 <div className="grid grid-cols-2 gap-2">
@@ -1667,11 +1669,12 @@ export default function AdminDashboard() {
                                                     <select
                                                         value={user.role}
                                                         onChange={(e) => handleUpdateRole(user.id, e.target.value)}
-                                                        className={`appearance-none bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer w-full ${user.role === 'ADMIN' ? 'text-purple-600' : user.role === 'INSTRUCTOR' ? 'text-blue-600' : 'text-emerald-600'}`}
+                                                        className={`appearance-none bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer w-full ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'text-purple-600' : user.role === 'INSTRUCTOR' ? 'text-blue-600' : 'text-emerald-600'}`}
                                                     >
                                                         <option value="STUDENT">Aluno</option>
                                                         <option value="INSTRUCTOR">Instrutor</option>
-                                                        <option value="ADMIN">{user.locationId ? 'Admin' : 'Super Admin'}</option>
+                                                        <option value="ADMIN">Administrador</option>
+                                                        <option value="SUPER_ADMIN">Super Admin</option>
                                                     </select>
                                                     <LucideUserCog className="h-4 w-4 opacity-30 pointer-events-none shrink-0" />
                                                 </div>
