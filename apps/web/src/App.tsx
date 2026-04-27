@@ -58,7 +58,7 @@ function App() {
                 position={isMobile ? "top-center" : "bottom-right"} 
                 containerStyle={{
                     bottom: isMobile ? 120 : 40,
-                    top: isMobile ? 96 : 'auto',
+                    top: isMobile ? 75 : 'auto',
                 }}
                 toastOptions={{
                     duration: 4000,

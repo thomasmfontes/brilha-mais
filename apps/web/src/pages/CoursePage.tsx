@@ -500,7 +500,7 @@ export default function CoursePage() {
 
                                         <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col">
                                             {(!quizSubmitted && (!currentLesson.completed || Object.keys(quizAnswers).length > 0)) ? (
-                                                <div className="flex-1 flex flex-col">
+                                                <div key="quiz-interaction-block" className="flex-1 flex flex-col">
                                                     <div className="flex-1">
                                                         {(() => {
                                                             const questions = currentLesson.quiz?.questions || [];
@@ -589,60 +589,64 @@ export default function CoursePage() {
                                                         })()}
                                                     </div>
 
-                                                    <div className="flex items-center gap-4 mt-12 pt-8 border-t border-slate-50">
+                                                    <div key="quiz-actions" className="flex items-center gap-4 mt-12 pt-8 border-t border-slate-50">
                                                         {!showFeedback ? (
-                                                            <button 
-                                                                onClick={() => setShowFeedback(true)}
-                                                                disabled={quizAnswers[currentQuestionIdx] === undefined}
-                                                                className="w-full py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-3 group"
-                                                            >
-                                                                Confirmar Resposta
-                                                                <LucideCheck className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                                                            </button>
-                                                        ) : (
-                                                            <>
                                                                 <button 
+                                                                    key="btn-confirm-answer"
+                                                                    onClick={() => setShowFeedback(true)}
+                                                                    disabled={quizAnswers[currentQuestionIdx] === undefined}
+                                                                    className="w-full py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-3 group"
+                                                                >
+                                                                    <span>Confirmar Resposta</span>
+                                                                    <LucideCheck className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                                                </button>
+                                                        ) : (
+                                                            <div key="quiz-nav-feedback" className="flex items-center gap-4 w-full">
+                                                                <button 
+                                                                    key="btn-prev-q"
                                                                     onClick={handlePrevQuestion}
                                                                     disabled={currentQuestionIdx === 0}
                                                                     className="flex-1 py-4 px-6 border border-slate-200 rounded-2xl font-black uppercase tracking-widest text-xs text-slate-400 hover:text-slate-600 hover:bg-slate-50 disabled:opacity-0 transition-all flex items-center justify-center gap-2"
                                                                 >
                                                                     <LucideChevronLeft className="h-4 w-4" />
-                                                                    Anterior
+                                                                    <span>Anterior</span>
                                                                 </button>
                                                                 
                                                                 {currentQuestionIdx < (currentLesson.quiz?.questions?.length || 0) - 1 ? (
                                                                     <button 
+                                                                        key="btn-next-q"
                                                                         onClick={handleNextQuestion}
                                                                         className="flex-[2] py-4 px-6 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-slate-900/10 hover:brightness-125 active:scale-95 transition-all flex items-center justify-center gap-2 group"
                                                                     >
-                                                                        Próxima Pergunta
+                                                                        <span>Próxima Pergunta</span>
                                                                         <LucideChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                                                     </button>
                                                                 ) : (
                                                                     <button 
+                                                                        key="btn-finish-quiz"
                                                                         onClick={handleQuizSubmit} 
                                                                         disabled={isSubmittingQuiz || Object.keys(quizAnswers).length < (currentLesson.quiz?.questions?.length || 0)}
                                                                         className="flex-[2] py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                                                                     >
                                                                         {isSubmittingQuiz ? (
-                                                                            <>
+                                                                            <span className="flex items-center gap-2">
                                                                                 <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                                                                                 Processando...
-                                                                            </>
+                                                                            </span>
                                                                         ) : (
-                                                                            <>
+                                                                            <span className="flex items-center gap-2">
                                                                                 Finalizar Teste
                                                                                 <LucideZap className="h-4 w-4 fill-current" />
-                                                                            </>
+                                                                            </span>
                                                                         )}
                                                                     </button>
                                                                 )}
-                                                            </>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="text-center py-10 flex flex-col items-center justify-center">
+                                                <div key="quiz-results-block" className="text-center py-10 flex flex-col items-center justify-center">
                                                     <motion.div 
                                                         initial={{ scale: 0 }}
                                                         animate={{ scale: 1 }}
