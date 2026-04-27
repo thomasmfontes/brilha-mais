@@ -33,7 +33,7 @@ const UpdateNotifier = () => {
                         </div>
                         <div>
                             <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Nova Versão Disponível!</p>
-                            <p className="text-[11px] font-medium text-slate-500 leading-tight mt-0.5">Fizemos melhorias na plataforma. Atualize para ver as novidades.</p>
+                            <p className="text-[11px] font-medium text-slate-500 leading-tight mt-0.5">Fizemos melhorias na plataforma.</p>
                         </div>
                     </div>
                     
