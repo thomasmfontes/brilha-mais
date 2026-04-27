@@ -308,7 +308,7 @@ export default function InstructorDashboard() {
                         <thead>
                             <tr className="border-b border-slate-100 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 bg-slate-50/50">
                                 <th className="px-8 py-4 text-center">Informações do Curso</th>
-                                {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && <th className="px-8 py-4 text-center">Instrutor</th>}
+                                {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && <th className="px-8 py-4 text-center">Criador</th>}
                                 <th className="px-8 py-4">Status</th>
                                 <th className="px-8 py-4 text-center">Alunos</th>
                                 <th className="px-8 py-4 text-right">Gerenciamento</th>
@@ -596,33 +596,46 @@ export default function InstructorDashboard() {
                                     </div>
                                 </div>
 
-                                {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
-                                    <div className="space-y-3">
-                                        <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Instrutor Responsável</label>
-                                        <div className="relative">
-                                            <select
-                                                required
-                                                value={newCourse.instructorId}
-                                                onChange={(e) => setNewCourse({ ...newCourse, instructorId: e.target.value })}
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer shadow-sm"
-                                            >
-                                                <option value="" disabled>Selecione um instrutor</option>
-                                                {instructors.length > 0 ? (
-                                                    instructors.map((inst) => (
-                                                        <option key={inst.id} value={inst.id} className="text-slate-900">
-                                                            {inst.name || inst.email} ({inst.role})
-                                                        </option>
-                                                    ))
-                                                ) : (
-                                                    <option value="" disabled>Carregando instrutores...</option>
-                                                )}
-                                            </select>
-                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                                <LucideUsers className="h-4 w-4" />
+                                <div className="space-y-3">
+                                    <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Criador do Curso</label>
+                                    <div className="relative">
+                                        {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') ? (
+                                            <>
+                                                <select
+                                                    required
+                                                    value={newCourse.instructorId}
+                                                    onChange={(e) => setNewCourse({ ...newCourse, instructorId: e.target.value })}
+                                                    className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer shadow-sm"
+                                                >
+                                                    <option value="" disabled>Selecione um instrutor</option>
+                                                    {instructors.length > 0 ? (
+                                                        instructors.map((inst) => (
+                                                            <option key={inst.id} value={inst.id} className="text-slate-900">
+                                                                {inst.name || inst.email} ({inst.role})
+                                                            </option>
+                                                        ))
+                                                    ) : (
+                                                        <option value="" disabled>Carregando instrutores...</option>
+                                                    )}
+                                                </select>
+                                                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                    <LucideUsers className="h-4 w-4" />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="w-full bg-slate-100/50 border border-slate-200 rounded-3xl px-8 py-5 font-bold text-slate-500 flex items-center justify-between shadow-inner">
+                                                <span>{editingCourse ? (editingCourse as any).instructorName : 'Você (Criador)'}</span>
+                                                <LucideUsers className="h-4 w-4 text-slate-300" />
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
-                                )}
+                                    <div className="mt-2 flex items-start gap-2 bg-amber-50/50 border border-amber-100/50 p-3 rounded-2xl">
+                                        <LucideInfo className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+                                        <p className="text-[9px] font-bold text-amber-600/80 uppercase tracking-tight leading-relaxed">
+                                            Acesso Compartilhado: Este curso é visível para todos os instrutores da mesma Área e Localidade.
+                                        </p>
+                                    </div>
+                                </div>
 
                                 <div className="space-y-3">
                                     <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Configurações de Visibilidade</label>
