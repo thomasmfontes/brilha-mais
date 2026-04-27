@@ -775,7 +775,7 @@ export default function InstructorSyllabus() {
                                                             <div className="h-5 w-5 rounded bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
                                                                 <LucideHelpCircle className="h-2.5 w-2.5" />
                                                             </div>
-                                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">Questões do Teste</span>
+                                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">Questões do Quiz</span>
                                                         </div>
                                                         <button
                                                             onClick={() => addQuestion(mIdx, lIdx)}
@@ -898,7 +898,7 @@ export default function InstructorSyllabus() {
                                                     {([
                                                         { value: 'VIDEO', label: 'Vídeo', icon: <LucidePlay className="h-4 w-4" />, color: 'text-red-500', activeBg: 'bg-red-500', activeRing: 'ring-red-200', activeShadow: 'shadow-red-100' },
                                                         { value: 'PDF', label: 'PDF', icon: <LucideFileText className="h-4 w-4" />, color: 'text-blue-500', activeBg: 'bg-blue-500', activeRing: 'ring-blue-200', activeShadow: 'shadow-blue-100' },
-                                                        { value: 'QUIZ', label: 'Teste', icon: <LucideHelpCircle className="h-4 w-4" />, color: 'text-violet-500', activeBg: 'bg-violet-500', activeRing: 'ring-violet-200', activeShadow: 'shadow-violet-100' },
+                                                        { value: 'QUIZ', label: 'Quiz', icon: <LucideHelpCircle className="h-4 w-4" />, color: 'text-violet-500', activeBg: 'bg-violet-500', activeRing: 'ring-violet-200', activeShadow: 'shadow-violet-100' },
                                                         { value: 'ESSAY', label: 'Desafio', icon: <LucideZap className="h-4 w-4" />, color: 'text-amber-500', activeBg: 'bg-amber-500', activeRing: 'ring-amber-200', activeShadow: 'shadow-amber-100' },
                                                     ] as const).map((opt) => {
                                                         const isActive = (lesson.contentType || 'VIDEO') === opt.value;

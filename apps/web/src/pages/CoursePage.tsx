@@ -247,21 +247,28 @@ export default function CoursePage() {
         if (userRole === 'ADMIN' || userRole === 'INSTRUCTOR' || userRole === 'SUPER_ADMIN') return false;
         if (mIdx === 0 && lIdx === 0) return false;
         
-        const targetModule = modules[mIdx];
-        const prevLesson = lIdx > 0 
-            ? targetModule?.lessons?.[lIdx - 1] 
-            : mIdx > 0 ? modules[mIdx - 1]?.lessons?.[modules[mIdx - 1].lessons.length - 1] : null;
-        
-        if (!prevLesson) return true;
-        if (prevLesson.completed) return false;
+        // Iterate through all modules and lessons up to the current one
+        for (let m = 0; m <= mIdx; m++) {
+            const moduleLessons = modules[m]?.lessons || [];
+            const maxL = (m === mIdx) ? lIdx : moduleLessons.length;
+            
+            for (let l = 0; l < maxL; l++) {
+                const prevLesson = moduleLessons[l];
+                if (!prevLesson) continue;
 
-        // If previous lesson is an expired challenge, allow progress
-        if (prevLesson.contentType === 'ESSAY' && prevLesson.deadline) {
-            const isExpired = new Date() > new Date(prevLesson.deadline);
-            if (isExpired) return false;
+                // Check if this specific previous lesson blocks progress
+                if (!prevLesson.completed) {
+                    // Exception: If it's an expired challenge, it doesn't block
+                    if (prevLesson.contentType === 'ESSAY' && prevLesson.deadline) {
+                        const isExpired = new Date() > new Date(prevLesson.deadline);
+                        if (isExpired) continue; // Skip blocking for expired challenges
+                    }
+                    return true; // Found an uncompleted lesson that blocks
+                }
+            }
         }
-
-        return true;
+        
+        return false;
     };
 
     const getNextLessonIndices = () => {
@@ -608,7 +615,7 @@ export default function CoursePage() {
                                                                         onClick={handleNextQuestion}
                                                                         className="flex-[2] py-4 px-6 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-slate-900/10 hover:brightness-125 active:scale-95 transition-all flex items-center justify-center gap-2 group"
                                                                     >
-                                                                        Próxima Questão
+                                                                        Próxima Pergunta
                                                                         <LucideChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                                                                     </button>
                                                                 ) : (
@@ -806,7 +813,7 @@ export default function CoursePage() {
                         </div>
                     </div>
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
-                        <SyllabusList modules={modules} expandedModules={expandedModules} setExpandedModules={setExpandedModules} currentModuleIdx={currentModuleIdx} currentLessonIdx={currentLessonIdx} isEnrolled={isEnrolled} userRole={userRole} goToLesson={goToLesson} formatDuration={formatDuration} totalModuleDuration={totalModuleDuration} />
+                        <SyllabusList modules={modules} expandedModules={expandedModules} setExpandedModules={setExpandedModules} currentModuleIdx={currentModuleIdx} currentLessonIdx={currentLessonIdx} isEnrolled={isEnrolled} userRole={userRole} goToLesson={goToLesson} formatDuration={formatDuration} totalModuleDuration={totalModuleDuration} isLessonLocked={isLessonLocked} />
                     </div>
                 </div>
             </div>
@@ -864,6 +871,7 @@ export default function CoursePage() {
                                     }} 
                                     formatDuration={formatDuration} 
                                     totalModuleDuration={totalModuleDuration} 
+                                    isLessonLocked={isLessonLocked}
                                 />
                             </div>
                         </motion.div>

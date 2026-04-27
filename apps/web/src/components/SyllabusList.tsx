@@ -12,6 +12,7 @@ interface SyllabusListProps {
     goToLesson: (mIdx: number, lIdx: number) => void;
     formatDuration: (val: any) => string;
     totalModuleDuration: (module: any) => string | null;
+    isLessonLocked: (mIdx: number, lIdx: number) => boolean;
 }
 
 const SyllabusList = ({
@@ -24,7 +25,8 @@ const SyllabusList = ({
     userRole = 'STUDENT',
     goToLesson,
     formatDuration,
-    totalModuleDuration
+    totalModuleDuration,
+    isLessonLocked
 }: SyllabusListProps) => (
     <div className="space-y-0">
         {modules.map((module, mIdx) => {
@@ -70,17 +72,7 @@ const SyllabusList = ({
                                 className="overflow-hidden bg-slate-50/30"
                             >
                                 {(module.lessons || []).map((lesson: any, lIdx: number) => {
-                                    const isFirst = mIdx === 0 && lIdx === 0;
-                                    const prevLesson = lIdx > 0 ? module.lessons[lIdx - 1] : mIdx > 0 ? modules[mIdx - 1]?.lessons?.[modules[mIdx - 1].lessons.length - 1] : null;
-                                    
-                                    const isPrivileged = userRole === 'ADMIN' || userRole === 'INSTRUCTOR' || userRole === 'SUPER_ADMIN';
-                                    let isLocked = !isPrivileged && !isFirst && (!prevLesson || !prevLesson.completed);
-
-                                    // If previous lesson is an expired challenge, allow progress
-                                    if (isLocked && prevLesson && prevLesson.contentType === 'ESSAY' && prevLesson.deadline) {
-                                        const isExpired = new Date() > new Date(prevLesson.deadline);
-                                        if (isExpired) isLocked = false;
-                                    }
+                                    const isLocked = isLessonLocked(mIdx, lIdx);
 
                                     const isActive = mIdx === currentModuleIdx && lIdx === currentLessonIdx;
 
@@ -121,7 +113,7 @@ const SyllabusList = ({
                                                 }`}>
                                                     {lesson.contentType === 'VIDEO'
                                                         ? (lesson.duration && lesson.duration !== '0:00' ? formatDuration(lesson.duration) : 'Vídeo')
-                                                        : lesson.contentType === 'PDF' ? 'PDF' : lesson.contentType === 'QUIZ' ? 'Questões' : 'Desafio'}
+                                                        : lesson.contentType === 'PDF' ? 'PDF' : lesson.contentType === 'QUIZ' ? 'Quiz' : 'Desafio'}
                                                 </span>
                                             </div>
                                         </button>
