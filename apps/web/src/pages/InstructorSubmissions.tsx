@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { 
     LucideFileText, LucideCheckCircle, LucideChevronRight, 
     LucideSearch, LucideFilter, LucideMessageSquare, LucideStar,
-    LucideDownload, LucideX, LucideZap, LucideCalendar, LucideUser, LucideChevronDown, LucideRefreshCw
+    LucideDownload, LucideX, LucideZap, LucideCalendar, LucideUser, LucideChevronDown, LucideRefreshCw, LucideCheck
 } from "lucide-react";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { PortalModal } from "../components/PortalModal";
@@ -53,6 +53,7 @@ export default function InstructorSubmissions() {
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'REVIEWED'>('PENDING');
     const [selectedCourseId, setSelectedCourseId] = useState<string>('ALL');
+    const [isCourseDropdownOpen, setIsCourseDropdownOpen] = useState(false);
     
     // Pagination States
     const [page, setPage] = useState(1);
@@ -92,7 +93,7 @@ export default function InstructorSubmissions() {
 
     const fetchCourses = async () => {
         try {
-            const response = await api.get("/courses/instructor/all");
+            const response = await api.get("/courses/instructor");
             setCourses(response.data);
         } catch (error) {
             console.error(error);
@@ -309,18 +310,68 @@ export default function InstructorSubmissions() {
                     />
                 </div>
                 <div className="relative">
-                    <LucideFilter className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
-                    <select 
-                        value={selectedCourseId}
-                        onChange={(e) => setSelectedCourseId(e.target.value)}
-                        className="w-full bg-card border border-border rounded-xl py-3 pl-11 pr-10 text-xs font-black uppercase tracking-widest appearance-none outline-none h-11"
+                    <button 
+                        onClick={() => setIsCourseDropdownOpen(!isCourseDropdownOpen)}
+                        className={`w-full bg-card border ${isCourseDropdownOpen ? 'border-primary ring-4 ring-primary/5' : 'border-border'} rounded-xl py-3 pl-11 pr-10 text-left transition-all outline-none h-11 relative shadow-sm hover:border-primary/30`}
                     >
-                        <option value="ALL">Todos os Cursos</option>
-                        {courses.map(course => (
-                            <option key={course.id} value={course.id}>{course.title}</option>
-                        ))}
-                    </select>
-                    <LucideChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/30 pointer-events-none" />
+                        <LucideFilter className={`absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 transition-colors ${isCourseDropdownOpen ? 'text-primary' : 'text-muted-foreground/50'}`} />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-700 truncate block">
+                            {selectedCourseId === 'ALL' ? 'Todos os Cursos' : courses.find(c => c.id === selectedCourseId)?.title}
+                        </span>
+                        <LucideChevronDown className={`absolute right-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 transition-all ${isCourseDropdownOpen ? 'text-primary rotate-180' : 'text-muted-foreground/30'}`} />
+                    </button>
+
+                    <AnimatePresence>
+                        {isCourseDropdownOpen && (
+                            <>
+                                <div 
+                                    className="fixed inset-0 z-[40]" 
+                                    onClick={() => setIsCourseDropdownOpen(false)}
+                                />
+                                <motion.div 
+                                    initial={{ opacity: 0, y: -5, scale: 0.98 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -5, scale: 0.98 }}
+                                    transition={{ duration: 0.15, ease: "easeOut" }}
+                                    className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] z-[50] p-1.5 flex flex-col gap-1 overflow-hidden"
+                                >
+                                    <div className="max-h-64 overflow-y-auto custom-scrollbar flex flex-col gap-1">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedCourseId('ALL');
+                                                setIsCourseDropdownOpen(false);
+                                            }}
+                                            className={`w-full px-3 py-2.5 rounded-xl text-left text-[9px] font-black uppercase tracking-widest transition-all ${selectedCourseId === 'ALL' ? 'bg-primary/5 text-primary' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 flex items-center justify-center shrink-0">
+                                                    {selectedCourseId === 'ALL' && <LucideCheck className="h-3 w-3" />}
+                                                </div>
+                                                Todos os Cursos
+                                            </div>
+                                        </button>
+                                        {courses.map(course => (
+                                            <button
+                                                key={course.id}
+                                                onClick={() => {
+                                                    setSelectedCourseId(course.id);
+                                                    setIsCourseDropdownOpen(false);
+                                                }}
+                                                className={`w-full px-3 py-2.5 rounded-xl text-left text-[9px] font-black uppercase tracking-widest transition-all ${selectedCourseId === course.id ? 'bg-primary/5 text-primary' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-3 flex items-center justify-center shrink-0">
+                                                        {selectedCourseId === course.id && <LucideCheck className="h-3 w-3" />}
+                                                    </div>
+                                                    <span className="truncate">{course.title}</span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            </>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 

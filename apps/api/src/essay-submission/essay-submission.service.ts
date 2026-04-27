@@ -102,10 +102,12 @@ export class EssaySubmissionService {
 
         if (!lesson) throw new HttpException('Aula não encontrada', HttpStatus.NOT_FOUND);
 
-        const isOwner = lesson.module.course.instructorId === instructorId;
-        const isGlobalInArea = lesson.module.course.isGlobal && lesson.module.course.categoryId && areaIds.includes(lesson.module.course.categoryId);
+        const course = lesson.module.course;
+        const isOwner = course.instructorId === instructorId;
+        const matchesArea = course.categoryId && areaIds.includes(course.categoryId);
+        const matchesLocation = course.isGlobal || course.locationId === locationId;
 
-        if (!isOwner && !isGlobalInArea) {
+        if (!isOwner && !(matchesArea && matchesLocation)) {
           throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
         }
       }
@@ -155,8 +157,11 @@ export class EssaySubmissionService {
                 lesson: { 
                   module: { 
                     course: { 
-                      isGlobal: true, 
-                      categoryId: { in: areaIds } 
+                      categoryId: { in: areaIds },
+                      OR: [
+                        { isGlobal: true },
+                        { locationId: locationId }
+                      ]
                     } 
                   } 
                 } 
@@ -248,10 +253,11 @@ export class EssaySubmissionService {
 
       if (!isAdmin) {
         const isOwner = course.instructorId === instructorId;
-        const isGlobalInArea = course.isGlobal && course.categoryId && areaIds.includes(course.categoryId);
+        const matchesArea = course.categoryId && areaIds.includes(course.categoryId);
+        const matchesLocation = course.isGlobal || course.locationId === locationId;
 
-        if (!isOwner && !isGlobalInArea) {
-          throw new HttpException('Acesso negado: Você não é o instrutor deste curso', HttpStatus.FORBIDDEN);
+        if (!isOwner && !(matchesArea && matchesLocation)) {
+          throw new HttpException('Acesso negado: Você não tem permissão nesta área/localidade', HttpStatus.FORBIDDEN);
         }
       }
     }
@@ -296,10 +302,11 @@ export class EssaySubmissionService {
 
       if (!isAdmin) {
         const isOwner = course.instructorId === instructorId;
-        const isGlobalInArea = course.isGlobal && course.categoryId && areaIds.includes(course.categoryId);
+        const matchesArea = course.categoryId && areaIds.includes(course.categoryId);
+        const matchesLocation = course.isGlobal || course.locationId === locationId;
 
-        if (!isOwner && !isGlobalInArea) {
-          throw new HttpException('Acesso negado: Você não é o instrutor deste curso', HttpStatus.FORBIDDEN);
+        if (!isOwner && !(matchesArea && matchesLocation)) {
+          throw new HttpException('Acesso negado: Você não tem permissão nesta área/localidade', HttpStatus.FORBIDDEN);
         }
       }
     }
@@ -350,10 +357,11 @@ export class EssaySubmissionService {
 
       if (!isAdmin) {
         const isOwner = course.instructorId === instructorId;
-        const isGlobalInArea = course.isGlobal && course.categoryId && areaIds.includes(course.categoryId);
+        const matchesArea = course.categoryId && areaIds.includes(course.categoryId);
+        const matchesLocation = course.isGlobal || course.locationId === locationId;
 
-        if (!isOwner && !isGlobalInArea) {
-          throw new HttpException('Acesso negado: Você não é o instrutor deste curso', HttpStatus.FORBIDDEN);
+        if (!isOwner && !(matchesArea && matchesLocation)) {
+          throw new HttpException('Acesso negado: Você não tem permissão nesta área/localidade', HttpStatus.FORBIDDEN);
         }
       }
     }

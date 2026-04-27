@@ -556,7 +556,7 @@ export default function InstructorDashboard() {
                     </div>
 
                     <form className="flex-1 flex flex-col min-h-0" onSubmit={handleSave}>
-                        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6 pb-6">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar space-y-6 pb-6">
                             <div className="space-y-3">
                                 <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Título do Curso</label>
                                 <input

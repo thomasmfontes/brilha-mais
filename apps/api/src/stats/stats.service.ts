@@ -74,7 +74,29 @@ export class StatsService {
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-      const instrFilter = isAdmin ? {} : { instructorId };
+      let instrFilter: any = isAdmin ? {} : { instructorId };
+
+      if (!isAdmin) {
+        const user = await this.prisma.user.findUnique({
+          where: { id: instructorId },
+          include: { assignedAreas: true }
+        });
+        const areaIds = user?.assignedAreas.map(a => a.categoryId) || [];
+
+        instrFilter = {
+          OR: [
+            { instructorId },
+            {
+              locationId: user?.locationId,
+              categoryId: { in: areaIds }
+            },
+            {
+              isGlobal: true,
+              categoryId: { in: areaIds }
+            }
+          ]
+        };
+      }
 
       const [
         totalStudents,

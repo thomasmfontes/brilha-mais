@@ -116,7 +116,10 @@ export class CourseService {
     }
 
     async findByInstructor(instructorId: string, role?: string) {
-        const user = await this.prisma.user.findUnique({ where: { id: instructorId } });
+        const user = await this.prisma.user.findUnique({ 
+            where: { id: instructorId },
+            include: { assignedAreas: true }
+        });
         const isSuperAdmin = role === 'SUPER_ADMIN';
         const isAdmin = role === 'ADMIN';
 
@@ -131,8 +134,23 @@ export class CourseService {
                 { isGlobal: true }
             ];
         } else {
-            // Instructor ONLY sees their own courses
-            where.instructorId = instructorId;
+            // Instructor sees:
+            // 1. Their own courses
+            // 2. Courses in their locality AND in their assigned areas
+            // 3. Global courses in their assigned areas
+            const areaIds = user?.assignedAreas.map(a => a.categoryId) || [];
+
+            where.OR = [
+                { instructorId: instructorId },
+                { 
+                    locationId: user?.locationId,
+                    categoryId: { in: areaIds }
+                },
+                {
+                    isGlobal: true,
+                    categoryId: { in: areaIds }
+                }
+            ];
         }
 
         const courses = await this.prisma.course.findMany({
@@ -576,11 +594,26 @@ export class CourseService {
         const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
-            select: { instructorId: true }
+            select: { instructorId: true, locationId: true, categoryId: true, isGlobal: true }
         });
 
-        if (!course || (!isAdmin && course.instructorId !== instructorId)) {
-            throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+        if (!course) throw new HttpException('Curso não encontrado', HttpStatus.NOT_FOUND);
+
+        if (!isAdmin) {
+            const isOwner = course.instructorId === instructorId;
+            
+            // Check area/location access
+            const instructor = await this.prisma.user.findUnique({
+                where: { id: instructorId },
+                include: { assignedAreas: true }
+            });
+            const areaIds = instructor?.assignedAreas.map(a => a.categoryId) || [];
+            const hasAreaAccess = areaIds.includes(course.categoryId as string);
+            const hasLocationAccess = course.isGlobal || (course.locationId === instructor?.locationId);
+
+            if (!isOwner && !(hasAreaAccess && hasLocationAccess)) {
+                throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+            }
         }
 
         const modules = await this.prisma.module.findMany({
@@ -617,11 +650,26 @@ export class CourseService {
         const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
-            select: { instructorId: true }
+            select: { instructorId: true, locationId: true, categoryId: true, isGlobal: true }
         });
 
-        if (!course || (!isAdmin && course.instructorId !== instructorId)) {
-            throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+        if (!course) throw new HttpException('Curso não encontrado', HttpStatus.NOT_FOUND);
+
+        if (!isAdmin) {
+            const isOwner = course.instructorId === instructorId;
+            
+            // Check area/location access
+            const instructor = await this.prisma.user.findUnique({
+                where: { id: instructorId },
+                include: { assignedAreas: true }
+            });
+            const areaIds = instructor?.assignedAreas.map(a => a.categoryId) || [];
+            const hasAreaAccess = areaIds.includes(course.categoryId as string);
+            const hasLocationAccess = course.isGlobal || (course.locationId === instructor?.locationId);
+
+            if (!isOwner && !(hasAreaAccess && hasLocationAccess)) {
+                throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+            }
         }
 
         const enrollments = await this.prisma.enrollment.findMany({
@@ -648,11 +696,26 @@ export class CourseService {
         const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
         const course = await this.prisma.course.findUnique({
             where: { id: courseId },
-            select: { instructorId: true }
+            select: { instructorId: true, locationId: true, categoryId: true, isGlobal: true }
         });
 
-        if (!course || (!isAdmin && course.instructorId !== instructorId)) {
-            throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+        if (!course) throw new HttpException('Curso não encontrado', HttpStatus.NOT_FOUND);
+
+        if (!isAdmin) {
+            const isOwner = course.instructorId === instructorId;
+            
+            // Check area/location access
+            const instructor = await this.prisma.user.findUnique({
+                where: { id: instructorId },
+                include: { assignedAreas: true }
+            });
+            const areaIds = instructor?.assignedAreas.map(a => a.categoryId) || [];
+            const hasAreaAccess = areaIds.includes(course.categoryId as string);
+            const hasLocationAccess = course.isGlobal || (course.locationId === instructor?.locationId);
+
+            if (!isOwner && !(hasAreaAccess && hasLocationAccess)) {
+                throw new HttpException('Acesso negado', HttpStatus.FORBIDDEN);
+            }
         }
 
         const enrollments = await this.prisma.enrollment.findMany({
