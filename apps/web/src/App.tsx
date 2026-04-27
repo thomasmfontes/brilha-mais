@@ -16,6 +16,7 @@ import TermosPage from "./pages/TermosPage";
 import PrivacidadePage from "./pages/PrivacidadePage";
 import { AppLayout } from "./layouts/AppLayout";
 import { Toaster } from "react-hot-toast";
+import UpdateNotifier from "./components/UpdateNotifier";
 import logo from "./assets/logo.png";
 
 // Simplified Home Page
@@ -55,6 +56,7 @@ function App() {
                     boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
                 },
             }} />
+            <UpdateNotifier />
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<LoginPage />} />
