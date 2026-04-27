@@ -384,7 +384,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
             ref={containerRef} 
             className={`relative w-full bg-black select-none overflow-hidden group transition-all duration-300 ${
                 isFullscreen 
-                    ? 'fixed inset-0 z-[9999] h-screen w-screen' 
+                    ? 'fixed inset-0 z-[99999] h-[100dvh] w-screen touch-none bg-black' 
                     : 'h-full aspect-video'
             }`}
         >
