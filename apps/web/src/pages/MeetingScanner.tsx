@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import api from "../utils/api";
 import toast from "react-hot-toast";
-import { LucideChevronLeft, LucideQrCode, LucideCheckCircle2, LucideXCircle } from "lucide-react";
+import { LucideChevronLeft, LucideQrCode, LucideCheckCircle2, LucideXCircle, LucideShieldCheck, LucideInfo } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function MeetingScanner() {
@@ -38,9 +39,10 @@ export default function MeetingScanner() {
 
     return (
         <div className="max-w-md mx-auto space-y-8 pb-20">
+            {/* Header seguindo o padrão das outras telas */}
             <div className="flex items-center gap-4">
-                <Link to="/dashboard" className="p-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-primary transition-all shadow-sm">
-                    <LucideChevronLeft className="h-5 w-5" />
+                <Link to="/dashboard" className="p-2 rounded-2xl bg-white border border-slate-200 text-slate-500 hover:text-primary transition-all shadow-sm active:scale-95">
+                    <LucideChevronLeft className="h-6 w-6" />
                 </Link>
                 <div>
                     <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900">Ler QR Code</h1>
@@ -48,62 +50,106 @@ export default function MeetingScanner() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col items-center">
-                {isLoading ? (
-                    <div className="py-20 flex flex-col items-center justify-center gap-4">
-                        <LoadingSpinner size="lg" />
-                        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs animate-pulse">Verificando...</p>
-                    </div>
-                ) : result === 'success' ? (
-                    <div className="py-16 px-8 flex flex-col items-center text-center">
-                        <div className="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                            <LucideCheckCircle2 className="h-10 w-10" />
-                        </div>
-                        <h2 className="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight">Presença Confirmada!</h2>
-                        <p className="text-slate-500 font-medium mb-8">{message}</p>
-                        <Link to="/dashboard" className="w-full bg-slate-900 text-white py-4 rounded-xl font-black uppercase tracking-widest text-[11px] hover:bg-black transition-all shadow-md">
-                            Voltar ao Início
-                        </Link>
-                    </div>
-                ) : result === 'error' ? (
-                    <div className="py-16 px-8 flex flex-col items-center text-center">
-                        <div className="w-20 h-20 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mb-6 shadow-inner">
-                            <LucideXCircle className="h-10 w-10" />
-                        </div>
-                        <h2 className="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight">Ops, algo deu errado.</h2>
-                        <p className="text-slate-500 font-medium mb-8">{message}</p>
-                        <button onClick={handleRetry} className="w-full bg-primary text-white py-4 rounded-xl font-black uppercase tracking-widest text-[11px] hover:bg-primary/90 transition-all shadow-md">
-                            Tentar Novamente
-                        </button>
-                    </div>
-                ) : (
-                    <div className="w-full">
-                        <div className="bg-slate-900 p-6 text-center">
-                            <LucideQrCode className="h-8 w-8 text-white/50 mx-auto mb-2" />
-                            <p className="text-white font-bold text-sm">Aponte a câmera para a tela do professor</p>
-                        </div>
-                        <div className="aspect-square bg-black relative w-full overflow-hidden">
-                            <Scanner
-                                onScan={(result) => { if (result.length > 0) handleDecode(result[0].rawValue); }}
-                                onError={(error: unknown) => console.log((error as Error)?.message || error)}
-                                styles={{ container: { width: '100%', height: '100%' } }}
-                            />
-                            {/* Scanning Guide Overlay */}
-                            <div className="absolute inset-0 pointer-events-none border-[40px] border-black/40">
-                                <div className="w-full h-full border-2 border-primary/50 relative">
-                                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary"></div>
-                                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary"></div>
-                                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary"></div>
-                                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary"></div>
-                                    
-                                    {/* Scanning laser animation */}
-                                    <div className="w-full h-0.5 bg-primary absolute top-1/2 -translate-y-1/2 shadow-[0_0_8px_2px_rgba(var(--primary-rgb),0.5)] animate-scan"></div>
+            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col items-center">
+                <AnimatePresence mode="wait">
+                    {isLoading ? (
+                        <motion.div 
+                            key="loading"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="py-24 flex flex-col items-center justify-center gap-6"
+                        >
+                            <LoadingSpinner size="lg" />
+                            <p className="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] animate-pulse">Verificando...</p>
+                        </motion.div>
+                    ) : result === 'success' ? (
+                        <motion.div 
+                            key="success"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="py-16 px-8 flex flex-col items-center text-center w-full"
+                        >
+                            <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mb-6 shadow-inner border border-emerald-100">
+                                <LucideCheckCircle2 className="h-10 w-10" />
+                            </div>
+                            <h2 className="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight leading-tight">Presença Confirmada!</h2>
+                            <p className="text-slate-500 font-bold text-sm mb-10">{message}</p>
+                            <Link to="/dashboard" className="w-full bg-slate-900 text-white py-4.5 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:bg-black transition-all shadow-lg active:scale-95">
+                                Voltar ao Início
+                            </Link>
+                        </motion.div>
+                    ) : result === 'error' ? (
+                        <motion.div 
+                            key="error"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="py-16 px-8 flex flex-col items-center text-center w-full"
+                        >
+                            <div className="w-24 h-24 bg-red-50 text-red-500 rounded-[2rem] flex items-center justify-center mb-8 shadow-inner border border-red-100">
+                                <LucideXCircle className="h-12 w-12" />
+                            </div>
+                            <h2 className="text-2xl font-black text-slate-900 mb-3 uppercase tracking-tight leading-tight">Não foi possível validar</h2>
+                            <p className="text-slate-500 font-bold text-sm mb-12 leading-relaxed">
+                                {message === 'Invalid QR Code' ? 'Este QR Code não é válido para você ou já expirou.' : 
+                                 message === 'User does not belong to this class' ? 'Você não pertence a esta turma e não pode marcar presença.' : 
+                                 message}
+                            </p>
+                            <button 
+                                onClick={handleRetry} 
+                                className="w-full bg-slate-900 text-white py-5 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-[11px] hover:bg-black transition-all shadow-xl active:scale-95"
+                            >
+                                Tentar Novamente
+                            </button>
+                        </motion.div>
+                    ) : (
+                        <motion.div 
+                            key="scanner"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="w-full"
+                        >
+                            <div className="bg-slate-900 p-6 text-center">
+                                <div className="inline-flex items-center gap-2 mb-1">
+                                    <LucideQrCode className="h-4 w-4 text-primary" />
+                                    <p className="text-white font-black uppercase tracking-widest text-[10px]">Câmera Ativa</p>
+                                </div>
+                                <p className="text-white/60 font-bold text-[11px]">Aponte para o QR Code do instrutor</p>
+                            </div>
+                            
+                            <div className="aspect-square relative w-full overflow-hidden">
+                                <Scanner
+                                    onScan={(result) => { if (result.length > 0) handleDecode(result[0].rawValue); }}
+                                    onError={(error: unknown) => console.log((error as Error)?.message || error)}
+                                    components={{ finder: false }}
+                                    styles={{ container: { width: '100%', height: '100%' } }}
+                                />
+                                
+                                {/* Apenas cantos sutis para guia, sem overlay escuro */}
+                                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                                    <div className="w-56 h-56 relative">
+                                        <div className="absolute top-0 left-0 w-7 h-7 border-t-[3px] border-l-[3px] border-primary rounded-tl-lg"></div>
+                                        <div className="absolute top-0 right-0 w-7 h-7 border-t-[3px] border-r-[3px] border-primary rounded-tr-lg"></div>
+                                        <div className="absolute bottom-0 left-0 w-7 h-7 border-b-[3px] border-l-[3px] border-primary rounded-bl-lg"></div>
+                                        <div className="absolute bottom-0 right-0 w-7 h-7 border-b-[3px] border-r-[3px] border-primary rounded-br-lg"></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                )}
+
+                            <div className="p-8 bg-slate-50 flex items-center justify-center gap-3">
+                                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
+                                    <LucideInfo className="h-5 w-5" />
+                                </div>
+                                <p className="text-[11px] text-slate-500 font-bold leading-relaxed max-w-[200px]">
+                                    Mantenha o QR Code centralizado para uma leitura rápida.
+                                </p>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
+
+
 }

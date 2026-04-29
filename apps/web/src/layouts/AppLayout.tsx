@@ -434,12 +434,12 @@ export function AppLayout() {
                                             <Link
                                                 to="/scan"
                                                 onClick={() => setIsMobileMenuOpen(false)}
-                                                className="flex items-center gap-4 px-6 py-5 rounded-[1.5rem] bg-indigo-50/50 text-indigo-600 border border-indigo-100 font-black uppercase tracking-widest text-[10px] w-full transition-colors active:scale-95 shadow-sm mb-2"
+                                                className="flex items-center gap-4 px-6 py-5 rounded-[1.5rem] bg-primary/10 text-slate-800 border border-primary/20 font-black uppercase tracking-widest text-[10px] w-full transition-all active:scale-95 shadow-sm mb-2 hover:bg-primary/15"
                                             >
-                                                <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                                <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
                                                     <LucideQrCode className="h-4 w-4" />
                                                 </div>
-                                                Ler QR Code (Presença)
+                                                Marcar Presença
                                             </Link>
                                         )}
                                         <button
@@ -493,7 +493,9 @@ export function AppLayout() {
                                                     <p className="text-sm font-black uppercase tracking-tight text-slate-900 truncate leading-none mb-1">{userName || 'Usuário'}</p>
                                                     <div className="flex items-center gap-1.5">
                                                         <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                                                        <p className="text-[10px] text-primary font-black uppercase tracking-widest">{userRole === 'super_admin' ? 'Super Admin' : userRole}</p>
+                                                        <p className="text-[10px] text-primary font-black uppercase tracking-widest">
+                                                            {userRole === 'super_admin' ? 'Super Admin' : userRole === 'admin' ? 'Administrador' : userRole === 'instructor' ? 'Instrutor' : 'Aluno'}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </>
