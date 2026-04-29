@@ -16,6 +16,9 @@ export default function MeetingScanner() {
 
     const playScanSound = () => {
         try {
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(50);
+            }
             const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
@@ -33,6 +36,9 @@ export default function MeetingScanner() {
 
     const playSuccessSound = () => {
         try {
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(100);
+            }
             const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
@@ -51,6 +57,9 @@ export default function MeetingScanner() {
 
     const playErrorSound = () => {
         try {
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate([100, 50, 100]);
+            }
             const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
