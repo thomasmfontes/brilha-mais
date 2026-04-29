@@ -70,12 +70,14 @@ export default function MeetingScanner() {
                             animate={{ opacity: 1, scale: 1 }}
                             className="py-16 px-8 flex flex-col items-center text-center w-full"
                         >
-                            <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mb-6 shadow-inner border border-emerald-100">
-                                <LucideCheckCircle2 className="h-10 w-10" />
+                            <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-[2rem] flex items-center justify-center mb-8 shadow-inner border border-emerald-100">
+                                <LucideCheckCircle2 className="h-12 w-12" />
                             </div>
-                            <h2 className="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight leading-tight">Presença Confirmada!</h2>
-                            <p className="text-slate-500 font-bold text-sm mb-10">{message}</p>
-                            <Link to="/dashboard" className="w-full bg-slate-900 text-white py-4.5 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:bg-black transition-all shadow-lg active:scale-95">
+                            <h2 className="text-2xl font-black text-slate-900 mb-3 uppercase tracking-tight leading-tight">Tudo Certo!</h2>
+                            <p className="text-slate-500 font-bold text-sm mb-12">
+                                {message === 'Presence confirmed successfully' ? 'Sua presença foi registrada com sucesso. Boa aula!' : message}
+                            </p>
+                            <Link to="/dashboard" className="w-full bg-slate-900 text-white py-5 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-[11px] hover:bg-black transition-all shadow-xl active:scale-95 flex items-center justify-center">
                                 Voltar ao Início
                             </Link>
                         </motion.div>
