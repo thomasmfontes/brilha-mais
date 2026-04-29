@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { PortalModal } from "../components/PortalModal";
+import { ConfirmModal } from "../components/ConfirmModal";
+import Skeleton from "../components/Skeleton";
 import api from "../utils/api";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -377,9 +379,21 @@ export default function InstructorSubmissions() {
 
             {/* Submissions List */}
             {isLoading ? (
-                <div className="h-64 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                    <LoadingSpinner size="md" variant="primary" />
-                    <p className="text-[9px] font-bold uppercase tracking-widest">Carregando submissões...</p>
+                <div className="grid gap-3">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="bg-white border border-slate-100 rounded-2xl p-5 space-y-4 shadow-sm">
+                            <div className="flex items-center gap-4">
+                                <Skeleton className="h-11 w-11 shrink-0" variant="circle" />
+                                <div className="flex-1 space-y-2">
+                                    <Skeleton className="h-4 w-1/3" variant="rectangle" />
+                                    <div className="flex gap-2">
+                                        <Skeleton className="h-3 w-20" variant="rectangle" />
+                                        <Skeleton className="h-3 w-40" variant="rectangle" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : filteredSubmissions.length === 0 ? (
                 <div className="h-56 flex flex-col items-center justify-center text-center p-6 bg-card rounded-2xl border-dashed border-border border-2">
@@ -808,48 +822,16 @@ export default function InstructorSubmissions() {
             )}
 
             {/* Redo Confirmation Modal */}
-            <PortalModal isOpen={showRedoConfirm} onClose={() => setShowRedoConfirm(false)}>
-                <motion.div 
-                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                    className="bg-white rounded-[32px] p-8 max-w-md w-full shadow-2xl space-y-6 relative overflow-hidden"
-                >
-                    <div className="absolute top-0 left-0 w-full h-2 bg-amber-500" />
-                    
-                    <div className="flex items-center gap-4">
-                        <div className="h-14 w-14 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 shrink-0">
-                            <LucideRefreshCw className="h-7 w-7 animate-spin-slow" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-black italic uppercase tracking-tighter text-slate-900 leading-none mb-1">Solicitar Refação?</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Confirmação de Pedido</p>
-                        </div>
-                    </div>
-
-                    <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl">
-                        <p className="text-sm font-medium text-slate-600 leading-relaxed text-center">
-                            Deseja solicitar que o aluno refaça este desafio? Ele conseguirá ver seu <span className="text-primary font-bold">feedback atual</span> e enviar uma <span className="text-primary font-bold">nova versão</span>.
-                        </p>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button 
-                            onClick={() => setShowRedoConfirm(false)}
-                            className="flex-1 h-14 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-all active:scale-95"
-                        >
-                            Cancelar
-                        </button>
-                        <button 
-                            onClick={confirmRedo}
-                            disabled={isDeleting}
-                            className="flex-1 h-14 bg-amber-500 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all active:scale-95 flex items-center justify-center gap-2"
-                        >
-                            {isDeleting ? <LoadingSpinner size="sm" variant="white" /> : "Sim, solicitar"}
-                        </button>
-                    </div>
-                </motion.div>
-            </PortalModal>
+            <ConfirmModal 
+                isOpen={showRedoConfirm}
+                onClose={() => setShowRedoConfirm(false)}
+                onConfirm={confirmRedo}
+                isLoading={isDeleting}
+                variant="warning"
+                title="Solicitar Refação?"
+                description="Deseja solicitar que o aluno refaça este desafio? Ele conseguirá ver seu feedback atual e enviar uma nova versão."
+                confirmText="Sim, Solicitar"
+            />
         </div>
     );
 }

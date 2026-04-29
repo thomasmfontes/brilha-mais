@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useCourseStore } from "../store/courseStore";
 import { resolveThumbnail } from "../utils/url";
 import { CourseCard } from "../components/CourseCard";
+import Skeleton from "../components/Skeleton";
 
 export default function MyCoursesPage() {
     const myCourses = useCourseStore(state => state.myCourses);
@@ -38,19 +39,19 @@ export default function MyCoursesPage() {
                 {isLoading ? (
                     // Skeleton Loaders
                     [...Array(3)].map((_, i) => (
-                        <div key={i} className="bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden shadow-sm h-[350px] flex flex-col">
-                            <div className="aspect-video bg-slate-200 animate-shimmer" />
+                        <div key={i} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm h-[350px] flex flex-col">
+                            <Skeleton className="aspect-video w-full" variant="rectangle" />
                             <div className="p-5 flex-1 space-y-4">
                                 <div className="space-y-2">
-                                    <div className="h-4 bg-slate-200 rounded w-3/4 animate-shimmer" />
-                                    <div className="h-3 bg-slate-200 rounded w-1/2 animate-shimmer" />
+                                    <Skeleton className="h-4 w-3/4" variant="rectangle" />
+                                    <Skeleton className="h-3 w-1/2" variant="rectangle" />
                                 </div>
                                 <div className="pt-4 border-t border-slate-100 space-y-2">
                                     <div className="flex justify-between">
-                                        <div className="h-2 bg-slate-200 rounded w-1/4 animate-shimmer" />
-                                        <div className="h-2 bg-slate-200 rounded w-10 animate-shimmer" />
+                                        <Skeleton className="h-2 w-1/4" variant="rectangle" />
+                                        <Skeleton className="h-2 w-10" variant="rectangle" />
                                     </div>
-                                    <div className="h-1.5 bg-slate-200 rounded-full w-full animate-shimmer" />
+                                    <Skeleton className="h-1.5 w-full" variant="rectangle" />
                                 </div>
                             </div>
                         </div>

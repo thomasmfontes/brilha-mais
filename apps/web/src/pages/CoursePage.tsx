@@ -12,6 +12,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import SyllabusList from "../components/SyllabusList";
 import CircularProgress from "../components/CircularProgress";
 import EssaySubmissionForm from "../components/EssaySubmissionForm";
+import Skeleton from "../components/Skeleton";
 import api from "../utils/api";
 import { resolveThumbnail } from "../utils/url";
 import logo from "../assets/logo.png";
@@ -162,18 +163,49 @@ export default function CoursePage() {
     }, [currentModuleIdx, currentLessonIdx, currentLesson?.id, currentLesson?.completed, currentLesson?.quizAnswers]);
 
     if (isFetching || !indicesInitialized || !course) return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-10 overflow-hidden">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center gap-8">
-                <div className="relative">
-                    <img src={logo} alt="Brilha Mais" className="h-12 w-auto grayscale brightness-0 opacity-5" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <LoadingSpinner size="lg" variant="primary" />
+        <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+            <div className="lg:max-w-[1200px] lg:mx-auto lg:flex w-full h-full">
+                {/* Main Content Skeleton */}
+                <div className="flex-1 flex flex-col h-full border-r border-slate-100">
+                    {/* Header Breadcrumb Skeleton */}
+                    <div className="hidden lg:flex items-center gap-3 px-8 py-6">
+                        <Skeleton className="h-4 w-32" variant="rectangle" />
+                        <Skeleton className="h-4 w-4" variant="rectangle" />
+                        <Skeleton className="h-4 w-48" variant="rectangle" />
+                    </div>
+                    {/* Video Player Skeleton */}
+                    <Skeleton className="w-full aspect-video" variant="rectangle" />
+                    {/* Title & Info Skeleton */}
+                    <div className="p-6 lg:p-10 space-y-6">
+                        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="space-y-3">
+                                <Skeleton className="h-2 w-24" variant="rectangle" />
+                                <Skeleton className="h-8 w-64" variant="rounded" />
+                            </div>
+                            <Skeleton className="h-12 w-40" variant="rounded" />
+                        </div>
+                        <Skeleton className="h-24 w-full" variant="rounded" />
                     </div>
                 </div>
-                <div className="space-y-1.5 text-center">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary animate-pulse">Sincronizando Conteúdo</p>
+                {/* Sidebar Skeleton */}
+                <div className="hidden lg:flex flex-col w-80 xl:w-96 bg-slate-50 h-full p-6 space-y-6">
+                    <div className="space-y-4">
+                        <Skeleton className="h-6 w-1/2" variant="rounded" />
+                        <Skeleton className="h-12 w-full" variant="rounded" />
+                    </div>
+                    <div className="space-y-4 pt-4">
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <div key={i} className="flex gap-4">
+                                <Skeleton className="h-10 w-10 shrink-0" variant="rounded" />
+                                <div className="flex-1 space-y-2">
+                                    <Skeleton className="h-3 w-full" variant="rectangle" />
+                                    <Skeleton className="h-2 w-1/2" variant="rectangle" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 

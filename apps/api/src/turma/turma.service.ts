@@ -33,6 +33,7 @@ export class TurmaService {
                         name: true,
                         email: true,
                         role: true,
+                        avatarUrl: true,
                     },
                 },
                 areas: {

@@ -16,6 +16,7 @@ import { TurmaModule } from './turma/turma.module';
 import { EssaySubmissionModule } from './essay-submission/essay-submission.module';
 import { MaterialDownloadModule } from './material-download/material-download.module';
 import { LocationModule } from './location/location.module';
+import { InPersonMeetingModule } from './in-person-meeting/in-person-meeting.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { LocationModule } from './location/location.module';
     EssaySubmissionModule,
     MaterialDownloadModule,
     LocationModule,
+    InPersonMeetingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

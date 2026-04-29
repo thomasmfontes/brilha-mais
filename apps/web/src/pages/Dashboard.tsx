@@ -6,6 +6,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import api from "../utils/api";
 import { useCourseStore } from "../store/courseStore";
 import { resolveThumbnail } from "../utils/url";
+import Skeleton from "../components/Skeleton";
 
 interface Category {
     id: string;
@@ -64,14 +65,14 @@ export default function Dashboard() {
                     <div className="relative h-[250px] md:h-[350px] rounded-[2.5rem] overflow-hidden bg-white border border-slate-100 shadow-xl">
                         <div className="absolute inset-x-0 bottom-0 p-6 md:p-10 space-y-4">
                             <div className="flex gap-2">
-                                <div className="h-3 md:h-4 bg-slate-200 rounded w-16 md:w-20 animate-shimmer" />
-                                <div className="h-3 md:h-4 bg-slate-200 rounded w-24 md:w-32 animate-shimmer" />
+                                <Skeleton className="h-3 md:h-4 w-16 md:w-20" variant="rectangle" />
+                                <Skeleton className="h-3 md:h-4 w-24 md:w-32" variant="rectangle" />
                             </div>
-                            <div className="h-8 md:h-10 bg-slate-200 rounded w-2/3 animate-shimmer" />
-                            <div className="h-3 md:h-4 bg-slate-200 rounded w-1/2 animate-shimmer" />
+                            <Skeleton className="h-8 md:h-10 w-2/3" variant="rounded" />
+                            <Skeleton className="h-3 md:h-4 w-1/2" variant="rectangle" />
                             <div className="flex gap-3 pt-2">
-                                <div className="h-10 md:h-12 bg-slate-200 rounded-xl w-24 md:w-32 animate-shimmer" />
-                                <div className="h-10 md:h-12 bg-slate-200 rounded-xl w-24 md:w-32 animate-shimmer" />
+                                <Skeleton className="h-10 md:h-12 w-24 md:w-32" variant="rounded" />
+                                <Skeleton className="h-10 md:h-12 w-24 md:w-32" variant="rounded" />
                             </div>
                         </div>
                     </div>
@@ -122,18 +123,18 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 max-w-2xl gap-8 md:px-0">
                         {isLoading ? (
                             <div className="bg-white border border-slate-100 rounded-2xl p-5 flex gap-6 items-center overflow-hidden">
-                                <div className="h-28 w-28 rounded-xl bg-slate-200 shrink-0 animate-shimmer" />
+                                <Skeleton className="h-28 w-28 shrink-0" variant="rounded" />
                                 <div className="space-y-4 flex-1">
                                     <div className="space-y-2">
-                                        <div className="h-2 bg-slate-200 rounded w-20 animate-shimmer" />
-                                        <div className="h-4 bg-slate-200 rounded w-full animate-shimmer" />
+                                        <Skeleton className="h-2 w-20" variant="rectangle" />
+                                        <Skeleton className="h-4 w-full" variant="rounded" />
                                     </div>
                                     <div className="pt-2 space-y-2">
                                         <div className="flex justify-between">
-                                            <div className="h-2 bg-slate-200 rounded w-1/4 animate-shimmer" />
-                                            <div className="h-2 bg-slate-200 rounded w-10 animate-shimmer" />
+                                            <Skeleton className="h-2 w-1/4" variant="rectangle" />
+                                            <Skeleton className="h-2 w-10" variant="rectangle" />
                                         </div>
-                                        <div className="h-1.5 bg-slate-200 rounded-full w-full animate-shimmer" />
+                                        <Skeleton className="h-1.5 w-full" variant="rectangle" />
                                     </div>
                                 </div>
                             </div>
@@ -193,9 +194,9 @@ export default function Dashboard() {
                 <div className="flex overflow-x-auto no-scrollbar gap-4 pb-4 -mx-6 px-6 md:grid md:grid-cols-4 lg:grid-cols-6 md:mx-0 md:px-0 scroll-smooth">
                     {isLoading ? (
                         [...Array(6)].map((_, i) => (
-                            <div key={i} className="bg-white border border-slate-100 h-28 rounded-[2rem] flex flex-col items-center justify-center gap-3 animate-shimmer min-w-[120px]">
-                                <div className="h-10 w-10 bg-slate-200 rounded-lg" />
-                                <div className="h-2 bg-slate-200 rounded w-2/3" />
+                            <div key={i} className="bg-white border border-slate-100 h-28 rounded-[2rem] flex flex-col items-center justify-center gap-3 min-w-[120px]">
+                                <Skeleton className="h-10 w-10" variant="rounded" />
+                                <Skeleton className="h-2 w-2/3" variant="rectangle" />
                             </div>
                         ))
                     ) : (

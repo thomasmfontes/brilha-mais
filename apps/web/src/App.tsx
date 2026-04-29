@@ -15,6 +15,9 @@ import MyCoursesPage from "./pages/MyCoursesPage";
 import ResourcesPage from "./pages/ResourcesPage";
 import TermosPage from "./pages/TermosPage";
 import PrivacidadePage from "./pages/PrivacidadePage";
+import InstructorMeetings from "./pages/InstructorMeetings";
+import MeetingProjection from "./pages/MeetingProjection";
+import MeetingScanner from "./pages/MeetingScanner";
 import { AppLayout } from "./layouts/AppLayout";
 import { Toaster } from "react-hot-toast";
 import UpdateNotifier from "./components/UpdateNotifier";
@@ -59,6 +62,7 @@ function App() {
                 containerStyle={{
                     bottom: isMobile ? 120 : 40,
                     top: isMobile ? 75 : 'auto',
+                    zIndex: 999999,
                 }}
                 toastOptions={{
                     duration: 4000,
@@ -78,15 +82,18 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/termos" element={<TermosPage />} />
                 <Route path="/privacidade" element={<PrivacidadePage />} />
+                <Route path="/instructor/meeting/:id/project" element={<MeetingProjection />} />
 
                 {/* Persistent Layout for Authenticated Routes */}
                 <Route element={<AppLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/scan" element={<MeetingScanner />} />
                     <Route path="/course/:id" element={<CoursePage />} />
                     <Route path="/instructor" element={<InstructorDashboard />} />
                     <Route path="/instructor/course/:id/syllabus" element={<InstructorSyllabus />} />
                     <Route path="/instructor/course/:id/progress" element={<InstructorCourseProgress />} />
                     <Route path="/instructor/submissions" element={<InstructorSubmissions />} />
+                    <Route path="/instructor/turma/:id/meetings" element={<InstructorMeetings />} />
                     <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/my-courses" element={<MyCoursesPage />} />
                     <Route path="/explore" element={<ExplorePage />} />

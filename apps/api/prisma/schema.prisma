@@ -36,6 +36,7 @@ model User {
   studentMaterials    StudentMaterial[]
   location            Location?          @relation(fields: [locationId], references: [id])
   turmas              Turma[]            @relation("UserTurmas")
+  meetingAttendances  MeetingAttendance[]
 }
 
 model StudentMaterial {
@@ -62,6 +63,7 @@ model Turma {
   location    Location?   @relation(fields: [locationId], references: [id])
   areas       TurmaArea[]
   users       User[]      @relation("UserTurmas")
+  meetings    InPersonMeeting[]
 }
 
 model Course {
@@ -338,4 +340,32 @@ enum ContentType {
   PDF
   QUIZ
   ESSAY
+}
+
+model InPersonMeeting {
+  id          String     @id @default(uuid())
+  title       String
+  date        DateTime
+  turmaId     String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  turma       Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  attendances MeetingAttendance[]
+
+  @@index([turmaId])
+}
+
+model MeetingAttendance {
+  id          String   @id @default(uuid())
+  meetingId   String
+  userId      String
+  timestamp   DateTime @default(now())
+  
+  meeting     InPersonMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+  @@index([meetingId])
+  @@index([userId])
 }

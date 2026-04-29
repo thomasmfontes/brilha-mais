@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../utils/api";
 import LoadingSpinner from "../components/LoadingSpinner";
+import Skeleton from "../components/Skeleton";
 
 export default function InstructorCourseProgress() {
     const { id: courseId } = useParams();
@@ -122,8 +123,17 @@ export default function InstructorCourseProgress() {
 
     if (isLoadingCourse && !courseTitle) {
         return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <LoadingSpinner />
+            <div className="max-w-4xl mx-auto px-4 md:px-8 lg:px-0 py-8 space-y-8">
+                <div className="flex items-center gap-6">
+                    <Skeleton className="h-12 w-12" variant="circle" />
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-32" variant="rectangle" />
+                        <Skeleton className="h-8 w-64" variant="rounded" />
+                    </div>
+                </div>
+                <div className="bg-white rounded-[2.5rem] border border-slate-200 p-12 h-96">
+                    <Skeleton className="h-full w-full" variant="rounded" />
+                </div>
             </div>
         );
     }
@@ -199,11 +209,11 @@ export default function InstructorCourseProgress() {
                                 [...Array(3)].map((_, i) => (
                                     <div key={i} className="space-y-6">
                                         <div className="flex items-center gap-3 ml-2">
-                                            <div className="h-4 w-48 bg-slate-100 rounded animate-shimmer" />
+                                            <Skeleton className="h-4 w-48" variant="rectangle" />
                                         </div>
                                         <div className="grid gap-4">
                                             {[...Array(2)].map((_, j) => (
-                                                <div key={j} className="h-24 w-full bg-slate-50/50 rounded-2xl md:rounded-3xl animate-shimmer border border-slate-100" />
+                                                <Skeleton key={j} className="h-24 w-full" variant="rounded" />
                                             ))}
                                         </div>
                                     </div>
@@ -274,7 +284,7 @@ export default function InstructorCourseProgress() {
                             {isLoadingStudents ? (
                                 <div className="grid gap-4">
                                     {[...Array(5)].map((_, i) => (
-                                        <div key={i} className="h-24 md:h-28 w-full bg-slate-50/50 rounded-2xl md:rounded-3xl animate-shimmer border border-slate-100" />
+                                        <Skeleton key={i} className="h-24 md:h-28 w-full" variant="rounded" />
                                     ))}
                                 </div>
                             ) : courseStudents.length === 0 ? (
@@ -327,7 +337,7 @@ export default function InstructorCourseProgress() {
                             {isLoadingLessonStudents ? (
                                 <div className="grid gap-4">
                                     {[...Array(5)].map((_, i) => (
-                                        <div key={i} className="h-24 w-full bg-slate-50/50 rounded-2xl md:rounded-3xl animate-shimmer border border-slate-100" />
+                                        <Skeleton key={i} className="h-24 w-full" variant="rounded" />
                                     ))}
                                 </div>
                             ) : lessonStudents.length === 0 ? (
@@ -437,10 +447,10 @@ export default function InstructorCourseProgress() {
                             {isLoadingModules ? (
                                 [...Array(2)].map((_, i) => (
                                     <div key={i} className="space-y-6">
-                                        <div className="h-5 w-48 bg-slate-100 rounded animate-shimmer ml-2" />
+                                        <Skeleton className="h-5 w-48 ml-2" variant="rectangle" />
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                             {[...Array(2)].map((_, j) => (
-                                                <div key={j} className="h-28 w-full bg-slate-50/50 rounded-2xl md:rounded-[2rem] animate-shimmer border border-slate-100" />
+                                                <Skeleton key={j} className="h-28 w-full" variant="rounded" />
                                             ))}
                                         </div>
                                     </div>

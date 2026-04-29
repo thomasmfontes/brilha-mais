@@ -10,7 +10,9 @@ import { getYoutubeId } from "../utils/youtube";
 import { resolveThumbnail } from "../utils/url";
 import api from "../utils/api";
 import LoadingSpinner from "../components/LoadingSpinner";
+import Skeleton from "../components/Skeleton";
 import { PortalModal } from "../components/PortalModal";
+import { ConfirmModal } from "../components/ConfirmModal";
 import CountUp from "../components/CountUp";
 
 export default function InstructorDashboard() {
@@ -22,7 +24,10 @@ export default function InstructorDashboard() {
     const [stats, setStats] = useState<any>(null);
     const [isLoadingStats, setIsLoadingStats] = useState(true);
     const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+    const [isLoadingTurmas, setIsLoadingTurmas] = useState(true);
     const [userRole, setUserRole] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'cursos' | 'turmas'>('cursos');
+    const [myTurmas, setMyTurmas] = useState<any[]>([]);
     const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadPreview, setUploadPreview] = useState<string | null>(null);
@@ -85,6 +90,7 @@ export default function InstructorDashboard() {
     };
 
     const fetchUser = async () => {
+        setIsLoadingTurmas(true);
         try {
             const response = await api.get('/users/me');
             if (response.data) {
@@ -93,13 +99,15 @@ export default function InstructorDashboard() {
                 
                 // If it's a Super Admin, they should see all categories
                 if (userData.role === 'SUPER_ADMIN' || userData.role === 'ADMIN') {
-                    const [{ data: allCategories }, { data: allUsers }, { data: allLocations }] = await Promise.all([
+                    const [{ data: allCategories }, { data: allUsers }, { data: allLocations }, { data: allTurmas }] = await Promise.all([
                         api.get('/categories'),
                         api.get('/users'),
-                        api.get('/locations')
+                        api.get('/locations'),
+                        api.get('/turmas')
                     ]);
                     setAssignedCategories(allCategories);
                     setLocations(allLocations);
+                    setMyTurmas(allTurmas);
                     
                     const instructorList = allUsers.filter((u: any) => u.role === 'INSTRUCTOR' || u.role === 'ADMIN' || u.role === 'SUPER_ADMIN');
                     setInstructors(instructorList);
@@ -118,9 +126,14 @@ export default function InstructorDashboard() {
                     }
                     setNewCourse(prev => ({ ...prev, instructorId: userData.id }));
                 }
+                if (userData.turmas && userData.role !== 'SUPER_ADMIN' && userData.role !== 'ADMIN') {
+                    setMyTurmas(userData.turmas);
+                }
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
+        } finally {
+            setIsLoadingTurmas(false);
         }
     };
 
@@ -304,6 +317,22 @@ export default function InstructorDashboard() {
             </div>
 
 
+            <div className="flex gap-4 border-b border-slate-200">
+                <button
+                    onClick={() => setActiveTab('cursos')}
+                    className={`pb-4 font-black uppercase tracking-widest text-sm transition-all border-b-2 ${activeTab === 'cursos' ? 'text-primary border-primary' : 'text-slate-400 border-transparent hover:text-slate-600'}`}
+                >
+                    Cursos
+                </button>
+                <button
+                    onClick={() => setActiveTab('turmas')}
+                    className={`pb-4 font-black uppercase tracking-widest text-sm transition-all border-b-2 ${activeTab === 'turmas' ? 'text-primary border-primary' : 'text-slate-400 border-transparent hover:text-slate-600'}`}
+                >
+                    Chamadas
+                </button>
+            </div>
+
+            {activeTab === 'cursos' ? (
             <div className="bg-white md:border md:border-slate-200 md:rounded-3xl overflow-hidden shadow-sm">
                 <div className="p-6 border-b border-slate-100 bg-slate-50 md:bg-white px-4 md:px-6">
                     <h2 className="text-base md:text-lg font-black tracking-tight text-slate-800 uppercase">Meus Cursos</h2>
@@ -327,23 +356,29 @@ export default function InstructorDashboard() {
                                     <tr key={i} className="border-b border-slate-100 last:border-0">
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-4">
-                                                <div className="h-12 w-20 rounded-lg bg-slate-200 animate-shimmer" />
+                                                <Skeleton className="h-12 w-20" variant="rounded" />
                                                 <div className="space-y-2">
-                                                    <div className="h-4 w-40 bg-slate-300 rounded animate-shimmer" />
-                                                    <div className="h-3 w-20 bg-slate-200 rounded animate-shimmer" />
+                                                    <Skeleton className="h-4 w-40" variant="rectangle" />
+                                                    <Skeleton className="h-3 w-20" variant="rectangle" />
                                                 </div>
                                             </div>
                                         </td>
+                                        {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
+                                            <td className="px-8 py-5 text-center">
+                                                <Skeleton className="h-6 w-24 mx-auto" variant="rounded" />
+                                            </td>
+                                        )}
                                         <td className="px-8 py-5">
-                                            <div className="h-6 w-16 bg-slate-200 rounded-full animate-shimmer" />
+                                            <Skeleton className="h-8 w-24 mx-auto" variant="rounded" />
                                         </td>
                                         <td className="px-8 py-5">
-                                            <div className="mx-auto h-4 w-8 bg-slate-200 rounded animate-shimmer" />
+                                            <Skeleton className="h-9 w-12 mx-auto" variant="rounded" />
                                         </td>
                                         <td className="px-8 py-5">
                                             <div className="flex justify-end gap-2">
-                                                <div className="h-9 w-9 bg-slate-200 rounded-xl animate-shimmer" />
-                                                <div className="h-9 w-9 bg-slate-200 rounded-xl animate-shimmer" />
+                                                <Skeleton className="h-9 w-9" variant="rounded" />
+                                                <Skeleton className="h-9 w-9" variant="rounded" />
+                                                <Skeleton className="h-9 w-9" variant="rounded" />
                                             </div>
                                         </td>
                                     </tr>
@@ -418,13 +453,16 @@ export default function InstructorDashboard() {
                                                         message: "Excluir este curso?",
                                                         subtext: "Todos os módulos e aulas vinculadas serão removidos permanentemente.",
                                                         onConfirm: async () => {
-                                                            setConfirmModal(null);
+                                                            setIsSaving(true);
                                                             try {
                                                                 await api.delete(`/courses/${course.id}`);
                                                                 toast.success("Curso excluído com sucesso!");
+                                                                setConfirmModal(null);
                                                                 fetchInitialData();
                                                             } catch (error) {
                                                                 toast.error("Erro ao excluir curso.");
+                                                            } finally {
+                                                                setIsSaving(false);
                                                             }
                                                         }
                                                     })}
@@ -445,20 +483,20 @@ export default function InstructorDashboard() {
                 {/* Mobile: Course List (Cards) - Now inside the container to benefit from styles */}
                 <div className="md:hidden space-y-4 p-4 border-t border-slate-100">
                     {isLoadingCourses ? (
-                        [...Array(3)].map((_, i) => (
-                            <div key={i} className="bg-white border border-slate-100 rounded-2xl p-4 animate-pulse space-y-4">
+                        [1, 2, 3].map((_, i) => (
+                            <div key={i} className="bg-white border border-slate-100 rounded-2xl p-4 space-y-4">
                                 <div className="flex gap-4">
-                                    <div className="h-16 w-24 bg-slate-200 rounded-lg" />
+                                    <Skeleton className="h-16 w-24" variant="rounded" />
                                     <div className="flex-1 space-y-2">
-                                        <div className="h-4 w-3/4 bg-slate-200 rounded" />
-                                        <div className="h-3 w-1/2 bg-slate-100 rounded" />
+                                        <Skeleton className="h-4 w-3/4" variant="rectangle" />
+                                        <Skeleton className="h-3 w-1/2" variant="rectangle" />
                                     </div>
                                 </div>
                                 <div className="pt-4 border-t border-slate-50 flex justify-between">
-                                    <div className="h-6 w-20 bg-slate-100 rounded-full" />
+                                    <Skeleton className="h-6 w-20" variant="rounded" />
                                     <div className="flex gap-2">
-                                        <div className="h-8 w-8 bg-slate-100 rounded-lg" />
-                                        <div className="h-8 w-8 bg-slate-100 rounded-lg" />
+                                        <Skeleton className="h-8 w-8" variant="rounded" />
+                                        <Skeleton className="h-8 w-8" variant="rounded" />
                                     </div>
                                 </div>
                             </div>
@@ -520,13 +558,16 @@ export default function InstructorDashboard() {
                                             onClick={() => setConfirmModal({
                                                 message: "Excluir?",
                                                 onConfirm: async () => {
-                                                    setConfirmModal(null);
+                                                    setIsSaving(true);
                                                     try {
                                                         await api.delete(`/courses/${course.id}`);
                                                         toast.success("Excluído!");
+                                                        setConfirmModal(null);
                                                         fetchInitialData();
                                                     } catch (error) {
                                                         toast.error("Erro.");
+                                                    } finally {
+                                                        setIsSaving(false);
                                                     }
                                                 }
                                             })}
@@ -541,6 +582,43 @@ export default function InstructorDashboard() {
                     )}
                 </div>
             </div>
+            ) : (
+            <div className="bg-white md:border md:border-slate-200 md:rounded-3xl overflow-hidden shadow-sm">
+                <div className="p-6 border-b border-slate-100 bg-slate-50 md:bg-white px-4 md:px-6">
+                    <h2 className="text-base md:text-lg font-black tracking-tight text-slate-800 uppercase">Minhas Turmas</h2>
+                </div>
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {isLoadingTurmas ? (
+                        [1, 2, 3].map(i => (
+                            <div key={i} className="bg-slate-50 border border-slate-200 rounded-3xl p-6 h-48 space-y-4">
+                                <Skeleton className="h-6 w-3/4" variant="rounded" />
+                                <Skeleton className="h-4 w-full" variant="rectangle" />
+                                <Skeleton className="h-12 w-full mt-4" variant="rounded" />
+                            </div>
+                        ))
+                    ) : myTurmas.length === 0 ? (
+                        <div className="col-span-full text-center py-10">
+                            <p className="text-slate-500 font-bold">Você não está atribuído a nenhuma turma presencial.</p>
+                        </div>
+                    ) : (
+                        myTurmas.map((turma, idx) => (
+                            <div key={idx} className="bg-slate-50 border border-slate-200 rounded-3xl p-6 flex flex-col justify-between hover:border-primary/50 hover:bg-primary/5 transition-all">
+                                <div>
+                                    <h3 className="font-black text-lg text-slate-900 mb-2 uppercase tracking-tight">{turma.name}</h3>
+                                    {turma.description && <p className="text-sm text-slate-500 mb-4 line-clamp-2">{turma.description}</p>}
+                                </div>
+                                <Link 
+                                    to={`/instructor/turma/${turma.id}/meetings`}
+                                    className="mt-4 bg-primary text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-md hover:bg-primary/90 transition-all"
+                                >
+                                    Gerenciar Chamadas
+                                </Link>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+            )}
 
             {/* Create Course Modal */}
             <PortalModal isOpen={isCreateModalOpen} onClose={handleCloseModal} preventCloseOnOverlayClick={isSaving}>
@@ -591,7 +669,7 @@ export default function InstructorDashboard() {
                                                 assignedCategories.map((cat) => (
                                                     <option key={cat.id} value={cat.id} className="text-slate-900">
                                                         {cat.name}
-                                                    </option>
+                                                     </option>
                                                 ))
                                             ) : (
                                                 <option value="" disabled>Nenhuma área atribuída</option>
@@ -768,44 +846,15 @@ export default function InstructorDashboard() {
                 </motion.div>
             </PortalModal>
             
-            {/* Modal de Confirmação de Exclusão */}
-            <PortalModal isOpen={!!confirmModal} onClose={() => setConfirmModal(null)}>
-                {confirmModal && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        className="relative z-10 bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl space-y-8 border border-slate-100"
-                    >
-                        <div className="h-20 w-20 bg-destructive/10 text-destructive rounded-[2rem] flex items-center justify-center mx-auto shadow-inner">
-                            <LucideTrash2 className="h-10 w-10" />
-                        </div>
-
-                        <div className="text-center space-y-3">
-                            <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900 leading-none">
-                                {confirmModal.message}
-                            </h2>
-                            <p className="text-sm text-slate-500 font-medium leading-relaxed px-2">
-                                {confirmModal.subtext || "Esta ação não pode ser desfeita."}
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col gap-3">
-                            <button
-                                onClick={confirmModal.onConfirm}
-                                className="w-full bg-destructive text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-destructive/20"
-                            >
-                                Sim, Remover Permanentemente
-                            </button>
-                            <button
-                                onClick={() => setConfirmModal(null)}
-                                className="w-full bg-slate-100 text-slate-500 py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:bg-slate-200 active:scale-[0.98] transition-all"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </PortalModal>
+            <ConfirmModal 
+                isOpen={!!confirmModal}
+                onClose={() => !isSaving && setConfirmModal(null)}
+                onConfirm={confirmModal?.onConfirm || (() => {})}
+                isLoading={isSaving}
+                title={confirmModal?.message || ""}
+                description={confirmModal?.subtext || "Esta ação não pode ser desfeita."}
+                confirmText="Sim, Excluir"
+            />
 
             {/* Modal de Guia de Capas - Redesign Premium */}
             <PortalModal isOpen={isGuideModalOpen} onClose={() => setIsGuideModalOpen(false)}>

@@ -7,8 +7,10 @@ import { compressImage } from "@/utils/image";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { PortalModal } from "../components/PortalModal";
+import { ConfirmModal } from "../components/ConfirmModal";
 import UserMaterialsModal from "../components/UserMaterialsModal";
 import CountUp from "../components/CountUp";
+import Skeleton from "../components/Skeleton";
 
 interface Category {
     id: string;
@@ -76,34 +78,34 @@ const UserSkeleton = () => (
     <tr className="border-b border-border last:border-0">
         <td className="px-8 py-6">
             <div className="flex items-center gap-4">
-                <div className="h-10 w-10 bg-slate-200 rounded-full animate-shimmer" />
+                <Skeleton className="h-10 w-10" variant="circle" />
                 <div className="space-y-2">
-                    <div className="h-4 w-32 bg-slate-200 rounded animate-shimmer" />
-                    <div className="h-3 w-48 bg-slate-200 rounded animate-shimmer" />
+                    <Skeleton className="h-4 w-32" variant="rectangle" />
+                    <Skeleton className="h-3 w-48" variant="rectangle" />
                 </div>
             </div>
         </td>
-        <td className="px-8 py-6"><div className="h-8 w-24 bg-slate-200 rounded-xl animate-shimmer" /></td>
-        <td className="px-8 py-6"><div className="h-6 w-32 bg-slate-200 rounded-lg animate-shimmer" /></td>
-        <td className="px-8 py-6 text-right"><div className="h-8 w-8 bg-slate-200 rounded-xl ml-auto animate-shimmer" /></td>
+        <td className="px-8 py-6"><Skeleton className="h-8 w-24" variant="rounded" /></td>
+        <td className="px-8 py-6"><Skeleton className="h-6 w-32" variant="rounded" /></td>
+        <td className="px-8 py-6 text-right"><Skeleton className="h-8 w-8 ml-auto" variant="rounded" /></td>
     </tr>
 );
 
 const UserCardSkeleton = () => (
     <div className="bg-card border border-border rounded-3xl p-6 shadow-sm space-y-6">
         <div className="flex items-center gap-4">
-            <div className="h-12 w-12 bg-slate-200 rounded-full shrink-0 animate-shimmer" />
+            <Skeleton className="h-12 w-12 shrink-0" variant="circle" />
             <div className="space-y-2 flex-1">
-                <div className="h-4 w-2/3 bg-slate-200 rounded animate-shimmer" />
-                <div className="h-3 w-1/2 bg-slate-200 rounded animate-shimmer" />
+                <Skeleton className="h-4 w-2/3" variant="rectangle" />
+                <Skeleton className="h-3 w-1/2" variant="rectangle" />
             </div>
         </div>
         <div className="space-y-4 pt-4 border-t border-white/5">
             <div className="flex justify-between items-center">
-                <div className="h-3 w-8 bg-slate-200 rounded animate-shimmer" />
-                <div className="h-8 w-24 bg-slate-200 rounded-xl animate-shimmer" />
+                <Skeleton className="h-3 w-8" variant="rectangle" />
+                <Skeleton className="h-8 w-24" variant="rounded" />
             </div>
-            <div className="h-10 w-full bg-slate-200 rounded-xl animate-shimmer" />
+            <Skeleton className="h-10 w-full" variant="rounded" />
         </div>
     </div>
 );
@@ -112,16 +114,16 @@ const CategorySkeleton = () => (
     <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
         <div className="flex items-start justify-between mb-6">
             <div className="space-y-2">
-                <div className="h-5 w-32 bg-slate-200 rounded animate-shimmer" />
-                <div className="h-3 w-20 bg-slate-200 rounded animate-shimmer" />
+                <Skeleton className="h-5 w-32" variant="rounded" />
+                <Skeleton className="h-3 w-20" variant="rectangle" />
             </div>
-            <div className="h-8 w-8 bg-slate-200 rounded-xl animate-shimmer" />
+            <Skeleton className="h-8 w-8" variant="rounded" />
         </div>
         <div className="space-y-3">
-            <div className="h-3 w-16 bg-slate-200 rounded animate-shimmer" />
+            <Skeleton className="h-3 w-16" variant="rectangle" />
             <div className="flex -space-x-2">
                 {[1, 2, 3].map(i => (
-                    <div key={i} className="h-8 w-8 bg-slate-200 rounded-full border-2 border-card animate-shimmer" />
+                    <Skeleton key={i} className="h-8 w-8 border-2 border-card" variant="circle" />
                 ))}
             </div>
         </div>
@@ -130,66 +132,37 @@ const CategorySkeleton = () => (
 
 const StatSkeleton = () => (
     <div className="p-6 rounded-3xl bg-card border border-border shadow-sm h-32 flex flex-col justify-center">
-        <div className="h-10 w-10 bg-slate-200/80 rounded-xl mb-4 animate-shimmer" />
-        <div className="h-6 w-16 bg-slate-300 rounded mb-2 animate-shimmer" />
-        <div className="h-3 w-24 bg-slate-200 rounded animate-shimmer" />
+        <Skeleton className="h-10 w-10 mb-4" variant="rounded" />
+        <Skeleton className="h-6 w-16 mb-2" variant="rounded" />
+        <Skeleton className="h-3 w-24" variant="rectangle" />
     </div>
 );
 
 const FilterSkeleton = () => (
-    <div className="h-10 w-32 bg-slate-100 rounded-xl animate-shimmer border border-slate-200/50" />
+    <Skeleton className="h-10 w-32 border border-slate-200/50" variant="rounded" />
 );
 
-const ConfirmModal = ({ message, subtext, onConfirm, onCancel, isDeleting }: { message: string; subtext?: string; onConfirm: () => void; onCancel: () => void; isDeleting?: boolean }) => (
-    <PortalModal isOpen={true} onClose={onCancel} preventCloseOnOverlayClick={isDeleting}>
-        <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-            className="relative bg-card border border-border rounded-[2rem] p-8 shadow-xl w-full max-w-md z-10 overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-destructive/50 via-destructive to-destructive/50" />
-            <div className="flex items-start gap-4 mb-8">
-                <div className="p-3 rounded-2xl bg-destructive/10 text-destructive shrink-0">
-                    <LucideAlertTriangle className="h-6 w-6" />
-                </div>
-                <div>
-                    <h3 className="text-xl font-black mb-2">{message}</h3>
-                    {subtext && <p className="text-sm text-muted-foreground font-medium">{subtext}</p>}
-                </div>
-            </div>
-            <div className="flex gap-3 justify-end mt-4 pt-6 border-t border-white/5">
-                <button onClick={onCancel} disabled={isDeleting} className="px-6 py-3 rounded-2xl border border-border font-bold text-sm hover:bg-muted transition-all disabled:opacity-40">
-                    Cancelar
-                </button>
-                <button onClick={onConfirm} disabled={isDeleting} className="min-w-[140px] flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-destructive text-white font-bold text-sm hover:bg-destructive/90 transition-all shadow-lg shadow-destructive/20 disabled:opacity-80">
-                    {isDeleting ? (
-                        <>
-                            <LoadingSpinner size="sm" variant="white" />
-                            Excluindo...
-                        </>
-                    ) : 'Sim, excluir'}
-                </button>
-            </div>
-        </motion.div>
-    </PortalModal>
-);
+
 
 const ActivitySkeleton = () => (
     <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
         <div className="flex items-center gap-4">
-            <div className="h-10 w-10 bg-slate-200 rounded-full animate-shimmer" />
+            <Skeleton className="h-10 w-10" variant="circle" />
             <div className="space-y-2">
-                <div className="h-4 w-24 bg-slate-200 rounded animate-shimmer" />
-                <div className="h-3 w-40 bg-slate-200 rounded animate-shimmer" />
+                <Skeleton className="h-4 w-24" variant="rectangle" />
+                <Skeleton className="h-3 w-40" variant="rectangle" />
             </div>
         </div>
-        <div className="h-3 w-16 bg-slate-200 rounded animate-shimmer" />
+        <Skeleton className="h-3 w-16" variant="rectangle" />
     </div>
 );
 
 const AuditSkeleton = () => (
     <div className="relative pl-8 border-l-2 border-slate-100 pb-8 last:pb-0">
-        <div className="absolute left-[-9px] top-0 h-4 w-4 rounded-full bg-slate-200 border-4 border-white animate-shimmer" />
-        <div className="h-3 w-20 bg-slate-200 rounded mb-3 animate-shimmer" />
-        <div className="h-5 w-32 bg-slate-200 rounded mb-2 animate-shimmer" />
-        <div className="h-4 w-48 bg-slate-200 rounded animate-shimmer" />
+        <div className="absolute left-[-9px] top-0 h-4 w-4 rounded-full bg-white border-4 border-slate-200" />
+        <Skeleton className="h-3 w-20 mb-3" variant="rectangle" />
+        <Skeleton className="h-5 w-32 mb-2" variant="rounded" />
+        <Skeleton className="h-4 w-48" variant="rounded" />
     </div>
 );
 
@@ -2191,17 +2164,15 @@ export default function AdminDashboard() {
             </PortalModal>
 
             {/* Confirm Modal */}
-            <AnimatePresence>
-                {confirmModal && (
-                    <ConfirmModal
-                        message={confirmModal.message}
-                        subtext={confirmModal.subtext}
-                        onConfirm={confirmModal.onConfirm}
-                        onCancel={() => !isDeleting && setConfirmModal(null)}
-                        isDeleting={isDeleting}
-                    />
-                )}
-            </AnimatePresence>
+            <ConfirmModal 
+                isOpen={!!confirmModal}
+                onClose={() => !isDeleting && setConfirmModal(null)}
+                onConfirm={confirmModal?.onConfirm || (() => {})}
+                isLoading={isDeleting}
+                title={confirmModal?.message || ""}
+                description={confirmModal?.subtext || "Esta ação não pode ser desfeita."}
+                confirmText="Sim, Excluir"
+            />
 
             {/* Student Materials Modal */}
             {isMaterialsModalOpen && selectedUser && (

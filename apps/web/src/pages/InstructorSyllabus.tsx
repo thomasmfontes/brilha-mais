@@ -8,6 +8,8 @@ import { getYoutubeId } from "../utils/youtube";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { PortalModal } from "../components/PortalModal";
+import { ConfirmModal } from "../components/ConfirmModal";
+import Skeleton from "../components/Skeleton";
 
 interface Material {
     id?: string;
@@ -110,22 +112,22 @@ export default function InstructorSyllabus() {
         <div className="max-w-4xl mx-auto space-y-8 pb-32 px-4 md:px-0">
             <div className="flex justify-between items-center pt-6">
                 <div className="flex items-center gap-6">
-                    <div className="h-12 w-12 rounded-full bg-slate-200 animate-shimmer" />
+                    <Skeleton className="h-12 w-12" variant="circle" />
                     <div className="space-y-2">
-                        <div className="h-3 w-24 bg-slate-200 rounded animate-shimmer" />
-                        <div className="h-8 w-48 bg-slate-300 rounded animate-shimmer" />
+                        <Skeleton className="h-3 w-24" variant="rectangle" />
+                        <Skeleton className="h-8 w-48" variant="rounded" />
                     </div>
                 </div>
-                <div className="h-12 w-40 bg-slate-200 rounded-xl animate-shimmer" />
+                <Skeleton className="h-12 w-40" variant="rounded" />
             </div>
             <div className="space-y-12">
                 {[...Array(2)].map((_, i) => (
                     <div key={i} className="bg-white border border-slate-200 rounded-[2rem] h-[400px] shadow-sm flex flex-col p-6 space-y-6">
                         <div className="flex items-center gap-4">
-                            <div className="h-9 w-9 bg-slate-200 rounded-lg animate-shimmer" />
-                            <div className="h-6 w-64 bg-slate-300 rounded animate-shimmer" />
+                            <Skeleton className="h-9 w-9" variant="rounded" />
+                            <Skeleton className="h-6 w-64" variant="rounded" />
                         </div>
-                        <div className="flex-1 bg-slate-50 rounded-2xl animate-shimmer" />
+                        <Skeleton className="flex-1 w-full" variant="rounded" />
                     </div>
                 ))}
             </div>
@@ -1059,42 +1061,15 @@ export default function InstructorSyllabus() {
                 </button>
             </div>
 
-            {/* Global Delete Confirmation Modal */}
-            <PortalModal isOpen={confirmModal.isOpen} onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}>
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    className="relative z-10 bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl space-y-8 border border-slate-100"
-                >
-                    <div className="h-20 w-20 bg-destructive/10 text-destructive rounded-[2rem] flex items-center justify-center mx-auto shadow-inner">
-                        <LucideTrash2 className="h-10 w-10" />
-                    </div>
-
-                    <div className="text-center space-y-3">
-                        <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900 leading-none">
-                            {confirmModal.title}
-                        </h2>
-                        <p className="text-sm text-slate-500 font-medium leading-relaxed px-2">
-                            {confirmModal.description}
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col gap-3">
-                        <button
-                            onClick={confirmModal.onConfirm}
-                            className="w-full bg-destructive text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-destructive/20"
-                        >
-                            Sim, Remover Permanentemente
-                        </button>
-                        <button
-                            onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-                            className="w-full bg-slate-100 text-slate-500 py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:bg-slate-200 active:scale-[0.98] transition-all"
-                        >
-                            Cancelar
-                        </button>
-                    </div>
-                </motion.div>
-            </PortalModal>
+            <ConfirmModal 
+                isOpen={confirmModal.isOpen}
+                onClose={() => !isSaving && setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                isLoading={isSaving}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                confirmText="Sim, Remover"
+            />
         </div>
     );
 }

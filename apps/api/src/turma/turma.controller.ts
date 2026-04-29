@@ -18,7 +18,7 @@ export class TurmaController {
     }
 
     @Get(':id')
-    @Roles('ADMIN')
+    @Roles('ADMIN', 'INSTRUCTOR')
     findOne(@Param('id') id: string) {
         return this.turmaService.findOne(id);
     }

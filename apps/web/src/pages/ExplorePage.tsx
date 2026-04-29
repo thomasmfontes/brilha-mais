@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 
 import { useCourseStore } from "../store/courseStore";
 import api from "../utils/api";
+import Skeleton from "../components/Skeleton";
 
 import React, { useEffect, useState } from "react";
 
@@ -95,8 +96,14 @@ export default function ExplorePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 md:px-0">
                 {isLoading ? (
-                    [...Array(4)].map((_, i) => (
-                        <div key={i} className="bg-slate-200 border border-slate-300 rounded-2xl overflow-hidden shadow-sm animate-shimmer h-[300px]" />
+                    [...Array(8)].map((_, i) => (
+                        <div key={i} className="space-y-4">
+                            <Skeleton className="h-[200px] w-full" variant="rounded" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-3/4" variant="rectangle" />
+                                <Skeleton className="h-3 w-1/2" variant="rectangle" />
+                            </div>
+                        </div>
                     ))
                 ) : filteredCourses.length > 0 ? (
                     filteredCourses.map(course => (

@@ -13,7 +13,8 @@ import {
     LucideArrowRight,
     LucideCheckCircle,
     LucideCamera,
-    LucideLoader2
+    LucideLoader2,
+    LucideQrCode
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
@@ -429,6 +430,18 @@ export function AppLayout() {
 
                                     <div className="space-y-4">
                                         <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 px-4">Configurações</p>
+                                        {userRole === 'student' && (
+                                            <Link
+                                                to="/scan"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                className="flex items-center gap-4 px-6 py-5 rounded-[1.5rem] bg-indigo-50/50 text-indigo-600 border border-indigo-100 font-black uppercase tracking-widest text-[10px] w-full transition-colors active:scale-95 shadow-sm mb-2"
+                                            >
+                                                <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                                    <LucideQrCode className="h-4 w-4" />
+                                                </div>
+                                                Ler QR Code (Presença)
+                                            </Link>
+                                        )}
                                         <button
                                             onClick={handleLogout}
                                             className="flex items-center gap-4 px-6 py-5 rounded-[1.5rem] bg-red-50/50 text-red-500 border border-red-100 font-black uppercase tracking-widest text-[10px] w-full transition-colors active:scale-95 shadow-sm"

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { LucideGraduationCap, LucideDownload, LucideAward } from "lucide-react";
+import Skeleton from "../components/Skeleton";
 
 export default function CertificatesPage() {
     const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +22,7 @@ export default function CertificatesPage() {
             {isLoading ? (
                 <div className="grid md:grid-cols-2 gap-6">
                     {[...Array(2)].map((_, i) => (
-                        <div key={i} className="p-8 rounded-[2.5rem] border border-border bg-slate-50 shadow-sm animate-shimmer h-32" />
+                        <Skeleton key={i} className="h-32 w-full" variant="rounded" />
                     ))}
                 </div>
             ) : certificates.length > 0 ? (

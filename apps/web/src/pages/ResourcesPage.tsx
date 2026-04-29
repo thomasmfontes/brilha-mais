@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LucidePlay, LucideVideo, LucideX } from "lucide-react";
 import api from "../utils/api";
+import Skeleton from "../components/Skeleton";
 
 const RESOURCES = [
     {
@@ -74,11 +75,11 @@ export default function ResourcesPage() {
                 {isLoading ? (
                     // Skeleton Loading
                     [...Array(4)].map((_, i) => (
-                        <div key={i} className="flex flex-col gap-4 animate-pulse">
-                            <div className="aspect-[9/16] rounded-[2rem] bg-slate-100 border-4 border-white shadow-sm" />
+                        <div key={i} className="flex flex-col gap-4">
+                            <Skeleton className="aspect-[9/16] w-full" variant="rounded" />
                             <div className="px-2 space-y-2">
-                                <div className="h-4 bg-slate-100 rounded-md w-3/4" />
-                                <div className="h-3 bg-slate-50 rounded-md w-1/2" />
+                                <Skeleton className="h-4 w-3/4" variant="rectangle" />
+                                <Skeleton className="h-3 w-1/2" variant="rectangle" />
                             </div>
                         </div>
                     ))
