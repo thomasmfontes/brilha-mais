@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideGlobe, LucideSearch, LucideX, LucideInfo, LucideCheckCircle2, LucideMapPin } from "lucide-react";
+import { LucideChevronLeft, LucidePlus, LucideSave, LucideSettings, LucideTrash2, LucideUsers, LucideEdit, LucideFileText, LucideLayout, LucideImage, LucideAlertTriangle, LucideShield, LucideLock, LucideUnlock, LucideGlobe, LucideSearch, LucideX, LucideInfo, LucideCheckCircle2, LucideMapPin, LucideAlertCircle, LucideRefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
@@ -28,11 +28,23 @@ export default function InstructorDashboard() {
     const [userRole, setUserRole] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'cursos' | 'turmas'>('cursos');
     const [myTurmas, setMyTurmas] = useState<any[]>([]);
+    const [confirmModal, setConfirmModal] = useState<{ message: string; subtext?: string; onConfirm: () => void } | null>(null);
     const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadPreview, setUploadPreview] = useState<string | null>(null);
-    const [confirmModal, setConfirmModal] = useState<{ message: string; subtext?: string; onConfirm: () => void } | null>(null);
     const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+    const [hasError, setHasError] = useState(false);
+
+    // Helper for retrying failed requests (Vercel deploy instability)
+    const fetchWithRetry = async (fn: () => Promise<any>, retries = 3, delay = 1500) => {
+        try {
+            return await fn();
+        } catch (error) {
+            if (retries <= 0) throw error;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return fetchWithRetry(fn, retries - 1, delay);
+        }
+    };
 
     const courses = useCourseStore(state => state.instructorCourses);
     const addCourse = useCourseStore(state => state.addCourse);
@@ -57,8 +69,12 @@ export default function InstructorDashboard() {
 
     const fetchInstructorCoursesWithLoading = async () => {
         setIsLoadingCourses(true);
+        setHasError(false);
         try {
-            await fetchInstructorCourses();
+            await fetchWithRetry(() => fetchInstructorCourses());
+        } catch (error) {
+            console.error("Error fetching courses after retries:", error);
+            setHasError(true);
         } finally {
             setIsLoadingCourses(false);
         }
@@ -80,7 +96,7 @@ export default function InstructorDashboard() {
     const fetchStats = async () => {
         setIsLoadingStats(true);
         try {
-            const { data } = await api.get('/stats/instructor');
+            const { data } = await fetchWithRetry(() => api.get('/stats/instructor'));
             setStats(data);
         } catch (error) {
             console.error("Error fetching stats:", error);
@@ -92,7 +108,7 @@ export default function InstructorDashboard() {
     const fetchUser = async () => {
         setIsLoadingTurmas(true);
         try {
-            const response = await api.get('/users/me');
+            const response = await fetchWithRetry(() => api.get('/users/me'));
             if (response.data) {
                 const userData = response.data;
                 setUserRole(userData.role);
@@ -132,6 +148,7 @@ export default function InstructorDashboard() {
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
+            setHasError(true);
         } finally {
             setIsLoadingTurmas(false);
         }
@@ -315,6 +332,29 @@ export default function InstructorDashboard() {
                     isLoading={isLoadingStats}
                 />
             </div>
+
+            {hasError && !isLoadingCourses && (
+                <div className="bg-amber-50 border border-amber-200 rounded-[2rem] p-8 md:p-12 text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="h-16 w-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600">
+                        <LucideAlertCircle className="h-8 w-8" />
+                    </div>
+                    <div className="max-w-md mx-auto space-y-2">
+                        <h2 className="text-xl font-black uppercase tracking-tight text-amber-900">Instabilidade Detectada</h2>
+                        <p className="text-amber-700/80 font-bold text-sm leading-relaxed">
+                            Não conseguimos carregar todos os dados. Isso geralmente acontece durante atualizações do sistema.
+                        </p>
+                    </div>
+                    <button 
+                        onClick={() => {
+                            fetchUser();
+                            fetchInitialData();
+                        }}
+                        className="bg-amber-600 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-700 transition-all shadow-lg shadow-amber-200 active:scale-95 flex items-center gap-2 mx-auto"
+                    >
+                        <LucideRefreshCw className="h-4 w-4" /> Tentar Novamente
+                    </button>
+                </div>
+            )}
 
 
             <div className="flex gap-4 border-b border-slate-200">
