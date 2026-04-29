@@ -95,6 +95,7 @@ export default function MeetingScanner() {
                             <p className="text-slate-500 font-bold text-sm mb-12 leading-relaxed">
                                 {message === 'Invalid QR Code' ? 'Este QR Code não é válido para você ou já expirou.' : 
                                  message === 'User does not belong to this class' ? 'Você não pertence a esta turma e não pode marcar presença.' : 
+                                 message === 'Presence already recorded' ? 'Sua presença já foi registrada nesta aula.' :
                                  message}
                             </p>
                             <button 
