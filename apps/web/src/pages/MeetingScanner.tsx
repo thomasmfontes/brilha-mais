@@ -163,6 +163,7 @@ export default function MeetingScanner() {
                                     onScan={(result) => { if (result.length > 0) handleDecode(result[0].rawValue); }}
                                     onError={(error: unknown) => console.log((error as Error)?.message || error)}
                                     components={{ finder: false }}
+                                    sound={false}
                                     styles={{ container: { width: '100%', height: '100%' } }}
                                 />
                                 
