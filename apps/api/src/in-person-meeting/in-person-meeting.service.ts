@@ -70,8 +70,17 @@ export class InPersonMeetingService {
       
       const meetingId = payload.sub;
 
-      const meeting = await this.prisma.inPersonMeeting.findUnique({ where: { id: meetingId } });
+      const meeting = await this.prisma.inPersonMeeting.findUnique({ 
+        where: { id: meetingId },
+        include: { turma: { include: { users: { select: { id: true } } } } }
+      });
       if (!meeting) throw new NotFoundException('Meeting not found');
+
+      // Check if user belongs to the turma
+      const userInTurma = meeting.turma.users.some(u => u.id === userId);
+      if (!userInTurma) {
+        throw new BadRequestException('You do not belong to this class group.');
+      }
 
       // Check if already attended
       const existing = await this.prisma.meetingAttendance.findUnique({
@@ -99,6 +108,18 @@ export class InPersonMeetingService {
   }
 
   async markAttendanceManually(meetingId: string, userId: string) {
+      const meeting = await this.prisma.inPersonMeeting.findUnique({ 
+        where: { id: meetingId },
+        include: { turma: { include: { users: { select: { id: true } } } } }
+      });
+      if (!meeting) throw new NotFoundException('Meeting not found');
+
+      // Check if user belongs to the turma
+      const userInTurma = meeting.turma.users.some(u => u.id === userId);
+      if (!userInTurma) {
+        throw new BadRequestException('User does not belong to this class group.');
+      }
+
       const existing = await this.prisma.meetingAttendance.findUnique({
         where: { meetingId_userId: { meetingId, userId } }
       });

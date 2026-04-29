@@ -310,28 +310,61 @@ export default function InstructorMeetings() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {meetings.map((meeting) => (
                             <div key={meeting.id} className="group bg-white border border-slate-200 hover:border-primary/20 rounded-[2rem] p-6 transition-all hover:shadow-xl hover:shadow-slate-200/50 flex flex-col justify-between gap-6">
-                                <div className="flex justify-between items-start">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                                {(() => {
-                                                    const [year, month, day] = meeting.date.split('T')[0].split('-').map(Number);
-                                                    return new Date(year, month - 1, day).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
-                                                })()}
-                                            </span>
+                                <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                                    <div className="space-y-1 w-full md:w-auto">
+                                        <div className="flex items-center justify-between md:justify-start gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                                    {(() => {
+                                                        const [year, month, day] = meeting.date.split('T')[0].split('-').map(Number);
+                                                        return new Date(year, month - 1, day).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+                                                    })()}
+                                                </span>
+                                            </div>
+                                            
+                                            {/* Mobile-only Actions Icons */}
+                                            {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
+                                                <div className="flex md:hidden gap-1">
+                                                    <button 
+                                                        onClick={() => {
+                                                            setEditingMeeting({ 
+                                                                id: meeting.id, 
+                                                                title: meeting.title, 
+                                                                date: meeting.date.split('T')[0] 
+                                                            });
+                                                            setIsEditModalOpen(true);
+                                                        }}
+                                                        className="p-1.5 text-slate-400 hover:text-primary transition-colors"
+                                                    >
+                                                        <LucidePencil className="h-3.5 w-3.5" />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => {
+                                                            setMeetingToDelete(meeting.id);
+                                                            setIsDeleteModalOpen(true);
+                                                        }}
+                                                        className="p-1.5 text-slate-400 hover:text-destructive transition-colors"
+                                                    >
+                                                        <LucideTrash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
-                                        <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-tight group-hover:text-primary transition-colors">
+                                        <h3 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-tight leading-tight group-hover:text-primary transition-colors">
                                             {meeting.title}
                                         </h3>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="bg-slate-50 text-slate-600 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-100 flex items-center gap-2">
+                                    
+                                    <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-2">
+                                        <div className="bg-slate-50 text-slate-600 px-3 py-1.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-slate-100 flex items-center gap-2 shrink-0">
                                             <LucideUsers className="h-3 w-3" />
                                             {meeting._count?.attendances || 0} Presentes
                                         </div>
+                                        
+                                        {/* Desktop-only Actions Icons */}
                                         {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
-                                            <div className="flex gap-1">
+                                            <div className="hidden md:flex gap-1">
                                                 <button 
                                                     onClick={() => {
                                                         setEditingMeeting({ 
@@ -359,16 +392,16 @@ export default function InstructorMeetings() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="flex flex-col md:grid md:grid-cols-2 gap-3 mt-2">
                                     <button
                                         onClick={() => openAttendance(meeting)}
-                                        className="flex items-center justify-center gap-2 bg-slate-50 text-slate-600 py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-100 transition-all border border-slate-100"
+                                        className="w-full flex items-center justify-center gap-2 bg-slate-50 text-slate-600 py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-100 transition-all border border-slate-100 order-2 md:order-1"
                                     >
                                         Lista Manual
                                     </button>
                                     <Link
                                         to={`/instructor/meeting/${meeting.id}/project`}
-                                        className="flex items-center justify-center gap-2 bg-slate-900 text-white py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-black transition-all shadow-md active:scale-95"
+                                        className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-black transition-all shadow-md active:scale-95 order-1 md:order-2"
                                     >
                                         <LucideQrCode className="h-4 w-4" /> Projetar QR
                                     </Link>
