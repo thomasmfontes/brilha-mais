@@ -62,49 +62,51 @@ export class InPersonMeetingService {
   }
 
   async scanQrCode(userId: string, token: string) {
+    let payload;
     try {
-      const payload = this.jwtService.verify(token);
-      if (payload.type !== 'attendance_qr') {
-        throw new BadRequestException('Invalid token type');
-      }
-      
-      const meetingId = payload.sub;
-
-      const meeting = await this.prisma.inPersonMeeting.findUnique({ 
-        where: { id: meetingId },
-        include: { turma: { include: { users: { select: { id: true } } } } }
-      });
-      if (!meeting) throw new NotFoundException('Meeting not found');
-
-      // Check if user belongs to the turma
-      const userInTurma = meeting.turma.users.some(u => u.id === userId);
-      if (!userInTurma) {
-        throw new BadRequestException('You do not belong to this class group.');
-      }
-
-      // Check if already attended
-      const existing = await this.prisma.meetingAttendance.findUnique({
-        where: { meetingId_userId: { meetingId, userId } }
-      });
-      
-      if (existing) {
-        return { message: 'Presence already recorded' };
-      }
-
-      await this.prisma.meetingAttendance.create({
-        data: {
-          meetingId,
-          userId,
-        }
-      });
-
-      return { message: 'Presence confirmed successfully', meetingId };
+      payload = this.jwtService.verify(token);
     } catch (e) {
       if (e.name === 'TokenExpiredError') {
         throw new BadRequestException('QR Code expired. Please scan again.');
       }
       throw new BadRequestException('Invalid QR Code');
     }
+
+    if (payload.type !== 'attendance_qr') {
+      throw new BadRequestException('Invalid token type');
+    }
+    
+    const meetingId = payload.sub;
+
+    const meeting = await this.prisma.inPersonMeeting.findUnique({ 
+      where: { id: meetingId },
+      include: { turma: { include: { users: { select: { id: true } } } } }
+    });
+    if (!meeting) throw new NotFoundException('Meeting not found');
+
+    // Check if user belongs to the turma
+    const userInTurma = meeting.turma.users.some(u => u.id === userId);
+    if (!userInTurma) {
+      throw new BadRequestException('User does not belong to this class');
+    }
+
+    // Check if already attended
+    const existing = await this.prisma.meetingAttendance.findUnique({
+      where: { meetingId_userId: { meetingId, userId } }
+    });
+    
+    if (existing) {
+      return { message: 'Presence already recorded' };
+    }
+
+    await this.prisma.meetingAttendance.create({
+      data: {
+        meetingId,
+        userId,
+      }
+    });
+
+    return { message: 'Presence confirmed successfully', meetingId };
   }
 
   async markAttendanceManually(meetingId: string, userId: string) {

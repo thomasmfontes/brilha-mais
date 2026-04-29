@@ -75,7 +75,12 @@ export default function MeetingScanner() {
                             </div>
                             <h2 className="text-2xl font-black text-slate-900 mb-3 uppercase tracking-tight leading-tight">Tudo Certo!</h2>
                             <p className="text-slate-500 font-bold text-sm mb-12">
-                                {message === 'Presence confirmed successfully' ? 'Sua presença foi registrada com sucesso. Boa aula!' : message}
+                                {(() => {
+                                    const translations: Record<string, string> = {
+                                        'Presence confirmed successfully': 'Sua presença foi registrada com sucesso. Boa aula!'
+                                    };
+                                    return translations[message] || 'Sua presença foi registrada com sucesso. Boa aula!';
+                                })()}
                             </p>
                             <Link to="/dashboard" className="w-full bg-slate-900 text-white py-5 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-[11px] hover:bg-black transition-all shadow-xl active:scale-95 flex items-center justify-center">
                                 Voltar ao Início
@@ -93,10 +98,18 @@ export default function MeetingScanner() {
                             </div>
                             <h2 className="text-2xl font-black text-slate-900 mb-3 uppercase tracking-tight leading-tight">Não foi possível validar</h2>
                             <p className="text-slate-500 font-bold text-sm mb-12 leading-relaxed">
-                                {message === 'Invalid QR Code' ? 'Este QR Code não é válido para você ou já expirou.' : 
-                                 message === 'User does not belong to this class' ? 'Você não pertence a esta turma e não pode marcar presença.' : 
-                                 message === 'Presence already recorded' ? 'Sua presença já foi registrada nesta aula.' :
-                                 message}
+                                {(() => {
+                                    const translations: Record<string, string> = {
+                                        'Invalid QR Code': 'Este QR Code não é válido ou já expirou.',
+                                        'User does not belong to this class': 'Você não pertence a esta turma e não pode marcar presença.',
+                                        'Presence already recorded': 'Sua presença já foi registrada nesta aula.',
+                                        'QR Code expired. Please scan again.': 'O QR Code expirou. Por favor, peça ao instrutor para gerar um novo.',
+                                        'Meeting not found': 'Aula não encontrada no sistema.',
+                                        'Invalid token type': 'Código de autenticação inválido.',
+                                        'Presence confirmed successfully': 'Sua presença foi registrada com sucesso. Boa aula!'
+                                    };
+                                    return translations[message] || 'Ocorreu um erro ao validar sua presença. Tente novamente ou fale com o instrutor.';
+                                })()}
                             </p>
                             <button 
                                 onClick={handleRetry} 
