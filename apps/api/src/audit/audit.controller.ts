@@ -32,7 +32,8 @@ export class AuditController {
         return this.auditService.getActivityForInstructor(
             req.user.id,
             req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN',
-            limit ? parseInt(limit) : 50
+            limit ? parseInt(limit) : 50,
+            req.user.locationId
         );
     }
 }

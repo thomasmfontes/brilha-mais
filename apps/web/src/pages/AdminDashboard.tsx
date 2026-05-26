@@ -317,6 +317,10 @@ export default function AdminDashboard() {
         recentLogs: []
     });
 
+    const [auditLimit, setAuditLimit] = useState(5);
+    const [auditLogs, setAuditLogs] = useState<any[]>([]);
+    const [isLoadingMoreAudit, setIsLoadingMoreAudit] = useState(false);
+
     useEffect(() => {
         fetchProfile();
         fetchLocations(true);
@@ -347,10 +351,33 @@ export default function AdminDashboard() {
         try {
             const { data } = await api.get('/stats/admin');
             setStats(data);
+            setAuditLogs(data.recentLogs || []);
+            setAuditLimit(5);
         } catch (error) {
             console.error("Error fetching stats:", error);
         } finally {
             setIsLoadingStats(false);
+        }
+    };
+
+    const handleLoadMoreAudit = async () => {
+        setIsLoadingMoreAudit(true);
+        try {
+            const nextLimit = auditLimit + 15;
+            const { data } = await api.get(`/audit/instructor?limit=${nextLimit}`);
+            const mapped = data.map((log: any) => ({
+                user: log.user?.name || 'Sistema',
+                action: log.action,
+                entity: log.entity,
+                time: log.createdAt,
+            }));
+            setAuditLogs(mapped);
+            setAuditLimit(nextLimit);
+        } catch (error) {
+            console.error("Error loading more audit logs:", error);
+            toast.error("Erro ao carregar mais registros de auditoria.");
+        } finally {
+            setIsLoadingMoreAudit(false);
         }
     };
 
@@ -845,13 +872,13 @@ export default function AdminDashboard() {
                                         <AuditSkeleton />
                                         <AuditSkeleton />
                                     </>
-                                ) : stats.recentLogs.length > 0 ? (
+                                ) : auditLogs.length > 0 ? (
                                     <motion.div
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         className="space-y-0"
                                     >
-                                        {stats.recentLogs.map((log, idx) => (
+                                        {auditLogs.map((log, idx) => (
                                             <div key={idx} className="relative pl-10 border-l-2 border-slate-100 pb-10 last:pb-0 group">
                                                 <div className="absolute left-[-9px] top-0 h-4 w-4 rounded-full bg-amber-400 border-4 border-white shadow-[0_0_15px_rgba(251,191,36,0.5)] z-10 group-hover:scale-125 transition-transform" />
 
@@ -870,6 +897,25 @@ export default function AdminDashboard() {
                                                 </div>
                                             </div>
                                         ))}
+
+                                        {auditLogs.length >= auditLimit && (
+                                            <div className="flex justify-center pt-8 mt-4 border-t border-slate-50">
+                                                <button
+                                                    onClick={handleLoadMoreAudit}
+                                                    disabled={isLoadingMoreAudit}
+                                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-100 text-amber-600 font-black text-xs uppercase tracking-wider shadow-sm hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 transition-all cursor-pointer"
+                                                >
+                                                    {isLoadingMoreAudit ? (
+                                                        <>
+                                                            <LucideLoader2 className="h-4 w-4 animate-spin text-amber-500" />
+                                                            Carregando...
+                                                        </>
+                                                    ) : (
+                                                        'Ver Mais Histórico'
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
                                     </motion.div>
                                 ) : (
                                     <div className="text-center py-20 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">

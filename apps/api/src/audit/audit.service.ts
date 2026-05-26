@@ -28,7 +28,7 @@ export class AuditService {
         }
     }
 
-    async getActivityForInstructor(instructorId: string, isAdmin: boolean = false, limit: number = 50) {
+    async getActivityForInstructor(instructorId: string, isAdmin: boolean = false, limit: number = 50, locationId?: string) {
         try {
             const where: any = {};
 
@@ -64,6 +64,9 @@ export class AuditService {
                         }
                     }
                 ];
+            } else if (locationId) {
+                // For unit admins, filter by location
+                where.user = { locationId };
             }
 
             return await this.prisma.auditLog.findMany({
