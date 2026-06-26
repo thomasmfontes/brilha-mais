@@ -5,13 +5,12 @@ import {
     LucideTrash2, 
     LucidePlus, 
     LucideX, 
-    LucideShieldCheck, 
     LucideCalendar, 
     LucideLoader2 
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import { toast } from "react-hot-toast";
-import LoadingSpinner from "./LoadingSpinner";
 import { startRegistration } from "@simplewebauthn/browser";
 
 interface Credential {
@@ -31,7 +30,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isRegistering, setIsRegistering] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
-    const [deviceName, setDeviceName] = useState("");
 
     const isWebAuthnSupported = typeof window !== "undefined" && !!window.PublicKeyCredential;
 
@@ -39,7 +37,13 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         setIsLoading(true);
         try {
             const response = await api.get<Credential[]>("/auth/webauthn/credentials");
-            setCredentials(response.data || []);
+            const list = response.data || [];
+            setCredentials(list);
+            if (list.length > 0) {
+                localStorage.setItem("has_biometrics", "true");
+            } else {
+                localStorage.removeItem("has_biometrics");
+            }
         } catch (error: any) {
             console.error("Erro ao buscar biometrias:", error);
             toast.error("Não foi possível carregar as biometrias cadastradas.");
@@ -51,25 +55,43 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     useEffect(() => {
         if (isOpen) {
             fetchCredentials();
-            setDeviceName("");
         }
     }, [isOpen]);
 
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // Helper to auto-generate a clean, recognizable device name based on OS & Browser
+    const detectDeviceName = () => {
+        const userAgent = navigator.userAgent;
+        let os = "Dispositivo";
+        if (userAgent.indexOf("Win") !== -1) os = "Windows";
+        else if (userAgent.indexOf("Mac") !== -1) os = "Mac";
+        else if (userAgent.indexOf("iPhone") !== -1) os = "iPhone";
+        else if (userAgent.indexOf("iPad") !== -1) os = "iPad";
+        else if (userAgent.indexOf("Android") !== -1) os = "Android";
+        else if (userAgent.indexOf("Linux") !== -1) os = "Linux";
+        
+        let browser = "Navegador";
+        if (userAgent.indexOf("Chrome") !== -1) browser = "Chrome";
+        else if (userAgent.indexOf("Safari") !== -1) browser = "Safari";
+        else if (userAgent.indexOf("Firefox") !== -1) browser = "Firefox";
+        else if (userAgent.indexOf("Edge") !== -1) browser = "Edge";
+
+        return `${os} (${browser})`;
+    };
+
+    const handleRegister = async () => {
         if (!isWebAuthnSupported) {
-            toast.error("Este navegador ou dispositivo não suporta autenticação biométrica.");
+            toast.error("Este dispositivo não suporta autenticação biométrica.");
             return;
         }
 
-        const nameToUse = deviceName.trim() || "Meu Dispositivo";
+        const autoDeviceName = detectDeviceName();
         setIsRegistering(true);
 
         try {
             // 1. Obter opções de registro do backend
             const optionsResponse = await api.post("/auth/webauthn/register/options", {
-                name: nameToUse,
-                deviceName: nameToUse
+                name: autoDeviceName,
+                deviceName: autoDeviceName
             });
             const options = optionsResponse.data;
 
@@ -79,22 +101,21 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             // 3. Enviar o resultado da verificação para o backend
             await api.post("/auth/webauthn/register/verify", {
                 ...registrationResult,
-                name: nameToUse,
-                deviceName: nameToUse
+                name: autoDeviceName,
+                deviceName: autoDeviceName
             });
 
+            localStorage.setItem("has_biometrics", "true");
             toast.success("Biometria cadastrada com sucesso!");
-            setDeviceName("");
             fetchCredentials();
         } catch (error: any) {
             console.error("Erro no registro WebAuthn:", error);
-            // Evitar exibir erro se o usuário cancelou o prompt
             if (error.name === "NotAllowedError") {
                 toast.error("Registro cancelado pelo usuário.");
             } else {
                 toast.error(
                     error.response?.data?.message || 
-                    "Falha ao registrar biometria. Verifique se o dispositivo já está cadastrado."
+                    "Falha ao registrar biometria."
                 );
             }
         } finally {
@@ -118,146 +139,139 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
     return (
         <PortalModal isOpen={isOpen} onClose={onClose}>
-            <div className="bg-white rounded-[2.5rem] p-6 sm:p-10 max-w-lg w-full shadow-2xl border border-slate-100 relative overflow-hidden flex flex-col max-h-[85vh]">
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="relative w-full max-w-md bg-card border border-border rounded-[2.5rem] p-8 md:p-10 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden"
+            >
+                {/* Border Top Gradient Line */}
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
+                
+                {/* Close Button */}
+                <button 
+                    onClick={onClose}
+                    className="absolute top-6 right-6 p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground z-20"
+                >
+                    <LucideX className="h-5 w-5" />
+                </button>
+
                 {/* Header */}
-                <div className="flex items-start justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shadow-sm">
+                <div className="mb-6 flex flex-col items-start text-left">
+                    <h2 className="text-2xl font-black mb-2 flex items-center gap-3">
+                        <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
                             <LucideFingerprint className="h-6 w-6" />
                         </div>
-                        <div>
-                            <h2 className="text-xl font-black uppercase tracking-tight text-slate-900">Biometria & Passkeys</h2>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Segurança Premium</p>
-                        </div>
-                    </div>
-                    <button 
-                        onClick={onClose}
-                        className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-colors active:scale-95"
-                    >
-                        <LucideX className="h-5 w-5" />
-                    </button>
+                        Biometria & Face ID
+                    </h2>
+                    <p className="text-muted-foreground font-medium text-xs pl-1">
+                        Gerencie seus dispositivos cadastrados para login rápido.
+                    </p>
                 </div>
 
-                <div className="overflow-y-auto pr-1 flex-1 space-y-6 scrollbar-thin">
-                    <p className="text-sm font-bold text-slate-500 leading-relaxed">
-                        Gerencie suas chaves de acesso biométricas. Uma vez cadastrada, você poderá entrar na sua conta rapidamente usando Face ID, Touch ID ou a biometria do seu dispositivo.
-                    </p>
-
-                    {/* Cadastrar Nova Biometria */}
-                    <div className="bg-slate-50 rounded-3xl p-5 border border-slate-100 space-y-4">
-                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-700 flex items-center gap-2">
-                            <LucideShieldCheck className="h-4 w-4 text-primary" />
-                            Cadastrar Novo Dispositivo
+                {/* List Container */}
+                <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-4 mb-6">
+                    <div className="space-y-3 pt-2">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">
+                            Dispositivos Salvos
                         </h3>
                         
-                        {!isWebAuthnSupported ? (
-                            <div className="text-xs font-bold text-red-500 bg-red-50 border border-red-100 rounded-xl p-3">
-                                Seu navegador ou dispositivo atual não oferece suporte para WebAuthn/Biometria.
-                            </div>
-                        ) : (
-                            <form onSubmit={handleRegister} className="space-y-3">
-                                <div>
-                                    <label htmlFor="device-name" className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 ml-1">
-                                        Nome da Biometria / Dispositivo
-                                    </label>
-                                    <input 
-                                        id="device-name"
-                                        type="text" 
-                                        value={deviceName}
-                                        onChange={(e) => setDeviceName(e.target.value)}
-                                        placeholder="Ex: Meu iPhone, TouchID Notebook"
-                                        required
-                                        disabled={isRegistering}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-semibold placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50"
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={isRegistering}
-                                    className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-800 transition-all active:scale-95 shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
-                                >
-                                    {isRegistering ? (
-                                        <>
-                                            <LucideLoader2 className="h-4 w-4 animate-spin" />
-                                            <span>Registrando no Dispositivo...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <LucidePlus className="h-4 w-4" />
-                                            <span>Cadastrar Biometria</span>
-                                        </>
-                                    )}
-                                </button>
-                            </form>
-                        )}
-                    </div>
-
-                    {/* Lista de Biometrias Cadastradas */}
-                    <div className="space-y-3">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
-                            Dispositivos Cadastrados ({credentials.length})
-                        </h3>
-
                         {isLoading ? (
-                            <div className="flex flex-col items-center justify-center py-8">
-                                <LoadingSpinner size="md" />
-                                <span className="text-xs font-bold text-slate-400 mt-2">Carregando dispositivos...</span>
+                            <div className="py-12 flex flex-col items-center justify-center gap-3">
+                                <LucideLoader2 className="h-6 w-6 text-primary animate-spin" />
+                                <p className="text-xs font-bold text-slate-400">Buscando chaves...</p>
                             </div>
                         ) : credentials.length === 0 ? (
-                            <div className="border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center">
-                                <LucideFingerprint className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                                <p className="text-sm font-black uppercase text-slate-400 tracking-tight">Nenhuma biometria cadastrada</p>
-                                <p className="text-xs text-slate-400 mt-1">Cadastre seu dispositivo acima para login rápido.</p>
+                            <div className="border border-dashed border-border rounded-3xl p-8 text-center bg-slate-50/50">
+                                <div className="h-12 w-12 rounded-2xl bg-white border border-border flex items-center justify-center text-slate-300 mx-auto mb-3 shadow-sm">
+                                    <LucideFingerprint className="h-6 w-6" />
+                                </div>
+                                <p className="text-xs font-black uppercase text-slate-400 tracking-wider">
+                                    Nenhum dispositivo salvo
+                                </p>
+                                <p className="text-[10px] text-slate-400 mt-1 max-w-[220px] mx-auto font-medium leading-relaxed">
+                                    Cadastre a biometria deste dispositivo para acessar sem precisar de senhas.
+                                </p>
                             </div>
                         ) : (
-                            <div className="space-y-2">
-                                {credentials.map((cred) => (
-                                    <div 
-                                        key={cred.id} 
-                                        className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-slate-300 transition-colors"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">
-                                                <LucideFingerprint className="h-5 w-5 text-slate-400" />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-black uppercase tracking-tight text-slate-800 truncate">
-                                                    {cred.name || cred.deviceName || "Chave de Acesso"}
-                                                </p>
-                                                <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-0.5">
-                                                    <LucideCalendar className="h-3 w-3" />
-                                                    {cred.createdAt 
-                                                        ? new Date(cred.createdAt).toLocaleDateString("pt-BR", {
-                                                            day: "2-digit",
-                                                            month: "2-digit",
-                                                            year: "numeric",
-                                                            hour: "2-digit",
-                                                            minute: "2-digit"
-                                                          })
-                                                        : "Data desconhecida"
-                                                    }
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => handleDelete(cred.id)}
-                                            disabled={deletingId !== null}
-                                            className="h-9 w-9 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 text-red-500 flex items-center justify-center transition-colors disabled:opacity-50 active:scale-95"
-                                            title="Excluir Biometria"
+                            <div className="space-y-2.5">
+                                <AnimatePresence initial={false}>
+                                    {credentials.map((cred) => (
+                                        <motion.div 
+                                            layout
+                                            key={cred.id} 
+                                            initial={{ opacity: 0, y: 8 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            className="relative p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-between hover:border-primary/20 transition-all group/file"
                                         >
-                                            {deletingId === cred.id ? (
-                                                <LucideLoader2 className="h-4 w-4 animate-spin" />
-                                            ) : (
-                                                <LucideTrash2 className="h-4 w-4" />
-                                            )}
-                                        </button>
-                                    </div>
-                                ))}
+                                            <div className="flex items-center gap-4 min-w-0">
+                                                <div className="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover/file:bg-primary/5 group-hover/file:text-primary transition-colors shrink-0">
+                                                    <LucideFingerprint className="h-6 w-6" />
+                                                </div>
+                                                <div className="min-w-0 text-left">
+                                                    <p className="font-bold text-sm truncate text-slate-900">
+                                                        {cred.name || cred.deviceName || "Chave de Acesso"}
+                                                    </p>
+                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">
+                                                        {cred.createdAt 
+                                                            ? new Date(cred.createdAt).toLocaleDateString("pt-BR", {
+                                                                day: "2-digit",
+                                                                month: "2-digit",
+                                                                year: "numeric"
+                                                              })
+                                                            : "Cadastrado"
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDelete(cred.id)}
+                                                disabled={deletingId !== null}
+                                                className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all active:scale-95 disabled:opacity-50"
+                                                title="Excluir Chave"
+                                            >
+                                                {deletingId === cred.id ? (
+                                                    <LucideLoader2 className="h-4 w-4 animate-spin text-primary" />
+                                                ) : (
+                                                    <LucideTrash2 className="h-4 w-4" />
+                                                )}
+                                            </button>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
                             </div>
                         )}
                     </div>
                 </div>
-            </div>
+
+                {/* Footer Action */}
+                <div className="mt-auto">
+                    {isWebAuthnSupported ? (
+                        <button
+                            onClick={handleRegister}
+                            disabled={isRegistering}
+                            className="w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            {isRegistering ? (
+                                <>
+                                    <LucideLoader2 className="h-4 w-4 animate-spin" />
+                                    <span>Registrando...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <LucidePlus className="h-4 w-4" />
+                                    <span>Adicionar Biometria</span>
+                                </>
+                            )}
+                        </button>
+                    ) : (
+                        <div className="w-full p-4 rounded-2xl bg-red-50 border border-red-100 text-red-500 text-[10px] font-black uppercase tracking-widest text-center">
+                            Dispositivo incompatível
+                        </div>
+                    )}
+                </div>
+            </motion.div>
         </PortalModal>
     );
 }

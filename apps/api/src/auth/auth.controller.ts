@@ -133,7 +133,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async registerVerify(
     @Req() req: RequestWithUser,
-    @Body() body: RegistrationResponseJSON,
+    @Body() body: RegistrationResponseJSON & { deviceName?: string; name?: string },
   ) {
     return this.webAuthnService.verifyRegistration(req.user, body);
   }

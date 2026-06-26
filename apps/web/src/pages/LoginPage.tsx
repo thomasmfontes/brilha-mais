@@ -26,6 +26,12 @@ export default function LoginPage() {
 
 
     const [isRedirecting, setIsRedirecting] = useState<string | null>(null);
+    const [showBiometricButton, setShowBiometricButton] = useState(false);
+
+    useEffect(() => {
+        const hasBiometrics = localStorage.getItem("has_biometrics") === "true";
+        setShowBiometricButton(hasBiometrics);
+    }, []);
 
     const handleBiometricLogin = async () => {
         setIsRedirecting('biometric');
@@ -38,7 +44,10 @@ export default function LoginPage() {
             const authResult = await startAuthentication({ optionsJSON: options });
 
             // 3. Enviar o resultado da verificação para o backend
-            const verifyResponse = await api.post("/auth/webauthn/authenticate/verify", authResult);
+            const verifyResponse = await api.post("/auth/webauthn/authenticate/verify", {
+                ...authResult,
+                challenge: options.challenge
+            });
 
             const { access_token } = verifyResponse.data;
             if (access_token) {
@@ -136,24 +145,28 @@ export default function LoginPage() {
                                 {isRedirecting === 'microsoft' ? 'Conectando...' : 'Entrar com Microsoft'}
                             </button>
 
-                            <div className="relative flex py-2 items-center">
-                                <div className="flex-grow border-t border-slate-200"></div>
-                                <span className="flex-shrink mx-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Ou</span>
-                                <div className="flex-grow border-t border-slate-200"></div>
-                            </div>
+                            {showBiometricButton && (
+                                <>
+                                    <div className="relative flex py-2 items-center">
+                                        <div className="flex-grow border-t border-slate-200"></div>
+                                        <span className="flex-shrink mx-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Ou</span>
+                                        <div className="flex-grow border-t border-slate-200"></div>
+                                    </div>
 
-                            <button
-                                onClick={handleBiometricLogin}
-                                disabled={!!isRedirecting}
-                                className="flex items-center justify-center gap-4 px-6 py-5 rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary transition-all font-black text-lg shadow-md group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                                {isRedirecting === 'biometric' ? (
-                                    <LoadingSpinner size="md" />
-                                ) : (
-                                    <LucideFingerprint className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
-                                )}
-                                {isRedirecting === 'biometric' ? 'Aguardando Leitura...' : 'Entrar com Biometria'}
-                            </button>
+                                    <button
+                                        onClick={handleBiometricLogin}
+                                        disabled={!!isRedirecting}
+                                        className="flex items-center justify-center gap-4 px-6 py-5 rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary transition-all font-black text-lg shadow-md group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        {isRedirecting === 'biometric' ? (
+                                            <LoadingSpinner size="md" />
+                                        ) : (
+                                            <LucideFingerprint className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
+                                        )}
+                                        {isRedirecting === 'biometric' ? 'Aguardando Leitura...' : 'Entrar com Biometria'}
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
 

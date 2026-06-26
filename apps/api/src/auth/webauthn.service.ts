@@ -64,7 +64,10 @@ export class WebAuthnService {
     return options;
   }
 
-  async verifyRegistration(user: User, body: RegistrationResponseJSON) {
+  async verifyRegistration(
+    user: User,
+    body: RegistrationResponseJSON & { deviceName?: string; name?: string },
+  ) {
     const storedChallenge = await this.prisma.webAuthnChallenge.findFirst({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
@@ -124,6 +127,7 @@ export class WebAuthnService {
           deviceType: credentialDeviceType,
           backedUp: credentialBackedUp,
           transports: transportsList,
+          deviceName: body.deviceName || body.name || null,
           userId: user.id,
         },
       });
@@ -278,6 +282,7 @@ export class WebAuthnService {
         credentialId: true,
         deviceType: true,
         backedUp: true,
+        deviceName: true,
         createdAt: true,
       },
     });
