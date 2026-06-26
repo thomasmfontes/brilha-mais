@@ -154,7 +154,7 @@ export default function InstructorSubmissions() {
                 responseType: 'blob'
             });
             
-            const blob = new Blob([response.data], { type: response.headers['content-type'] });
+            const blob = new Blob([response.data], { type: response.headers['content-type'] as string });
             
             // Re-calculate the pretty name (calculating is safer and synchronous)
             const originalExt = sub.fileName?.split('.').pop() || sub.fileUrl?.split('.').pop()?.split('?')[0] || 'file';

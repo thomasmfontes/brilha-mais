@@ -14,7 +14,8 @@ import {
     LucideCheckCircle,
     LucideCamera,
     LucideLoader2,
-    LucideQrCode
+    LucideQrCode,
+    LucideFingerprint
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
@@ -23,6 +24,7 @@ import logo from "../assets/logo.png";
 import icon from "../assets/icon.png";
 import { WelcomeVideoModal } from "../components/WelcomeVideoModal";
 import { LocationPickerModal } from "../components/LocationPickerModal";
+import SettingsModal from "../components/SettingsModal";
 import api from "../utils/api";
 import { toast } from "react-hot-toast";
 
@@ -42,6 +44,7 @@ const adminItems = [
 
 export function AppLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [userRole, setUserRole] = useState<'student' | 'instructor' | 'admin' | 'super_admin'>(() => {
         try {
             const token = localStorage.getItem('auth_token');
@@ -256,6 +259,16 @@ export function AppLayout() {
 
                 <div className="p-4 border-t mt-auto">
                     <button
+                        onClick={() => setIsSettingsOpen(true)}
+                        className={`
+                            flex items-center transition-colors w-full rounded-xl hover:bg-slate-50 text-slate-500 hover:text-slate-900 mb-2
+                            ${isSidebarOpen ? 'gap-4 px-3 py-3' : 'justify-center p-3'}
+                        `}
+                    >
+                        <LucideFingerprint className="h-5 w-5" />
+                        {isSidebarOpen && <span className="text-sm font-semibold">Biometria</span>}
+                    </button>
+                    <button
                         onClick={handleLogout}
                         className={`
                             flex items-center transition-colors w-full rounded-xl hover:bg-destructive/10 text-destructive/80 hover:text-destructive
@@ -443,6 +456,18 @@ export function AppLayout() {
                                             </Link>
                                         )}
                                         <button
+                                            onClick={() => {
+                                                setIsMobileMenuOpen(false);
+                                                setIsSettingsOpen(true);
+                                            }}
+                                            className="flex items-center gap-4 px-6 py-5 rounded-[1.5rem] bg-slate-50 text-slate-800 border border-slate-100 font-black uppercase tracking-widest text-[10px] w-full transition-all active:scale-95 shadow-sm mb-2 hover:bg-slate-100"
+                                        >
+                                            <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">
+                                                <LucideFingerprint className="h-4 w-4" />
+                                            </div>
+                                            Configurar Biometria
+                                        </button>
+                                        <button
                                             onClick={handleLogout}
                                             className="flex items-center gap-4 px-6 py-5 rounded-[1.5rem] bg-red-50/50 text-red-500 border border-red-100 font-black uppercase tracking-widest text-[10px] w-full transition-colors active:scale-95 shadow-sm"
                                         >
@@ -551,6 +576,11 @@ export function AppLayout() {
                 onLocationSelected={(_locationId) => {
                     setIsLocationPickerOpen(false);
                 }}
+            />
+
+            <SettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
             />
         </div>
     );
