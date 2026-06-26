@@ -74,7 +74,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             const options = optionsResponse.data;
 
             // 2. Chamar o navegador para criar a credencial
-            const registrationResult = await startRegistration(options);
+            const registrationResult = await startRegistration({ optionsJSON: options });
 
             // 3. Enviar o resultado da verificação para o backend
             await api.post("/auth/webauthn/register/verify", {

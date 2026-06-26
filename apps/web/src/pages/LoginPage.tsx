@@ -35,7 +35,7 @@ export default function LoginPage() {
             const options = optionsResponse.data;
 
             // 2. Iniciar autenticação no navegador
-            const authResult = await startAuthentication(options);
+            const authResult = await startAuthentication({ optionsJSON: options });
 
             // 3. Enviar o resultado da verificação para o backend
             const verifyResponse = await api.post("/auth/webauthn/authenticate/verify", authResult);

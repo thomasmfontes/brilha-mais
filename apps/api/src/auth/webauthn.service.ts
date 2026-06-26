@@ -101,17 +101,20 @@ export class WebAuthnService {
 
     if (verified && registrationInfo) {
       const {
-        credentialID,
-        credentialPublicKey,
-        counter,
+        credential,
         credentialDeviceType,
         credentialBackedUp,
       } = registrationInfo;
 
-      const credentialIdBase64url =
-        Buffer.from(credentialID).toString('base64url');
+      const credentialIdBase64url = credential.id;
       const publicKeyBase64 =
-        Buffer.from(credentialPublicKey).toString('base64');
+        Buffer.from(credential.publicKey).toString('base64');
+      const counter = credential.counter;
+
+      // transports is located inside response in RegistrationResponseJSON
+      const transportsList = body.response.transports
+        ? body.response.transports.join(',')
+        : null;
 
       await this.prisma.webAuthnCredential.create({
         data: {
@@ -120,9 +123,7 @@ export class WebAuthnService {
           counter: BigInt(counter),
           deviceType: credentialDeviceType,
           backedUp: credentialBackedUp,
-          transports: body.response.transports
-            ? body.response.transports.join(',')
-            : null,
+          transports: transportsList,
           userId: user.id,
         },
       });
