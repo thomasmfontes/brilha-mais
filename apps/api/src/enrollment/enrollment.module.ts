@@ -4,8 +4,8 @@ import { EnrollmentController } from './enrollment.controller';
 import { PrismaService } from '../prisma.service';
 
 @Module({
-    controllers: [EnrollmentController],
-    providers: [EnrollmentService, PrismaService],
-    exports: [EnrollmentService],
+  controllers: [EnrollmentController],
+  providers: [EnrollmentService, PrismaService],
+  exports: [EnrollmentService],
 })
-export class EnrollmentModule { }
+export class EnrollmentModule {}

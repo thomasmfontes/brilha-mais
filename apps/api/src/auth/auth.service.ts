@@ -9,7 +9,7 @@ export class AuthService {
     private jwtService: JwtService,
     private prisma: PrismaService,
     private audit: AuditService,
-  ) { }
+  ) {}
 
   async validateOAuthUser(profile: any) {
     const { email, firstName, lastName, picture, provider, providerId } =
@@ -65,13 +65,9 @@ export class AuthService {
       hasSeenWelcomeVideo: user.hasSeenWelcomeVideo,
     };
 
-    await this.audit.log(
-      'Login',
-      'Usuário',
-      user.id,
-      user.id,
-      { email: user.email }
-    );
+    await this.audit.log('Login', 'Usuário', user.id, user.id, {
+      email: user.email,
+    });
 
     return {
       access_token: this.jwtService.sign(payload),

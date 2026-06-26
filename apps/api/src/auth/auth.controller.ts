@@ -1,17 +1,31 @@
+/* eslint-disable */
 import {
   Controller,
   Get,
   Post,
+  Delete,
+  Param,
   Body,
   Req,
   UseGuards,
   Res,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma.service';
 import { ExecutionContext, Injectable } from '@nestjs/common';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { WebAuthnService } from './webauthn.service';
+import { Request } from 'express';
+import { User } from '@prisma/client';
+import type {
+  RegistrationResponseJSON,
+  AuthenticationResponseJSON,
+} from '@simplewebauthn/server';
+
+interface RequestWithUser extends Request {
+  user: User;
+}
 
 @Injectable()
 export class MicrosoftAuthGuard extends AuthGuard('microsoft') {
@@ -27,7 +41,8 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private prisma: PrismaService,
-  ) { }
+    private webAuthnService: WebAuthnService,
+  ) {}
 
   @Get('google')
   async googleAuth(@Req() req: any, @Res() res: any) {
@@ -54,7 +69,7 @@ export class AuthController {
 
   @Get('google/real')
   @UseGuards(AuthGuard('google'))
-  async googleAuthReal(@Req() req: any) { }
+  async googleAuthReal(@Req() req: any) {}
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
@@ -93,7 +108,9 @@ export class AuthController {
   @Get('microsoft/real')
   @UseGuards(MicrosoftAuthGuard)
   async microsoftAuthReal(@Req() req: any) {
-    console.log('--- AuthController: microsoftAuthReal (Guarded with prompt) ---');
+    console.log(
+      '--- AuthController: microsoftAuthReal (Guarded with prompt) ---',
+    );
   }
 
   @Get('microsoft/callback')
@@ -105,40 +122,43 @@ export class AuthController {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     res.redirect(`${frontendUrl}/login?token=${access_token}`);
   }
-  /* 
-  @Post('login')
-  async login(@Body() body: any) {
-    console.log('--- Demo Login Attempt ---', body.email);
-    const { email } = body;
 
-    let user = await this.prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user) {
-      // Create a demo user if doesn't exist
-      user = await this.prisma.user.create({
-        data: {
-          email,
-          name: email.split('@')[0],
-          provider: 'local',
-          providerId: `local-${email}`,
-          role: email.includes('admin')
-            ? 'ADMIN'
-            : email.includes('instrutor')
-              ? 'INSTRUCTOR'
-              : 'STUDENT',
-        },
-      });
-    } else if (email.includes('admin') && user.role !== 'ADMIN') {
-      // Force ADMIN for demo purposes
-      user = await this.prisma.user.update({
-        where: { id: user.id },
-        data: { role: 'ADMIN' },
-      });
-    }
-
-    return this.authService.login(user);
+  @Post('webauthn/register/options')
+  @UseGuards(JwtAuthGuard)
+  async registerOptions(@Req() req: RequestWithUser) {
+    return this.webAuthnService.getRegistrationOptions(req.user);
   }
-  */
+
+  @Post('webauthn/register/verify')
+  @UseGuards(JwtAuthGuard)
+  async registerVerify(
+    @Req() req: RequestWithUser,
+    @Body() body: RegistrationResponseJSON,
+  ) {
+    return this.webAuthnService.verifyRegistration(req.user, body);
+  }
+
+  @Post('webauthn/authenticate/options')
+  async authenticateOptions(@Body() body: { email?: string }) {
+    return this.webAuthnService.getAuthenticationOptions(body);
+  }
+
+  @Post('webauthn/authenticate/verify')
+  async authenticateVerify(
+    @Body() body: AuthenticationResponseJSON & { challenge?: string },
+  ) {
+    return this.webAuthnService.verifyAuthentication(body);
+  }
+
+  @Get('webauthn/credentials')
+  @UseGuards(JwtAuthGuard)
+  async getCredentials(@Req() req: RequestWithUser) {
+    return this.webAuthnService.getCredentials(req.user);
+  }
+
+  @Delete('webauthn/credentials/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteCredential(@Req() req: RequestWithUser, @Param('id') id: string) {
+    return this.webAuthnService.deleteCredential(req.user, id);
+  }
 }

@@ -5,8 +5,8 @@ import { PrismaService } from '../prisma.service';
 
 @Global()
 @Module({
-    controllers: [AuditController],
-    providers: [AuditService, PrismaService],
-    exports: [AuditService],
+  controllers: [AuditController],
+  providers: [AuditService, PrismaService],
+  exports: [AuditService],
 })
-export class AuditModule { }
+export class AuditModule {}

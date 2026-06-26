@@ -23,8 +23,8 @@ import { Role } from '@prisma/client';
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly materialService: StudentMaterialService
-  ) { }
+    private readonly materialService: StudentMaterialService,
+  ) {}
 
   @Get()
   @Roles(Role.ADMIN)
@@ -42,13 +42,21 @@ export class UserController {
 
   @Put(':id/role')
   @Roles(Role.ADMIN)
-  updateRole(@Param('id') id: string, @Body('role') role: any, @Req() req: any) {
+  updateRole(
+    @Param('id') id: string,
+    @Body('role') role: any,
+    @Req() req: any,
+  ) {
     return this.userService.updateRole(id, role, req.user.id);
   }
 
   @Put(':id/name')
   @Roles(Role.ADMIN)
-  updateName(@Param('id') id: string, @Body('name') name: string, @Req() req: any) {
+  updateName(
+    @Param('id') id: string,
+    @Body('name') name: string,
+    @Req() req: any,
+  ) {
     return this.userService.updateName(id, name, req.user.id);
   }
 
@@ -62,7 +70,6 @@ export class UserController {
     return this.userService.assignInstructorArea(id, categoryId, req.user.id);
   }
 
-
   @Delete(':id/instructor-areas/:categoryId')
   @Roles(Role.ADMIN)
   removeInstructorArea(
@@ -71,7 +78,6 @@ export class UserController {
   ) {
     return this.userService.removeInstructorArea(id, categoryId);
   }
-
 
   @Put(':id/areas')
   @Roles(Role.ADMIN)
@@ -110,7 +116,10 @@ export class UserController {
   }
 
   @Patch('me')
-  updateMe(@Req() req: any, @Body() data: { name?: string; avatarUrl?: string; locationId?: string }) {
+  updateMe(
+    @Req() req: any,
+    @Body() data: { name?: string; avatarUrl?: string; locationId?: string },
+  ) {
     return this.userService.updateProfile(req.user.id, data);
   }
 
@@ -121,7 +130,11 @@ export class UserController {
 
   @Patch(':id')
   @Roles(Role.ADMIN)
-  updateAnyUser(@Param('id') id: string, @Body() data: { name?: string; avatarUrl?: string }, @Req() req: any) {
+  updateAnyUser(
+    @Param('id') id: string,
+    @Body() data: { name?: string; avatarUrl?: string },
+    @Req() req: any,
+  ) {
     return this.userService.updateProfile(id, data, req.user.id);
   }
 
@@ -138,17 +151,14 @@ export class UserController {
   createMaterial(
     @Param('id') id: string,
     @Body() data: { name: string; url: string; type: string; size?: string },
-    @Req() req: any
+    @Req() req: any,
   ) {
     return this.materialService.create({ ...data, userId: id }, req.user.id);
   }
 
   @Delete(':id/materials/:materialId')
   @Roles(Role.ADMIN)
-  removeMaterial(
-    @Param('materialId') materialId: string,
-    @Req() req: any
-  ) {
+  removeMaterial(@Param('materialId') materialId: string, @Req() req: any) {
     return this.materialService.remove(materialId, req.user.id);
   }
 
@@ -158,10 +168,11 @@ export class UserController {
     @Res() res: any,
   ) {
     const material = await this.materialService.findOne(materialId);
-    if (!material) return res.status(404).json({ message: 'Material not found' });
+    if (!material)
+      return res.status(404).json({ message: 'Material not found' });
 
     const filePath = require('path').join(process.cwd(), material.url);
-    
+
     // Set content disposition to attachment with original filename
     res.download(filePath, material.name);
   }

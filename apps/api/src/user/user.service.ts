@@ -10,7 +10,7 @@ export class UserService {
     private prisma: PrismaService,
     private audit: AuditService,
     private categoryService: CategoryService,
-  ) { }
+  ) {}
 
   async findAll(locationId?: string) {
     const where = locationId ? { locationId } : {};
@@ -21,8 +21,8 @@ export class UserService {
         assignedAreas: { include: { category: true } },
         turmas: {
           include: {
-            areas: { include: { category: true } }
-          }
+            areas: { include: { category: true } },
+          },
         },
       },
     });
@@ -35,8 +35,8 @@ export class UserService {
         assignedAreas: { include: { category: true } },
         turmas: {
           include: {
-            areas: { include: { category: true } }
-          }
+            areas: { include: { category: true } },
+          },
         },
       },
     });
@@ -44,11 +44,11 @@ export class UserService {
 
   async updateRole(userId: string, role: string, actorId?: string) {
     const roleEnum = role as Role;
-    
+
     // Execute everything in a transaction to ensure data integrity
     const user = await this.prisma.$transaction(async (tx) => {
       const updateData: any = { role: roleEnum };
-      
+
       if (roleEnum === 'SUPER_ADMIN') {
         updateData.locationId = null;
       }
@@ -80,14 +80,21 @@ export class UserService {
       });
     });
 
-    const roleLabel = role === 'SUPER_ADMIN' ? 'Super Admin' : role === 'ADMIN' ? 'Administrador' : role === 'INSTRUCTOR' ? 'Instrutor' : 'Aluno';
+    const roleLabel =
+      role === 'SUPER_ADMIN'
+        ? 'Super Admin'
+        : role === 'ADMIN'
+          ? 'Administrador'
+          : role === 'INSTRUCTOR'
+            ? 'Instrutor'
+            : 'Aluno';
 
     await this.audit.log(
       `Alteração de Role → ${roleLabel}`,
       user.name ?? 'Usuário',
       userId,
       actorId,
-      { newRole: role, userName: user.name }
+      { newRole: role, userName: user.name },
     );
 
     return user;
@@ -99,25 +106,25 @@ export class UserService {
       data: { name },
     });
 
-    await this.audit.log(
-      'Atualização de Nome',
-      name,
-      userId,
-      actorId,
-      { newName: name }
-    );
+    await this.audit.log('Atualização de Nome', name, userId, actorId, {
+      newName: name,
+    });
 
     return user;
   }
 
-  async assignInstructorArea(userId: string, categoryId: string, actorId?: string) {
+  async assignInstructorArea(
+    userId: string,
+    categoryId: string,
+    actorId?: string,
+  ) {
     const assignment = await this.prisma.instructorArea.upsert({
       where: {
         userId_categoryId: { userId, categoryId },
       },
       update: {},
       create: { userId, categoryId },
-      include: { category: true, user: true }
+      include: { category: true, user: true },
     });
 
     await this.audit.log(
@@ -125,7 +132,7 @@ export class UserService {
       'Usuário',
       userId,
       actorId,
-      { category: assignment.category.name, userName: assignment.user.name }
+      { category: assignment.category.name, userName: assignment.user.name },
     );
 
     return assignment;
@@ -139,7 +146,11 @@ export class UserService {
     });
   }
 
-  async syncAreas(userId: string, instructorAreaIds: string[], actorId?: string) {
+  async syncAreas(
+    userId: string,
+    instructorAreaIds: string[],
+    actorId?: string,
+  ) {
     // 1. Get user details for audit logging
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('User not found');
@@ -164,8 +175,8 @@ export class UserService {
         actorId,
         {
           userName: user.name,
-          instructorAreasCount: instructorAreaIds.length
-        }
+          instructorAreasCount: instructorAreaIds.length,
+        },
       );
 
       return tx.user.findUnique({
@@ -174,8 +185,8 @@ export class UserService {
           assignedAreas: { include: { category: true } },
           turmas: {
             include: {
-              areas: { include: { category: true } }
-            }
+              areas: { include: { category: true } },
+            },
           },
         },
       });
@@ -196,7 +207,7 @@ export class UserService {
     if (turmaIds.length > 0) {
       const firstTurma = await this.prisma.turma.findUnique({
         where: { id: turmaIds[0] },
-        select: { locationId: true }
+        select: { locationId: true },
       });
       if (firstTurma?.locationId) {
         locationId = firstTurma.locationId;
@@ -215,8 +226,8 @@ export class UserService {
         location: true,
         turmas: {
           include: {
-            areas: { include: { category: true } }
-          }
+            areas: { include: { category: true } },
+          },
         },
         assignedAreas: { include: { category: true } },
       },
@@ -230,9 +241,9 @@ export class UserService {
       {
         userName: user.name,
         turmasCount: turmaIds.length,
-        turmas: updatedUser.turmas.map(t => t.name).join(', '),
-        locationName: updatedUser.location?.name || 'Global'
-      }
+        turmas: updatedUser.turmas.map((t) => t.name).join(', '),
+        locationName: updatedUser.location?.name || 'Global',
+      },
     );
 
     // Invalidate the category cache so newly assigned areas/turmas appear immediately
@@ -254,17 +265,21 @@ export class UserService {
       user.name ?? 'Usuário',
       id,
       actorId,
-      { userName: user.name, email: user.email }
+      { userName: user.name, email: user.email },
     );
 
     return user;
   }
 
-  async updateProfile(userId: string, data: { name?: string; avatarUrl?: string; locationId?: string }, actorId?: string) {
+  async updateProfile(
+    userId: string,
+    data: { name?: string; avatarUrl?: string; locationId?: string },
+    actorId?: string,
+  ) {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data,
-      include: { location: true }
+      include: { location: true },
     });
 
     await this.audit.log(
@@ -272,17 +287,25 @@ export class UserService {
       user.name ?? 'Usuário',
       userId,
       actorId || userId,
-      { ...data, userName: user.name, locationName: user.location?.name || 'Global' }
+      {
+        ...data,
+        userName: user.name,
+        locationName: user.location?.name || 'Global',
+      },
     );
 
     return user;
   }
 
-  async updateLocation(userId: string, locationId: string | null, actorId?: string) {
+  async updateLocation(
+    userId: string,
+    locationId: string | null,
+    actorId?: string,
+  ) {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: { locationId },
-      include: { location: true }
+      include: { location: true },
     });
 
     await this.audit.log(
@@ -290,7 +313,7 @@ export class UserService {
       user.name ?? 'Usuário',
       userId,
       actorId,
-      { locationId, locationName: user.location?.name || 'Global' }
+      { locationId, locationName: user.location?.name || 'Global' },
     );
 
     return user;

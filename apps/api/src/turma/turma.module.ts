@@ -4,8 +4,8 @@ import { TurmaController } from './turma.controller';
 import { PrismaService } from '../prisma.service';
 
 @Module({
-    controllers: [TurmaController],
-    providers: [TurmaService, PrismaService],
-    exports: [TurmaService],
+  controllers: [TurmaController],
+  providers: [TurmaService, PrismaService],
+  exports: [TurmaService],
 })
-export class TurmaModule { }
+export class TurmaModule {}

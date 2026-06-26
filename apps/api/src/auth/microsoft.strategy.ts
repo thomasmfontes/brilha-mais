@@ -8,7 +8,10 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
   constructor(private authService: AuthService) {
     console.log('--- Microsoft Strategy Init ---');
     console.log('MICROSOFT_CLIENT_ID:', process.env.MICROSOFT_CLIENT_ID);
-    const apiUrl = (process.env.API_URL || 'http://localhost:3000').replace(/\/$/, '');
+    const apiUrl = (process.env.API_URL || 'http://localhost:3000').replace(
+      /\/$/,
+      '',
+    );
 
     super({
       clientID: process.env.MICROSOFT_CLIENT_ID || 'dummy',
@@ -16,7 +19,7 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
       callbackURL: `${apiUrl}/auth/microsoft/callback`,
       scope: ['user.read', 'profile', 'email', 'openid', 'offline_access'],
       tenant: process.env.MICROSOFT_TENANT_ID || 'common',
-    } as any);
+    });
   }
 
   async validate(
@@ -41,7 +44,10 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
 
     if (!email) {
       console.error('--- Microsoft Strategy ERROR: No email found ---');
-      console.log('Profile context:', JSON.stringify({ id, displayName, _json }, null, 2));
+      console.log(
+        'Profile context:',
+        JSON.stringify({ id, displayName, _json }, null, 2),
+      );
       return done(new Error('No email found in Microsoft profile'), null);
     }
 

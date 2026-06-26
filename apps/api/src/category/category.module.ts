@@ -15,4 +15,4 @@ import { JwtModule } from '@nestjs/jwt';
   providers: [CategoryService, PrismaService],
   exports: [CategoryService],
 })
-export class CategoryModule { }
+export class CategoryModule {}

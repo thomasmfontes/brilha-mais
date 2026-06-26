@@ -24,7 +24,9 @@ export class MaterialDownloadService {
     return this.prisma.materialDownload.findMany({
       where,
       include: {
-        user: { select: { id: true, name: true, email: true, avatarUrl: true } },
+        user: {
+          select: { id: true, name: true, email: true, avatarUrl: true },
+        },
       },
       orderBy: { downloadedAt: 'desc' },
     });
@@ -37,10 +39,17 @@ export class MaterialDownloadService {
     });
 
     // Group by materialUrl → count unique users
-    const map = new Map<string, { materialName: string; count: number; uniqueUsers: Set<string> }>();
+    const map = new Map<
+      string,
+      { materialName: string; count: number; uniqueUsers: Set<string> }
+    >();
     for (const d of downloads) {
       if (!map.has(d.materialUrl)) {
-        map.set(d.materialUrl, { materialName: d.materialName, count: 0, uniqueUsers: new Set() });
+        map.set(d.materialUrl, {
+          materialName: d.materialName,
+          count: 0,
+          uniqueUsers: new Set(),
+        });
       }
       const entry = map.get(d.materialUrl)!;
       entry.uniqueUsers.add(d.userId);

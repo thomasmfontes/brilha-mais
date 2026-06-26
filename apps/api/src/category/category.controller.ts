@@ -21,15 +21,15 @@ import { JwtService } from '@nestjs/jwt';
 export class CategoryController {
   constructor(
     private readonly categoryService: CategoryService,
-    private readonly jwtService: JwtService
-  ) { }
+    private readonly jwtService: JwtService,
+  ) {}
 
   private extractUserId(req: any): string | undefined {
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
       try {
-        const payload = this.jwtService.decode(token) as any;
+        const payload = this.jwtService.decode(token);
         return payload?.sub;
       } catch (e) {
         return undefined;
@@ -46,15 +46,26 @@ export class CategoryController {
 
   @Post()
   @Roles(Role.ADMIN)
-  create(@Body() data: { name: string; icon?: string; locationId?: string }, @Req() req: any) {
+  create(
+    @Body() data: { name: string; icon?: string; locationId?: string },
+    @Req() req: any,
+  ) {
     // If admin has a location, force it. Otherwise, use what was sent or null (global).
     const locationId = req.user.locationId || data.locationId;
-    return this.categoryService.create(data.name, data.icon, locationId, req.user.id);
+    return this.categoryService.create(
+      data.name,
+      data.icon,
+      locationId,
+      req.user.id,
+    );
   }
 
   @Put(':id')
   @Roles(Role.ADMIN)
-  update(@Param('id') id: string, @Body() data: { name: string; icon?: string }) {
+  update(
+    @Param('id') id: string,
+    @Body() data: { name: string; icon?: string },
+  ) {
     return this.categoryService.update(id, data.name, data.icon);
   }
 

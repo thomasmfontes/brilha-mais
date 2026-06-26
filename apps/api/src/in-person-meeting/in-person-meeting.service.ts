@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { JwtService } from '@nestjs/jwt';
 
@@ -41,7 +45,7 @@ export class InPersonMeetingService {
               select: { id: true, name: true, email: true, avatarUrl: true },
             },
           },
-          orderBy: { timestamp: 'desc' }
+          orderBy: { timestamp: 'desc' },
         },
       },
     });
@@ -51,13 +55,15 @@ export class InPersonMeetingService {
 
   async generateQrToken(meetingId: string) {
     // Check if meeting exists
-    const meeting = await this.prisma.inPersonMeeting.findUnique({ where: { id: meetingId } });
+    const meeting = await this.prisma.inPersonMeeting.findUnique({
+      where: { id: meetingId },
+    });
     if (!meeting) throw new NotFoundException('Meeting not found');
-    
+
     // The token expires in 15 seconds (configured in module)
     const payload = { sub: meetingId, type: 'attendance_qr' };
     const token = this.jwtService.sign(payload);
-    
+
     return { token };
   }
 
@@ -75,26 +81,26 @@ export class InPersonMeetingService {
     if (payload.type !== 'attendance_qr') {
       throw new BadRequestException('Invalid token type');
     }
-    
+
     const meetingId = payload.sub;
 
-    const meeting = await this.prisma.inPersonMeeting.findUnique({ 
+    const meeting = await this.prisma.inPersonMeeting.findUnique({
       where: { id: meetingId },
-      include: { turma: { include: { users: { select: { id: true } } } } }
+      include: { turma: { include: { users: { select: { id: true } } } } },
     });
     if (!meeting) throw new NotFoundException('Meeting not found');
 
     // Check if user belongs to the turma
-    const userInTurma = meeting.turma.users.some(u => u.id === userId);
+    const userInTurma = meeting.turma.users.some((u) => u.id === userId);
     if (!userInTurma) {
       throw new BadRequestException('User does not belong to this class');
     }
 
     // Check if already attended
     const existing = await this.prisma.meetingAttendance.findUnique({
-      where: { meetingId_userId: { meetingId, userId } }
+      where: { meetingId_userId: { meetingId, userId } },
     });
-    
+
     if (existing) {
       return { message: 'Presence already recorded' };
     }
@@ -103,47 +109,51 @@ export class InPersonMeetingService {
       data: {
         meetingId,
         userId,
-      }
+      },
     });
 
     return { message: 'Presence confirmed successfully', meetingId };
   }
 
   async markAttendanceManually(meetingId: string, userId: string) {
-      const meeting = await this.prisma.inPersonMeeting.findUnique({ 
-        where: { id: meetingId },
-        include: { turma: { include: { users: { select: { id: true } } } } }
-      });
-      if (!meeting) throw new NotFoundException('Meeting not found');
+    const meeting = await this.prisma.inPersonMeeting.findUnique({
+      where: { id: meetingId },
+      include: { turma: { include: { users: { select: { id: true } } } } },
+    });
+    if (!meeting) throw new NotFoundException('Meeting not found');
 
-      // Check if user belongs to the turma
-      const userInTurma = meeting.turma.users.some(u => u.id === userId);
-      if (!userInTurma) {
-        throw new BadRequestException('User does not belong to this class group.');
-      }
+    // Check if user belongs to the turma
+    const userInTurma = meeting.turma.users.some((u) => u.id === userId);
+    if (!userInTurma) {
+      throw new BadRequestException(
+        'User does not belong to this class group.',
+      );
+    }
 
-      const existing = await this.prisma.meetingAttendance.findUnique({
-        where: { meetingId_userId: { meetingId, userId } }
-      });
-      
-      if (existing) {
-         await this.prisma.meetingAttendance.delete({
-            where: { meetingId_userId: { meetingId, userId } }
-         });
-         return { status: 'removed' };
-      }
+    const existing = await this.prisma.meetingAttendance.findUnique({
+      where: { meetingId_userId: { meetingId, userId } },
+    });
 
-      await this.prisma.meetingAttendance.create({
-        data: {
-          meetingId,
-          userId,
-        }
+    if (existing) {
+      await this.prisma.meetingAttendance.delete({
+        where: { meetingId_userId: { meetingId, userId } },
       });
-      return { status: 'added' };
+      return { status: 'removed' };
+    }
+
+    await this.prisma.meetingAttendance.create({
+      data: {
+        meetingId,
+        userId,
+      },
+    });
+    return { status: 'added' };
   }
 
   async updateMeeting(id: string, title: string, date: string) {
-    const meeting = await this.prisma.inPersonMeeting.findUnique({ where: { id } });
+    const meeting = await this.prisma.inPersonMeeting.findUnique({
+      where: { id },
+    });
     if (!meeting) throw new NotFoundException('Meeting not found');
 
     return this.prisma.inPersonMeeting.update({
@@ -156,7 +166,9 @@ export class InPersonMeetingService {
   }
 
   async deleteMeeting(id: string) {
-    const meeting = await this.prisma.inPersonMeeting.findUnique({ where: { id } });
+    const meeting = await this.prisma.inPersonMeeting.findUnique({
+      where: { id },
+    });
     if (!meeting) throw new NotFoundException('Meeting not found');
 
     return this.prisma.inPersonMeeting.delete({

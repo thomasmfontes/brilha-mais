@@ -9,15 +9,18 @@ let cachedServer: any;
 async function bootstrap() {
   if (!cachedServer) {
     const expressApp = express();
-    const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp));
-    
+    const app = await NestFactory.create(
+      AppModule,
+      new ExpressAdapter(expressApp),
+    );
+
     app.enableCors({
       origin: ['https://aguarasa.brilhamais.org.br', 'http://localhost:5173'],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true,
     });
     app.use('/public', express.static(path.join(process.cwd(), 'public')));
-    
+
     await app.init();
     cachedServer = expressApp;
   }

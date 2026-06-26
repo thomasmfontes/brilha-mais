@@ -35,10 +35,25 @@ export class LocationService {
       return {
         ...loc,
         counts: {
-          students: userGroups.find((g) => (g.role as string) === 'STUDENT' && g.locationId === loc.id)?._count ?? 0,
-          instructors: userGroups.find((g) => (g.role as string) === 'INSTRUCTOR' && g.locationId === loc.id)?._count ?? 0,
-          admins: userGroups.find((g) => (g.role as string) === 'ADMIN' && g.locationId === loc.id)?._count ?? 0,
-          supers: userGroups.find((g) => (g.role as string) === 'SUPER_ADMIN' && g.locationId === loc.id)?._count ?? 0,
+          students:
+            userGroups.find(
+              (g) =>
+                (g.role as string) === 'STUDENT' && g.locationId === loc.id,
+            )?._count ?? 0,
+          instructors:
+            userGroups.find(
+              (g) =>
+                (g.role as string) === 'INSTRUCTOR' && g.locationId === loc.id,
+            )?._count ?? 0,
+          admins:
+            userGroups.find(
+              (g) => (g.role as string) === 'ADMIN' && g.locationId === loc.id,
+            )?._count ?? 0,
+          supers:
+            userGroups.find(
+              (g) =>
+                (g.role as string) === 'SUPER_ADMIN' && g.locationId === loc.id,
+            )?._count ?? 0,
         },
       };
     });
@@ -67,7 +82,10 @@ export class LocationService {
       data: { name, slug },
     });
 
-    await this.audit.log('Criação de Localidade', name, location.id, actorId, { name, slug });
+    await this.audit.log('Criação de Localidade', name, location.id, actorId, {
+      name,
+      slug,
+    });
     return location;
   }
 
@@ -77,7 +95,9 @@ export class LocationService {
       data: { name },
     });
 
-    await this.audit.log('Atualização de Localidade', name, id, actorId, { name });
+    await this.audit.log('Atualização de Localidade', name, id, actorId, {
+      name,
+    });
     return location;
   }
 
@@ -87,7 +107,9 @@ export class LocationService {
 
     await this.prisma.location.delete({ where: { id } });
 
-    await this.audit.log('Exclusão de Localidade', location.name, id, actorId, { name: location.name });
+    await this.audit.log('Exclusão de Localidade', location.name, id, actorId, {
+      name: location.name,
+    });
     return location;
   }
 }

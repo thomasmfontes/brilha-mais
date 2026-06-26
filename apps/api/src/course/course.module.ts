@@ -17,4 +17,4 @@ import { PrismaService } from '../prisma.service';
   providers: [CourseService, PrismaService],
   exports: [CourseService],
 })
-export class CourseModule { }
+export class CourseModule {}

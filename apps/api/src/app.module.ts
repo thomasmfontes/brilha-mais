@@ -40,4 +40,4 @@ import { InPersonMeetingModule } from './in-person-meeting/in-person-meeting.mod
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

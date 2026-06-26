@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Body, Query, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Query,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { MaterialDownloadService } from './material-download.service';
 import { RecordDownloadDto } from './dto/record-download.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -20,7 +28,10 @@ export class MaterialDownloadController {
    * Optionally filter by materialUrl to get who downloaded a specific file
    */
   @Get()
-  getByLesson(@Query('lessonId') lessonId: string, @Query('materialUrl') materialUrl?: string) {
+  getByLesson(
+    @Query('lessonId') lessonId: string,
+    @Query('materialUrl') materialUrl?: string,
+  ) {
     return this.service.getDownloadsByLesson(lessonId, materialUrl);
   }
 

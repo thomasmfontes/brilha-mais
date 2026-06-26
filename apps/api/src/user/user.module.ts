@@ -11,4 +11,4 @@ import { CategoryModule } from '../category/category.module';
   providers: [UserService, StudentMaterialService, PrismaService],
   exports: [UserService],
 })
-export class UserModule { }
+export class UserModule {}

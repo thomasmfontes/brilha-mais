@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
-const ADMIN_CACHE_TTL_MS = 2 * 60 * 1000;   // 2 minutes
+const ADMIN_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 const INSTRUCTOR_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
 @Injectable()
@@ -9,7 +9,7 @@ export class StatsService {
   private adminCache = new Map<string, { data: any; expiresAt: number }>();
   private instructorCache = new Map<string, { data: any; expiresAt: number }>();
 
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async getAdminStats(locationId?: string) {
     const cacheKey = locationId || 'GLOBAL';
@@ -21,7 +21,9 @@ export class StatsService {
 
     // Filters for Unit Admins
     const userWhere = locationId ? { locationId } : {};
-    const enrollmentWhere = locationId ? { user: { locationId } } : { user: { role: 'STUDENT' as const } };
+    const enrollmentWhere = locationId
+      ? { user: { locationId } }
+      : { user: { role: 'STUDENT' as const } };
     const logWhere = locationId ? { user: { locationId } } : {};
     const courseWhere = locationId ? { locationId } : {};
 
@@ -50,7 +52,10 @@ export class StatsService {
       })),
     };
 
-    this.adminCache.set(cacheKey, { data, expiresAt: Date.now() + ADMIN_CACHE_TTL_MS });
+    this.adminCache.set(cacheKey, {
+      data,
+      expiresAt: Date.now() + ADMIN_CACHE_TTL_MS,
+    });
     return data;
   }
 
@@ -79,22 +84,22 @@ export class StatsService {
       if (!isAdmin) {
         const user = await this.prisma.user.findUnique({
           where: { id: instructorId },
-          include: { assignedAreas: true }
+          include: { assignedAreas: true },
         });
-        const areaIds = user?.assignedAreas.map(a => a.categoryId) || [];
+        const areaIds = user?.assignedAreas.map((a) => a.categoryId) || [];
 
         instrFilter = {
           OR: [
             { instructorId },
             {
               locationId: user?.locationId,
-              categoryId: { in: areaIds }
+              categoryId: { in: areaIds },
             },
             {
               isGlobal: true,
-              categoryId: { in: areaIds }
-            }
-          ]
+              categoryId: { in: areaIds },
+            },
+          ],
         };
       }
 
@@ -105,65 +110,88 @@ export class StatsService {
         lastMonthStudents,
         prevMonthStudents,
         lastMonthProgress,
-        prevMonthProgress
+        prevMonthProgress,
       ] = await Promise.all([
-        this.prisma.enrollment.count({ 
-          where: { 
+        this.prisma.enrollment.count({
+          where: {
             course: instrFilter,
-            user: { role: 'STUDENT' }
-          } 
+            user: { role: 'STUDENT' },
+          },
         }),
         this.prisma.progress.findMany({
-          where: { isCompleted: true, lesson: { module: { course: instrFilter } } },
-          include: { lesson: { select: { duration: true } } }
+          where: {
+            isCompleted: true,
+            lesson: { module: { course: instrFilter } },
+          },
+          include: { lesson: { select: { duration: true } } },
         }),
         this.prisma.course.count({ where: instrFilter }),
         this.prisma.enrollment.count({
-          where: { 
-            course: instrFilter, 
+          where: {
+            course: instrFilter,
             enrolledAt: { gte: thirtyDaysAgo },
-            user: { role: 'STUDENT' }
-          }
+            user: { role: 'STUDENT' },
+          },
         }),
         this.prisma.enrollment.count({
-          where: { 
-            course: instrFilter, 
+          where: {
+            course: instrFilter,
             enrolledAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
-            user: { role: 'STUDENT' }
-          }
+            user: { role: 'STUDENT' },
+          },
         }),
         this.prisma.progress.findMany({
-          where: { isCompleted: true, updatedAt: { gte: thirtyDaysAgo }, lesson: { module: { course: instrFilter } } },
-          include: { lesson: { select: { duration: true } } }
+          where: {
+            isCompleted: true,
+            updatedAt: { gte: thirtyDaysAgo },
+            lesson: { module: { course: instrFilter } },
+          },
+          include: { lesson: { select: { duration: true } } },
         }),
         this.prisma.progress.findMany({
-          where: { isCompleted: true, updatedAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo }, lesson: { module: { course: instrFilter } } },
-          include: { lesson: { select: { duration: true } } }
-        })
+          where: {
+            isCompleted: true,
+            updatedAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+            lesson: { module: { course: instrFilter } },
+          },
+          include: { lesson: { select: { duration: true } } },
+        }),
       ]);
 
       const calculateMinutes = (entries: any[]) =>
-        Math.round((entries || []).reduce((acc, p) => acc + (p.lesson?.duration || 0), 0) / 60);
+        Math.round(
+          (entries || []).reduce(
+            (acc, p) => acc + (p.lesson?.duration || 0),
+            0,
+          ) / 60,
+        );
 
       const totalMinutes = calculateMinutes(totalProgressEntries);
       const lastMonthMinutes = calculateMinutes(lastMonthProgress);
       const prevMonthMinutes = calculateMinutes(prevMonthProgress);
 
       const calculateTrend = (current: number, previous: number) => {
-        if (previous === 0) return current > 0 ? `+100% este mês` : "0% este mês";
+        if (previous === 0)
+          return current > 0 ? `+100% este mês` : '0% este mês';
         const diff = ((current - previous) / previous) * 100;
         return `${diff >= 0 ? '+' : ''}${Math.round(diff)}% este mês`;
       };
 
       const data = {
         totalStudents: totalStudents || 0,
-        totalMinutes: totalMinutes >= 1000 ? `${(totalMinutes / 1000).toFixed(1)}k` : totalMinutes.toString(),
+        totalMinutes:
+          totalMinutes >= 1000
+            ? `${(totalMinutes / 1000).toFixed(1)}k`
+            : totalMinutes.toString(),
         totalCourses: totalCourses || 0,
         studentsTrend: calculateTrend(lastMonthStudents, prevMonthStudents),
-        minutesTrend: calculateTrend(lastMonthMinutes, prevMonthMinutes)
+        minutesTrend: calculateTrend(lastMonthMinutes, prevMonthMinutes),
       };
 
-      this.instructorCache.set(cacheKey, { data, expiresAt: Date.now() + INSTRUCTOR_CACHE_TTL_MS });
+      this.instructorCache.set(cacheKey, {
+        data,
+        expiresAt: Date.now() + INSTRUCTOR_CACHE_TTL_MS,
+      });
       return data;
     } catch (error) {
       console.error('Error in getInstructorStats:', error);

@@ -18,15 +18,15 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 export class CourseController {
   constructor(
     private readonly courseService: CourseService,
-    private readonly jwtService: JwtService
-  ) { }
+    private readonly jwtService: JwtService,
+  ) {}
 
   private extractUserId(req: any): string | undefined {
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
       try {
-        const payload = this.jwtService.decode(token) as any;
+        const payload = this.jwtService.decode(token);
         return payload?.sub;
       } catch (e) {
         return undefined;
@@ -45,7 +45,11 @@ export class CourseController {
   @UseGuards(JwtAuthGuard)
   @Get(':id/students')
   getCourseStudents(@Param('id') id: string, @Req() req: any) {
-    return this.courseService.findStudentsByCourse(id, req.user.id, req.user.role);
+    return this.courseService.findStudentsByCourse(
+      id,
+      req.user.id,
+      req.user.role,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
@@ -53,9 +57,14 @@ export class CourseController {
   getCourseStudentProgress(
     @Param('id') id: string,
     @Param('studentId') studentId: string,
-    @Req() req: any
+    @Req() req: any,
   ) {
-    return this.courseService.getCourseStudentProgress(id, studentId, req.user.id, req.user.role);
+    return this.courseService.getCourseStudentProgress(
+      id,
+      studentId,
+      req.user.id,
+      req.user.role,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
@@ -63,9 +72,14 @@ export class CourseController {
   getLessonStudentsProgress(
     @Param('id') id: string,
     @Param('lessonId') lessonId: string,
-    @Req() req: any
+    @Req() req: any,
   ) {
-    return this.courseService.getLessonStudentsProgress(id, lessonId, req.user.id, req.user.role);
+    return this.courseService.getLessonStudentsProgress(
+      id,
+      lessonId,
+      req.user.id,
+      req.user.role,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
@@ -102,11 +116,13 @@ export class CourseController {
   create(@Req() req: any, @Body() data: any) {
     // If admin has a location, force it. Otherwise, use what was sent or null (global).
     const locationId = req.user.locationId || data.locationId;
-    
+
     // Allow admins to set instructorId. Otherwise force to req.user.id
-    const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN';
-    const instructorId = (isAdmin && data.instructorId) ? data.instructorId : req.user.id;
-    
+    const isAdmin =
+      req.user.role === 'ADMIN' || req.user.role === 'SUPER_ADMIN';
+    const instructorId =
+      isAdmin && data.instructorId ? data.instructorId : req.user.id;
+
     return this.courseService.create({ ...data, instructorId, locationId });
   }
 

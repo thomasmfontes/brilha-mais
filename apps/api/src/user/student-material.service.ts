@@ -22,7 +22,16 @@ export class StudentMaterialService {
     });
   }
 
-  async create(data: { name: string; url: string; type: string; size?: string; userId: string }, actorId?: string) {
+  async create(
+    data: {
+      name: string;
+      url: string;
+      type: string;
+      size?: string;
+      userId: string;
+    },
+    actorId?: string,
+  ) {
     const material = await this.prisma.studentMaterial.create({
       data,
       include: { user: true },
@@ -33,11 +42,11 @@ export class StudentMaterialService {
       material.name,
       material.userId,
       actorId,
-      { 
-        userName: material.user.name, 
+      {
+        userName: material.user.name,
         fileName: material.name,
-        type: material.type 
-      }
+        type: material.type,
+      },
     );
 
     return material;
@@ -54,10 +63,10 @@ export class StudentMaterialService {
       material.name,
       material.userId,
       actorId,
-      { 
-        userName: material.user.name, 
-        fileName: material.name 
-      }
+      {
+        userName: material.user.name,
+        fileName: material.name,
+      },
     );
 
     return material;

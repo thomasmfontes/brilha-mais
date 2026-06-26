@@ -7,6 +7,7 @@ import { GoogleStrategy } from './google.strategy';
 import { MicrosoftStrategy } from './microsoft.strategy';
 import { JwtStrategy } from './jwt.strategy';
 import { PrismaService } from '../prisma.service';
+import { WebAuthnService } from './webauthn.service';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { PrismaService } from '../prisma.service';
     MicrosoftStrategy,
     JwtStrategy,
     PrismaService,
+    WebAuthnService,
   ],
-  exports: [AuthService],
+  exports: [AuthService, WebAuthnService],
 })
 export class AuthModule {}

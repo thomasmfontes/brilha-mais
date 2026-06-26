@@ -7,15 +7,21 @@ import { AuthService } from './auth.service';
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private authService: AuthService) {
     console.log('--- Google Strategy Init ---');
-    console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Exists' : 'Missing');
-    const apiUrl = (process.env.API_URL || 'http://localhost:3000').replace(/\/$/, '');
-    
+    console.log(
+      'GOOGLE_CLIENT_ID:',
+      process.env.GOOGLE_CLIENT_ID ? 'Exists' : 'Missing',
+    );
+    const apiUrl = (process.env.API_URL || 'http://localhost:3000').replace(
+      /\/$/,
+      '',
+    );
+
     super({
       clientID: process.env.GOOGLE_CLIENT_ID || 'dummy',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy',
       callbackURL: `${apiUrl}/auth/google/callback`,
       scope: ['email', 'profile'],
-    } as any);
+    });
   }
 
   async validate(
