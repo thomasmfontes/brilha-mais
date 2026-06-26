@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LucideShield, LucideLock, LucideMail, LucideUser, LucideSparkles, LucideAlertCircle, LucideArrowLeft } from "lucide-react";
+import { LucideShield, LucideLock, LucideMail, LucideUser, LucideSparkles, LucideAlertCircle, LucideArrowLeft, LucideFingerprint } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../utils/api";
+import { startAuthentication } from "@simplewebauthn/browser";
+import { toast } from "react-hot-toast";
 import logo from "../assets/logo.png";
 import LoadingSpinner from "../components/LoadingSpinner";
 
@@ -24,6 +26,42 @@ export default function LoginPage() {
 
 
     const [isRedirecting, setIsRedirecting] = useState<string | null>(null);
+
+    const handleBiometricLogin = async () => {
+        setIsRedirecting('biometric');
+        try {
+            // 1. Obter opções de autenticação do backend
+            const optionsResponse = await api.post("/auth/webauthn/authenticate/options", {});
+            const options = optionsResponse.data;
+
+            // 2. Iniciar autenticação no navegador
+            const authResult = await startAuthentication(options);
+
+            // 3. Enviar o resultado da verificação para o backend
+            const verifyResponse = await api.post("/auth/webauthn/authenticate/verify", authResult);
+
+            const { token } = verifyResponse.data;
+            if (token) {
+                localStorage.setItem("auth_token", token);
+                toast.success("Autenticação realizada com sucesso!");
+                navigate("/dashboard", { replace: true });
+            } else {
+                throw new Error("Token não retornado pelo servidor.");
+            }
+        } catch (error: any) {
+            console.error("Erro na autenticação biométrica:", error);
+            if (error.name === "NotAllowedError") {
+                toast.error("Autenticação cancelada.");
+            } else {
+                toast.error(
+                    error.response?.data?.message || 
+                    "Não foi possível autenticar com biometria. Registre seu dispositivo nas configurações primeiro."
+                );
+            }
+        } finally {
+            setIsRedirecting(null);
+        }
+    };
 
     const handleSocialLogin = (provider: 'google' | 'microsoft') => {
         setIsRedirecting(provider);
@@ -96,6 +134,25 @@ export default function LoginPage() {
                                     </svg>
                                 )}
                                 {isRedirecting === 'microsoft' ? 'Conectando...' : 'Entrar com Microsoft'}
+                            </button>
+
+                            <div className="relative flex py-2 items-center">
+                                <div className="flex-grow border-t border-slate-200"></div>
+                                <span className="flex-shrink mx-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Ou</span>
+                                <div className="flex-grow border-t border-slate-200"></div>
+                            </div>
+
+                            <button
+                                onClick={handleBiometricLogin}
+                                disabled={!!isRedirecting}
+                                className="flex items-center justify-center gap-4 px-6 py-5 rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary transition-all font-black text-lg shadow-md group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                                {isRedirecting === 'biometric' ? (
+                                    <LoadingSpinner size="md" />
+                                ) : (
+                                    <LucideFingerprint className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
+                                )}
+                                {isRedirecting === 'biometric' ? 'Aguardando Leitura...' : 'Entrar com Biometria'}
                             </button>
                         </div>
                     </div>
