@@ -40,9 +40,9 @@ export default function LoginPage() {
             // 3. Enviar o resultado da verificação para o backend
             const verifyResponse = await api.post("/auth/webauthn/authenticate/verify", authResult);
 
-            const { token } = verifyResponse.data;
-            if (token) {
-                localStorage.setItem("auth_token", token);
+            const { access_token } = verifyResponse.data;
+            if (access_token) {
+                localStorage.setItem("auth_token", access_token);
                 toast.success("Autenticação realizada com sucesso!");
                 navigate("/dashboard", { replace: true });
             } else {
