@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { CategoryService } from '../category/category.service';
@@ -44,6 +44,32 @@ export class UserService {
 
   async updateRole(userId: string, role: string, actorId?: string) {
     const roleEnum = role as Role;
+
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    if (roleEnum === 'SUPER_ADMIN' || targetUser.role === 'SUPER_ADMIN') {
+      if (!actorId) {
+        throw new ForbiddenException('Ação não autorizada');
+      }
+
+      const actor = await this.prisma.user.findUnique({
+        where: { id: actorId },
+        select: { role: true },
+      });
+
+      if (!actor || actor.role !== 'SUPER_ADMIN') {
+        throw new ForbiddenException(
+          'Apenas administradores do nível Super Admin podem conceder ou revogar este acesso.',
+        );
+      }
+    }
 
     // Execute everything in a transaction to ensure data integrity
     const user = await this.prisma.$transaction(async (tx) => {

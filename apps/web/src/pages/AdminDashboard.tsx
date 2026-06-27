@@ -207,6 +207,7 @@ export default function AdminDashboard() {
     const [editingLocation, setEditingLocation] = useState<Location | null>(null);
     const [isSavingLocation, setIsSavingLocation] = useState(false);
     const [userLocationId, setUserLocationId] = useState<string | null | undefined>(undefined);
+    const [currentUserRole, setCurrentUserRole] = useState<'STUDENT' | 'INSTRUCTOR' | 'ADMIN' | 'SUPER_ADMIN' | null>(null);
     const listFileInputRef = useRef<HTMLInputElement>(null);
 
     const handleTabChange = (tab: typeof activeTab) => {
@@ -341,6 +342,7 @@ export default function AdminDashboard() {
         try {
             const { data } = await api.get('/users/me');
             setUserLocationId(data.locationId);
+            setCurrentUserRole(data.role);
         } catch (error) {
             console.error("Error fetching profile:", error);
         }
@@ -1391,6 +1393,7 @@ export default function AdminDashboard() {
                                                 <RoleSelect
                                                     value={user.role}
                                                     onChange={(val) => handleUpdateRole(user.id, val)}
+                                                    currentUserRole={currentUserRole}
                                                 />
                                             )}
                                         </td>
@@ -1684,16 +1687,19 @@ export default function AdminDashboard() {
                                                     <LoadingSpinner size="sm" />
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl pl-5 pr-4 py-3 w-full sm:w-48 shadow-sm group-hover/role:bg-white transition-all focus-within:ring-4 focus-within:ring-primary/10 focus-within:border-primary cursor-pointer">
+                                                <div className={`flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl pl-5 pr-4 py-3 w-full sm:w-48 shadow-sm group-hover/role:bg-white transition-all focus-within:ring-4 focus-within:ring-primary/10 focus-within:border-primary ${(user.role === 'SUPER_ADMIN' && currentUserRole !== 'SUPER_ADMIN') ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
                                                     <select
                                                         value={user.role}
+                                                        disabled={user.role === 'SUPER_ADMIN' && currentUserRole !== 'SUPER_ADMIN'}
                                                         onChange={(e) => handleUpdateRole(user.id, e.target.value)}
-                                                        className={`appearance-none bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer w-full ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'text-purple-600' : user.role === 'INSTRUCTOR' ? 'text-blue-600' : 'text-emerald-600'}`}
+                                                        className={`appearance-none bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest outline-none w-full ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'text-purple-600' : user.role === 'INSTRUCTOR' ? 'text-blue-600' : 'text-emerald-600'} ${(user.role === 'SUPER_ADMIN' && currentUserRole !== 'SUPER_ADMIN') ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                                     >
                                                         <option value="STUDENT">Aluno</option>
                                                         <option value="INSTRUCTOR">Instrutor</option>
                                                         <option value="ADMIN">Administrador</option>
-                                                        <option value="SUPER_ADMIN">Super Admin</option>
+                                                        {(currentUserRole === 'SUPER_ADMIN' || user.role === 'SUPER_ADMIN') && (
+                                                            <option value="SUPER_ADMIN">Super Admin</option>
+                                                        )}
                                                     </select>
                                                     <LucideUserCog className="h-4 w-4 opacity-30 pointer-events-none shrink-0" />
                                                 </div>
@@ -2327,20 +2333,28 @@ function timeAgo(dateString: string) {
 function RoleSelect({
     value,
     onChange,
-    disabled = false
+    disabled = false,
+    currentUserRole
 }: {
     value: string,
     onChange: (val: string) => void,
-    disabled?: boolean
+    disabled?: boolean,
+    currentUserRole?: string | null
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const isLocked = value === 'SUPER_ADMIN' && currentUserRole !== 'SUPER_ADMIN';
+    const isDisabled = disabled || isLocked;
 
     const options = [
         { id: 'STUDENT', name: 'Aluno', color: 'text-emerald-600', bg: 'bg-emerald-50' },
         { id: 'INSTRUCTOR', name: 'Instrutor', color: 'text-blue-600', bg: 'bg-blue-50' },
         { id: 'ADMIN', name: 'Admin', color: 'text-purple-600', bg: 'bg-purple-50' },
-        { id: 'SUPER_ADMIN', name: 'Super', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+        ...(currentUserRole === 'SUPER_ADMIN' || value === 'SUPER_ADMIN'
+            ? [{ id: 'SUPER_ADMIN', name: 'Super', color: 'text-indigo-600', bg: 'bg-indigo-50' }]
+            : []
+        )
     ];
 
     const selectedOption = options.find(o => o.id === value) || options[0];
@@ -2359,14 +2373,14 @@ function RoleSelect({
         <div className="relative w-32" ref={dropdownRef}>
             <button
                 type="button"
-                onClick={() => !disabled && setIsOpen(!isOpen)}
+                onClick={() => !isDisabled && setIsOpen(!isOpen)}
                 className={`
                     w-full flex items-center justify-between pl-3 pr-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider outline-none transition-all duration-300
                     ${isOpen 
                         ? 'bg-white border border-primary shadow-[0_4px_15px_-5px_rgba(249,115,22,0.15)] z-10 relative' 
                         : 'bg-slate-50 border border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-sm shadow-sm'
                     }
-                    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 `}
             >
                 <div className={`truncate text-left flex-1 ${selectedOption.color} transition-colors`}>
