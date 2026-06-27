@@ -18,20 +18,17 @@ model User {
   avatarUrl           String?
   provider            String?
   providerId          String?
-  isVerified          Boolean            @default(false)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
   hasSeenWelcomeVideo Boolean            @default(false)
   locationId          String?
   auditLogs           AuditLog[]
-  certificates        Certificate[]
   courses             Course[]           @relation("InstructorCourses")
   enrollments         Enrollment[]
   essaySubmissions    EssaySubmission[]
   assignedAreas       InstructorArea[]
   materialDownloads   MaterialDownload[]
   progress            Progress[]
-  reviews             Review[]
   studentAreas        StudentArea[]
   studentMaterials    StudentMaterial[]
   location            Location?          @relation(fields: [locationId], references: [id])
@@ -72,7 +69,6 @@ model Course {
   title        String
   description  String?
   thumbnail    String?
-  price        Float?
   isPublished  Boolean      @default(false)
   isGlobal     Boolean      @default(false)
   instructorId String
@@ -85,7 +81,6 @@ model Course {
   location     Location?    @relation(fields: [locationId], references: [id])
   enrollments  Enrollment[]
   modules      Module[]
-  reviews      Review[]
 
   @@index([instructorId])
   @@index([categoryId])
@@ -171,7 +166,6 @@ model Lesson {
   pdfUrl           String?
   duration         Int?
   order            Int
-  isFree           Boolean           @default(false)
   moduleId         String
   deadline         DateTime?
   allowSeeking     Boolean           @default(false)
@@ -267,25 +261,7 @@ model Progress {
   @@index([lessonId])
 }
 
-model Review {
-  id        String   @id @default(uuid())
-  rating    Int
-  comment   String?
-  userId    String
-  courseId  String
-  createdAt DateTime @default(now())
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
 
-model Certificate {
-  id         String   @id @default(uuid())
-  userId     String
-  courseId   String
-  courseName String
-  issuedAt   DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
 
 model AuditLog {
   id        String   @id @default(uuid())

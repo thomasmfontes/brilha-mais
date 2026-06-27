@@ -346,7 +346,6 @@ export class CourseService {
       'title',
       'description',
       'thumbnail',
-      'price',
       'isPublished',
       'isGlobal',
       'instructorId',
@@ -399,7 +398,6 @@ export class CourseService {
                 duration: typeof less.duration === 'number' ? less.duration : 0,
                 deadline: less.deadline ? new Date(less.deadline) : null,
                 order: lIdx,
-                isFree: less.isFree || false,
                 allowSeeking: !!less.allowSeeking,
                 allowPdfDownload: less.allowPdfDownload !== false,
                 quizzes: less.quiz
@@ -455,7 +453,6 @@ export class CourseService {
       'title',
       'description',
       'thumbnail',
-      'price',
       'isPublished',
       'isGlobal',
       'categoryId',
@@ -538,7 +535,6 @@ export class CourseService {
             description: less.description,
             deadline: less.deadline ? new Date(less.deadline) : null,
             order: lIdx,
-            isFree: less.isFree || false,
             allowSeeking: !!less.allowSeeking,
             allowPdfDownload: less.allowPdfDownload !== false,
           };
