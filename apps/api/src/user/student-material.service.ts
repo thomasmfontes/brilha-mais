@@ -9,9 +9,13 @@ export class StudentMaterialService {
     private audit: AuditService,
   ) {}
 
-  async findAll(userId: string) {
+  async findAll(userId: string, category?: string) {
+    const where: any = { userId };
+    if (category) {
+      where.category = category;
+    }
     return this.prisma.studentMaterial.findMany({
-      where: { userId },
+      where,
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -29,16 +33,26 @@ export class StudentMaterialService {
       type: string;
       size?: string;
       userId: string;
+      category?: string;
     },
     actorId?: string,
   ) {
+    const category = data.category || 'MATERIAL';
     const material = await this.prisma.studentMaterial.create({
-      data,
+      data: {
+        name: data.name,
+        url: data.url,
+        type: data.type,
+        size: data.size,
+        userId: data.userId,
+        category,
+      },
       include: { user: true },
     });
 
+    const isCert = category === 'CERTIFICATE';
     await this.audit.log(
-      'Upload de Material (Aluno)',
+      isCert ? 'Upload de Certificado (Aluno)' : 'Upload de Material (Aluno)',
       material.name,
       material.userId,
       actorId,
@@ -46,6 +60,7 @@ export class StudentMaterialService {
         userName: material.user.name,
         fileName: material.name,
         type: material.type,
+        category,
       },
     );
 
@@ -58,14 +73,16 @@ export class StudentMaterialService {
       include: { user: true },
     });
 
+    const isCert = material.category === 'CERTIFICATE';
     await this.audit.log(
-      'Remoção de Material (Aluno)',
+      isCert ? 'Remoção de Certificado (Aluno)' : 'Remoção de Material (Aluno)',
       material.name,
       material.userId,
       actorId,
       {
         userName: material.user.name,
         fileName: material.name,
+        category: material.category,
       },
     );
 

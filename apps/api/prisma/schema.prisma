@@ -43,6 +43,7 @@ model StudentMaterial {
   url       String
   type      String
   size      String?
+  category  String   @default("MATERIAL")
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

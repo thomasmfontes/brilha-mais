@@ -2,6 +2,7 @@ import { LucideShield, LucideUsers, LucideBookOpen, LucideAlertTriangle, LucideS
 import { getIconComponent } from "../utils/icons";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
+import { jwtDecode } from "jwt-decode";
 import api from "../utils/api";
 import { compressImage } from "@/utils/image";
 import toast from "react-hot-toast";
@@ -207,7 +208,20 @@ export default function AdminDashboard() {
     const [editingLocation, setEditingLocation] = useState<Location | null>(null);
     const [isSavingLocation, setIsSavingLocation] = useState(false);
     const [userLocationId, setUserLocationId] = useState<string | null | undefined>(undefined);
-    const [currentUserRole, setCurrentUserRole] = useState<'STUDENT' | 'INSTRUCTOR' | 'ADMIN' | 'SUPER_ADMIN' | null>(null);
+    const [currentUserRole, setCurrentUserRole] = useState<'STUDENT' | 'INSTRUCTOR' | 'ADMIN' | 'SUPER_ADMIN' | null>(() => {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            try {
+                const decoded: any = jwtDecode(token);
+                return decoded.role || null;
+            } catch (e) {
+                return null;
+            }
+        }
+        return null;
+    });
+
+    const isSuperAdminOrGlobal = currentUserRole === 'SUPER_ADMIN' || !userLocationId;
     const listFileInputRef = useRef<HTMLInputElement>(null);
 
     const handleTabChange = (tab: typeof activeTab) => {
@@ -759,7 +773,7 @@ export default function AdminDashboard() {
             );
             
             // Security filter: Unit admin only sees their location. Super admin follows the location filter.
-            const isWithinAdminScope = !userLocationId || u.locationId === userLocationId;
+            const isWithinAdminScope = isSuperAdminOrGlobal || u.locationId === userLocationId;
             const matchesLocationFilter = selectedLocationId === 'ALL' || u.locationId === selectedLocationId;
 
             return matchesSearch && matchesRole && matchesTurma && matchesArea && isWithinAdminScope && matchesLocationFilter;
@@ -770,7 +784,7 @@ export default function AdminDashboard() {
         const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase());
         
         // Security filter: Unit admin only sees their location. Super admin follows the location filter.
-        const isWithinAdminScope = !userLocationId || t.locationId === userLocationId;
+        const isWithinAdminScope = isSuperAdminOrGlobal || t.locationId === userLocationId;
         const matchesLocationFilter = selectedLocationId === 'ALL' || t.locationId === selectedLocationId;
         
         return matchesSearch && isWithinAdminScope && matchesLocationFilter;
@@ -818,12 +832,12 @@ export default function AdminDashboard() {
                             <LucideUserCircle className="h-4 w-4 md:hidden" />
                             <span className="hidden md:inline">Usuários</span>
                         </button>
-                        {userLocationId === undefined ? (
+                        {userLocationId === undefined && currentUserRole === null ? (
                             <div className="flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] bg-slate-200/50 animate-shimmer">
                                 <LucideMapPin className="h-4 w-4 md:hidden opacity-20" />
                                 <span className="hidden md:inline opacity-20 text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em]">Localidades</span>
                             </div>
-                        ) : userLocationId === null && (
+                        ) : isSuperAdminOrGlobal && (
                             <button
                                 onClick={() => handleTabChange('locations')}
                                 className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'locations' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
@@ -931,7 +945,7 @@ export default function AdminDashboard() {
                 </motion.div>
             )}
 
-            {activeTab === 'locations' && !userLocationId && (
+            {activeTab === 'locations' && isSuperAdminOrGlobal && (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1108,17 +1122,17 @@ export default function AdminDashboard() {
                                  </div>
  
                                  <div className="flex flex-wrap gap-2 items-center">
-                                     {userLocationId === undefined ? (
-                                         <FilterSkeleton />
-                                     ) : userLocationId === null && (
-                                         <FilterSelect
-                                             icon={LucideMapPin}
-                                             value={selectedLocationId}
-                                             onChange={setSelectedLocationId}
-                                             placeholder="Localidade"
-                                             options={locations.map(l => ({ id: l.id, name: l.name }))}
-                                         />
-                                     )}
+                                      {userLocationId === undefined && currentUserRole === null ? (
+                                          <FilterSkeleton />
+                                      ) : isSuperAdminOrGlobal && (
+                                          <FilterSelect
+                                              icon={LucideMapPin}
+                                              value={selectedLocationId}
+                                              onChange={setSelectedLocationId}
+                                              placeholder="Localidade"
+                                              options={locations.map(l => ({ id: l.id, name: l.name }))}
+                                          />
+                                      )}
                                  </div>
                              </div>
  
@@ -1142,9 +1156,9 @@ export default function AdminDashboard() {
                                 className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-black outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 text-slate-950"
                             />
                         </div>
-                        {userLocationId === undefined ? (
+                        {userLocationId === undefined && currentUserRole === null ? (
                             <div className="h-12 w-full bg-slate-100 rounded-2xl animate-shimmer border border-slate-200/50" />
-                        ) : userLocationId === null && (
+                        ) : isSuperAdminOrGlobal && (
                             <FilterSelect
                                 icon={LucideMapPin}
                                 value={selectedLocationId}
@@ -1294,9 +1308,9 @@ export default function AdminDashboard() {
                                             options={categories.map(c => ({ id: c.id, name: c.name }))}
                                         />
 
-                                        {userLocationId === undefined ? (
+                                        {userLocationId === undefined && currentUserRole === null ? (
                                             <FilterSkeleton />
-                                        ) : userLocationId === null && (
+                                        ) : isSuperAdminOrGlobal && (
                                             <FilterSelect
                                                 icon={LucideMapPin}
                                                 value={selectedLocationId}
@@ -1466,7 +1480,7 @@ export default function AdminDashboard() {
                                                         <div className="flex items-center gap-3">
                                                             {updatingRoleFor === user.id ? (
                                                                 <LoadingSpinner size="sm" />
-                                                            ) : !userLocationId && user.role !== 'SUPER_ADMIN' ? (
+                                                            ) : isSuperAdminOrGlobal && user.role !== 'SUPER_ADMIN' ? (
                                                                 <LocationSelect
                                                                     value={user.locationId || null}
                                                                     onChange={(val) => handleUpdateUserLocation(user.id, val)}
@@ -1529,9 +1543,9 @@ export default function AdminDashboard() {
                             </div>
 
                             <div className="space-y-2">
-                                {userLocationId === undefined ? (
+                                {userLocationId === undefined && currentUserRole === null ? (
                                     <div className="h-12 w-full bg-slate-100 rounded-2xl animate-shimmer border border-slate-200/50" />
-                                ) : userLocationId === null && (
+                                ) : isSuperAdminOrGlobal && (
                                     <FilterSelect
                                         icon={LucideMapPin}
                                         value={selectedLocationId}
@@ -1625,7 +1639,7 @@ export default function AdminDashboard() {
                                         )}
                                         <p className="text-sm font-medium text-slate-500 truncate lowercase">{user.email}</p>
                                         <div className="mt-1">
-                                            {!userLocationId ? (
+                                            {isSuperAdminOrGlobal ? (
                                                 <select
                                                     value={user.locationId || ""}
                                                     onChange={(e) => handleUpdateUserLocation(user.id, e.target.value || null)}
@@ -2159,7 +2173,7 @@ export default function AdminDashboard() {
                             <textarea className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm min-h-[100px] resize-none"
                                 placeholder="Sobre a turma..." value={turmaDescription} onChange={(e) => setTurmaDescription(e.target.value)} />
                         </div>
-                        {!userLocationId && (
+                        {isSuperAdminOrGlobal && (
                             <div>
                                 <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Localidade</label>
                                 <select className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm"

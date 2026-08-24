@@ -10,6 +10,7 @@ import {
   Req,
   Patch,
   Res,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { StudentMaterialService } from './student-material.service';
@@ -31,7 +32,7 @@ export class UserController {
   findAll(@Req() req: any) {
     // If Admin has a location, limit search to that location.
     // If Admin has NO location (Super Admin), show everything.
-    const locationId = req.user.locationId;
+    const locationId = req.user.role === 'SUPER_ADMIN' ? undefined : req.user.locationId;
     return this.userService.findAll(locationId);
   }
 
@@ -138,19 +139,39 @@ export class UserController {
     return this.userService.updateProfile(id, data, req.user.id);
   }
 
-  // --- Student Materials ---
+  // --- Student Materials & Certificates ---
+
+  @Get('me/certificates')
+  getMyCertificates(@Req() req: any) {
+    return this.materialService.findAll(req.user.id, 'CERTIFICATE');
+  }
+
+  @Get('me/materials')
+  getMyMaterials(@Req() req: any, @Query('category') category?: string) {
+    return this.materialService.findAll(req.user.id, category);
+  }
 
   @Get(':id/materials')
   @Roles(Role.ADMIN)
-  findMaterials(@Param('id') id: string) {
-    return this.materialService.findAll(id);
+  findMaterials(
+    @Param('id') id: string,
+    @Query('category') category?: string,
+  ) {
+    return this.materialService.findAll(id, category);
   }
 
   @Post(':id/materials')
   @Roles(Role.ADMIN)
   createMaterial(
     @Param('id') id: string,
-    @Body() data: { name: string; url: string; type: string; size?: string },
+    @Body()
+    data: {
+      name: string;
+      url: string;
+      type: string;
+      size?: string;
+      category?: string;
+    },
     @Req() req: any,
   ) {
     return this.materialService.create({ ...data, userId: id }, req.user.id);
@@ -164,16 +185,28 @@ export class UserController {
 
   @Get(':id/materials/:materialId/download')
   async downloadMaterial(
+    @Param('id') id: string,
     @Param('materialId') materialId: string,
+    @Req() req: any,
     @Res() res: any,
   ) {
     const material = await this.materialService.findOne(materialId);
     if (!material)
       return res.status(404).json({ message: 'Material not found' });
 
-    const filePath = require('path').join(process.cwd(), material.url);
+    // Allow student to download their own material or admin to download any
+    if (req.user.role === 'STUDENT' && material.userId !== req.user.id) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
 
-    // Set content disposition to attachment with original filename
+    if (
+      material.url.startsWith('http://') ||
+      material.url.startsWith('https://')
+    ) {
+      return res.redirect(material.url);
+    }
+
+    const filePath = require('path').join(process.cwd(), material.url);
     res.download(filePath, material.name);
   }
 }

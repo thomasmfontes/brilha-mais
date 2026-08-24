@@ -13,7 +13,7 @@ export class StatsController {
   @Get('admin')
   @Roles(Role.ADMIN)
   getAdminStats(@Req() req: any) {
-    const locationId = req.user.locationId;
+    const locationId = req.user.role === 'SUPER_ADMIN' ? undefined : req.user.locationId;
     return this.statsService.getAdminStats(locationId);
   }
 

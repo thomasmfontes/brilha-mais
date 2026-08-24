@@ -23,7 +23,7 @@ export class TurmaController {
   @Get()
   @Roles('ADMIN')
   findAll(@Req() req: any) {
-    const locationId = req.user.locationId;
+    const locationId = req.user.role === 'SUPER_ADMIN' ? undefined : req.user.locationId;
     return this.turmaService.findAll(locationId);
   }
 
@@ -37,7 +37,7 @@ export class TurmaController {
   @Roles('ADMIN')
   create(@Body() createTurmaDto: CreateTurmaDto, @Req() req: any) {
     // Force locationId if admin is restricted
-    if (req.user.locationId) {
+    if (req.user.locationId && req.user.role !== 'SUPER_ADMIN') {
       createTurmaDto.locationId = req.user.locationId;
     }
     return this.turmaService.create(createTurmaDto);
