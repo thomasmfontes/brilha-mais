@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import { QRCodeSVG } from "qrcode.react";
-import { LucideMaximize, LucideX, LucideUsers, LucideAlertCircle } from "lucide-react";
+import { LucideMaximize, LucideX, LucideUsers, LucideRefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
 
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -78,31 +78,30 @@ export default function MeetingProjection() {
 
     if (isLoading || !meeting) {
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col relative overflow-hidden">
+            <div className="min-h-screen bg-stone-50/50 flex flex-col relative overflow-hidden font-sans">
                 {/* Header Skeleton */}
-                <div className="p-8 md:p-12 flex justify-between items-center border-b border-slate-200 bg-white">
-                    <div className="space-y-3">
-                        <Skeleton className="h-8 w-64" variant="rounded" />
-                        <Skeleton className="h-3 w-40" variant="rectangle" />
+                <div className="px-6 py-4 md:px-8 md:py-5 flex justify-between items-center border-b border-slate-200/80 bg-white">
+                    <div className="space-y-2">
+                        <Skeleton className="h-6 w-64" variant="rounded" />
+                        <Skeleton className="h-3.5 w-40" variant="rectangle" />
                     </div>
-                    <div className="flex gap-3">
-                        <Skeleton className="h-12 w-12" variant="rounded" />
-                        <Skeleton className="h-12 w-12" variant="rounded" />
+                    <div className="flex gap-2">
+                        <Skeleton className="h-10 w-10" variant="rounded" />
+                        <Skeleton className="h-10 w-10" variant="rounded" />
                     </div>
                 </div>
 
                 {/* Content Skeleton */}
-                <div className="flex-1 flex flex-col items-center justify-center p-8">
-                    <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                        <div className="flex flex-col items-center gap-8">
-                            <div className="h-80 w-80 bg-white rounded-[3rem] shadow-sm border border-slate-100 flex items-center justify-center">
-                                <Skeleton className="h-64 w-64" variant="rounded" />
+                <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12">
+                    <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+                        <div className="flex flex-col items-center">
+                            <div className="h-96 w-96 max-w-full bg-white rounded-3xl shadow-2xs border border-slate-200/80 flex items-center justify-center">
+                                <Skeleton className="h-72 w-72" variant="rounded" />
                             </div>
-                            <Skeleton className="h-10 w-48" variant="rounded" />
                         </div>
                         <div className="space-y-6">
-                            <Skeleton className="h-32 w-full" variant="rounded" />
-                            <Skeleton className="h-64 w-full" variant="rounded" />
+                            <Skeleton className="h-28 w-full" variant="rounded" />
+                            <Skeleton className="h-56 w-full" variant="rounded" />
                         </div>
                     </div>
                 </div>
@@ -111,71 +110,81 @@ export default function MeetingProjection() {
     }
 
     return (
-        <div className="bg-slate-50 min-h-screen flex flex-col relative overflow-hidden font-sans">
-            <div className="p-8 md:p-12 flex justify-between items-center border-b border-slate-200 bg-white">
+        <div className="bg-[#FAFAF9] min-h-screen flex flex-col relative overflow-hidden font-sans">
+            {/* Top Bar */}
+            <div className="px-6 py-4 md:px-8 md:py-5 flex justify-between items-center border-b border-slate-200/80 bg-white shadow-2xs">
                 <div>
-                    <h1 className="text-slate-900 text-3xl font-black uppercase tracking-tight">{meeting.title}</h1>
-                    <div className="flex items-center gap-2 mt-1">
+                    <h1 className="text-slate-900 text-lg md:text-xl font-bold tracking-tight leading-snug">{meeting.title}</h1>
+                    <div className="flex items-center gap-2 mt-0.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">Chamada em tempo real</p>
+                        <p className="text-slate-500 text-xs font-medium">Chamada em tempo real</p>
                     </div>
                 </div>
-                <div className="flex gap-3">
-                    <button onClick={toggleFullScreen} className="h-12 w-12 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl flex items-center justify-center transition-all">
-                        <LucideMaximize className="h-5 w-5" />
+                <div className="flex gap-2">
+                    <button
+                        onClick={toggleFullScreen}
+                        className="h-9 w-9 bg-white hover:bg-slate-50 text-slate-600 rounded-lg border border-slate-200 flex items-center justify-center transition-colors shadow-2xs"
+                        title={isFullScreen ? "Sair da Tela Cheia" : "Tela Cheia"}
+                    >
+                        <LucideMaximize className="h-4 w-4" />
                     </button>
-                    <button onClick={() => navigate(-1)} className="h-12 w-12 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl flex items-center justify-center transition-all">
-                        <LucideX className="h-5 w-5" />
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="h-9 w-9 bg-white hover:bg-slate-50 text-slate-600 rounded-lg border border-slate-200 flex items-center justify-center transition-colors shadow-2xs"
+                        title="Fechar Projeção"
+                    >
+                        <LucideX className="h-4 w-4" />
                     </button>
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center p-8">
-                <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            {/* Projection Content */}
+            <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12">
+                <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
                     
                     {/* QR Code Section */}
                     <div className="flex flex-col items-center">
-                        <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-100 relative">
+                        <div className="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-slate-200/80 relative flex flex-col items-center">
                             {token ? (
-                                <QRCodeSVG value={token} size={320} level="H" includeMargin={false} />
+                                <QRCodeSVG value={token} size={300} level="H" includeMargin={false} />
                             ) : (
-                                <div className="w-[320px] h-[320px] bg-slate-50 flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200">
-                                    <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px] animate-pulse">Gerando código seguro...</span>
+                                <div className="w-[300px] h-[300px] bg-slate-50 flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200">
+                                    <span className="text-slate-400 font-medium text-xs animate-pulse">Gerando código seguro...</span>
                                 </div>
                             )}
                             
-                            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-2.5 rounded-full shadow-lg flex items-center gap-2">
-                                <LucideAlertCircle className="h-4 w-4" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">QR Code Rotativo</span>
+                            <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500 text-white shadow-xs text-xs font-medium whitespace-nowrap">
+                                <LucideRefreshCw className="h-3 w-3 animate-spin" style={{ animationDuration: '4s' }} />
+                                <span>QR Code Rotativo</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Info Section */}
-                    <div className="space-y-10">
-                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm flex items-center gap-8">
-                            <div className="h-20 w-20 rounded-3xl bg-slate-50 flex items-center justify-center text-primary">
-                                <LucideUsers className="h-10 w-10" />
+                    <div className="space-y-6">
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xs flex items-center gap-5">
+                            <div className="h-14 w-14 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                                <LucideUsers className="h-7 w-7" />
                             </div>
                             <div>
-                                <h2 className="text-5xl font-black text-slate-900 leading-none">{attendancesCount}</h2>
-                                <p className="text-slate-500 font-black uppercase tracking-widest text-xs mt-2">Alunos Presentes</p>
+                                <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 leading-none">{attendancesCount}</h2>
+                                <p className="text-slate-500 font-medium text-xs mt-1">Alunos Presentes</p>
                             </div>
                         </div>
 
-                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm space-y-8">
-                            <h3 className="text-slate-900 text-2xl font-black uppercase tracking-tight">Passo a Passo</h3>
-                            <div className="space-y-6">
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xs space-y-4">
+                            <h3 className="text-slate-900 text-sm md:text-base font-semibold tracking-tight">Passo a Passo</h3>
+                            <div className="space-y-3.5">
                                 {[
                                     "Abra o app Brilha Mais no seu celular.",
                                     "No menu, clique em 'Ler QR Code'.",
                                     "Aponte a câmera para este QR Code."
                                 ].map((step, i) => (
-                                    <div key={i} className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shrink-0">
+                                    <div key={i} className="flex items-center gap-3.5">
+                                        <div className="h-7 w-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-semibold text-xs shrink-0 shadow-2xs">
                                             {i + 1}
                                         </div>
-                                        <p className="text-slate-600 font-bold text-lg leading-tight">{step}</p>
+                                        <p className="text-slate-700 font-medium text-sm leading-snug">{step}</p>
                                     </div>
                                 ))}
                             </div>
