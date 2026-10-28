@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import toast from 'react-hot-toast';
-import { LucideRefreshCw, LucideZap } from 'lucide-react';
+import { RefreshCw, Sparkles, X } from 'lucide-react';
 
 /**
  * UpdateNotifier component
@@ -38,45 +38,58 @@ const UpdateNotifier = () => {
     useEffect(() => {
         if (needRefresh) {
             toast((t) => (
-                <div className="flex flex-col gap-3 p-1">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                            <LucideZap className="h-5 w-5 animate-pulse" />
+                <div className="flex flex-col gap-3.5 p-1 w-full text-left">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                            <div className="h-9 w-9 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-600 flex items-center justify-center shrink-0">
+                                <Sparkles className="h-4 w-4 text-[#F19B0A]" />
+                            </div>
+                            <div className="space-y-0.5">
+                                <p className="text-sm font-semibold text-zinc-950 tracking-tight">Nova versão disponível</p>
+                                <p className="text-xs text-zinc-500 leading-relaxed">Atualize para carregar o novo visual e melhorias da plataforma.</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Nova Versão Disponível!</p>
-                            <p className="text-[11px] font-medium text-slate-500 leading-tight mt-0.5">Fizemos melhorias na plataforma.</p>
-                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => toast.dismiss(t.id)}
+                            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+                            title="Fechar"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
                     </div>
                     
                     <button
+                        type="button"
                         onClick={() => {
                             updateServiceWorker(true);
                             setNeedRefresh(false);
                             toast.dismiss(t.id);
                         }}
-                        className="w-full bg-primary text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20"
+                        className="w-full bg-[#F19B0A] hover:bg-[#D98B08] text-white py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-2xs cursor-pointer"
                     >
-                        <LucideRefreshCw className="h-3.5 w-3.5" />
-                        Atualizar Agora
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        <span>Atualizar agora</span>
                     </button>
                 </div>
             ), {
                 duration: Infinity, // Keep the toast until user clicks
                 style: {
-                    borderRadius: '1.5rem',
+                    borderRadius: '1rem',
                     background: '#ffffff',
-                    color: '#334155',
-                    border: '1px solid #f1f5f9',
-                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-                    padding: '1rem',
-                    maxWidth: '350px'
+                    color: '#09090b',
+                    border: '1px solid rgba(228, 228, 231, 0.9)',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)',
+                    padding: '0.875rem',
+                    maxWidth: '360px',
+                    width: '100%'
                 },
             });
         }
     }, [needRefresh, updateServiceWorker, setNeedRefresh]);
 
-    return null; // This component doesn't render anything itself
+    return null;
 };
 
 export default UpdateNotifier;

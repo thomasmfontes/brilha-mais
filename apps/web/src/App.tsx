@@ -49,12 +49,13 @@ function App() {
                 toastOptions={{
                     duration: 4000,
                     style: {
-                        background: '#fff',
-                        color: '#0f172a',
-                        fontWeight: 'bold',
-                        borderRadius: '1rem',
-                        border: '1px solid #e2e8f0',
-                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                        background: '#ffffff',
+                        color: '#09090b',
+                        fontSize: '0.875rem',
+                        fontWeight: 500,
+                        borderRadius: '0.875rem',
+                        border: '1px solid rgba(228, 228, 231, 0.9)',
+                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)',
                     },
                 }} 
             />
