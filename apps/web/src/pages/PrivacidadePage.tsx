@@ -1,163 +1,136 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Shield, CheckCircle2, ExternalLink } from 'lucide-react';
-import logo from "../assets/logo.png";
+import LegalLayout from '../components/LegalLayout';
+import { ShieldCheck, CheckCircle2 } from 'lucide-react';
+
+const toc = [
+    { id: 'coleta', label: 'Coleta e Origem de Dados' },
+    { id: 'finalidade', label: 'Finalidade do Tratamento' },
+    { id: 'seguranca', label: 'Segurança e Sigilo de Dados' },
+    { id: 'direitos', label: 'Direitos do Titular (LGPD)' },
+    { id: 'cookies', label: 'Cookies e Armazenamento Local' },
+    { id: 'contato', label: 'Contato e Encarregado (DPO)' },
+];
 
 const PrivacidadePage: React.FC = () => {
     return (
-        <div className="min-h-screen bg-[#FAFAF9] text-zinc-900 flex flex-col justify-between selection:bg-amber-100 selection:text-amber-900">
-            {/* Top Navigation */}
-            <header className="w-full max-w-4xl mx-auto px-6 py-6 sm:py-8 flex items-center justify-between">
-                <Link
-                    to="/"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200/80 bg-white text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-colors shadow-2xs"
-                >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    <span>Voltar ao início</span>
-                </Link>
+        <LegalLayout
+            title="Política de Privacidade"
+            subtitle="Nosso compromisso com a proteção, sigilo e transparência no tratamento dos seus dados pessoais em total conformidade com a LGPD."
+            lastUpdated="24 de março de 2026"
+            version="2.1"
+            activeTab="privacidade"
+            toc={toc}
+        >
+            {/* LGPD Compliance Badge Callout */}
+            <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/60 p-4 sm:p-5 mb-8 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+                <div className="text-xs text-emerald-950 leading-relaxed">
+                    <p className="font-semibold text-emerald-900 mb-1">Privacidade em primeiro lugar (LGPD)</p>
+                    <p>
+                        Seus dados são tratados exclusivamente para viabilizar seu aprendizado e emissão de certificados. Nós <strong>não vendemos, não alugamos e não compartilhamos</strong> suas informações pessoais com terceiros para fins publicitários.
+                    </p>
+                </div>
+            </div>
 
-                <Link to="/" className="inline-block">
-                    <img src={logo} alt="Brilha Mais" className="h-8 w-auto object-contain" />
-                </Link>
+            <div className="space-y-10 text-sm leading-relaxed text-zinc-600">
+                <section id="coleta" className="scroll-mt-32 space-y-3">
+                    <h2 className="text-base sm:text-lg font-semibold text-zinc-950 flex items-center gap-2.5 border-b border-zinc-100 pb-2">
+                        <span className="h-6 w-6 rounded-md bg-zinc-100 text-zinc-700 text-xs flex items-center justify-center font-mono font-medium">01</span>
+                        Coleta e Origem de Dados
+                    </h2>
+                    <p>
+                        Coletamos tão somente os dados estritamente necessários para a correta identificação do estudante e registro de seu histórico educacional.
+                    </p>
+                    <p>
+                        Ao efetuar o login institucional com Google ou Microsoft, recebemos exclusivamente:
+                    </p>
+                    <ul className="space-y-1.5 pl-4 list-disc marker:text-amber-500">
+                        <li>Nome completo para emissão do certificado;</li>
+                        <li>Endereço de e-mail institucional para comunicação e recuperação de acesso;</li>
+                        <li>Foto de perfil pública (opcional, para personalização visual).</li>
+                    </ul>
+                </section>
 
-                <Link
-                    to="/login"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#F19B0A] hover:bg-[#D98B08] transition-colors shadow-2xs"
-                >
-                    <span>Entrar</span>
-                </Link>
-            </header>
-
-            {/* Main Content Reader Card */}
-            <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 pb-16">
-                <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 sm:p-12 shadow-2xs">
-                    
-                    {/* Header Info */}
-                    <div className="border-b border-zinc-100 pb-8 mb-8">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-200/60 text-emerald-800 text-[11px] font-medium mb-4">
-                            <Shield className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Privacidade e Proteção de Dados (LGPD)</span>
+                <section id="finalidade" className="scroll-mt-32 space-y-3">
+                    <h2 className="text-base sm:text-lg font-semibold text-zinc-950 flex items-center gap-2.5 border-b border-zinc-100 pb-2">
+                        <span className="h-6 w-6 rounded-md bg-zinc-100 text-zinc-700 text-xs flex items-center justify-center font-mono font-medium">02</span>
+                        Finalidade do Tratamento
+                    </h2>
+                    <p>
+                        Os dados coletados são tratados exclusivamente com base nas hipóteses legais da Lei Geral de Proteção de Dados (Lei nº 13.709/2018), para:
+                    </p>
+                    <div className="grid gap-2.5 pt-1">
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                            <span className="text-xs text-zinc-700">Manutenção do progresso acadêmico em videoaulas, quizzes e materiais.</span>
                         </div>
-                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
-                            Política de Privacidade
-                        </h1>
-                        <p className="text-xs text-zinc-400 mt-2">
-                            Última atualização: 24 de março de 2026 · Em conformidade com a Lei Geral de Proteção de Dados
-                        </p>
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                            <span className="text-xs text-zinc-700">Avaliação pedagógica de desafios dissertativos por instrutores responsáveis.</span>
+                        </div>
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                            <span className="text-xs text-zinc-700">Emissão de certificados oficiais com chave de verificação pública de autenticidade.</span>
+                        </div>
+                        <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 border border-zinc-100">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                            <span className="text-xs text-zinc-700">Garantia da segurança cibernética e prevenção contra fraudes em avaliações.</span>
+                        </div>
                     </div>
+                </section>
 
-                    {/* Content Sections */}
-                    <div className="space-y-8 text-sm leading-relaxed text-zinc-600">
-                        <section className="space-y-2">
-                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
-                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">1</span>
-                                Coleta e Origem de Dados
-                            </h2>
-                            <p>
-                                Coletamos exclusivamente informações essenciais para a prestação do serviço educacional. Ao autenticar-se por meio do Google ou Microsoft, recebemos apenas seu nome, endereço de e-mail institucional e foto de perfil autorizados por você.
-                            </p>
-                        </section>
+                <section id="seguranca" className="scroll-mt-32 space-y-3">
+                    <h2 className="text-base sm:text-lg font-semibold text-zinc-950 flex items-center gap-2.5 border-b border-zinc-100 pb-2">
+                        <span className="h-6 w-6 rounded-md bg-zinc-100 text-zinc-700 text-xs flex items-center justify-center font-mono font-medium">03</span>
+                        Segurança e Sigilo de Dados
+                    </h2>
+                    <p>
+                        Aplicamos práticas técnicas alinhadas aos mais altos padrões do setor:
+                    </p>
+                    <ul className="space-y-1.5 pl-4 list-disc marker:text-amber-500">
+                        <li>Criptografia completa em trânsito com protocolos modernos TLS 1.3;</li>
+                        <li>Controle restrito de acessos baseado em privilégios mínimos (Least Privilege);</li>
+                        <li>Autenticação sem senhas (Passkey FIDO2) para eliminar riscos de sequestro de credenciais.</li>
+                    </ul>
+                </section>
 
-                        <section className="space-y-3">
-                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
-                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">2</span>
-                                Finalidade do Tratamento
-                            </h2>
-                            <p>
-                                Seus dados são utilizados estritamente para as seguintes finalidades legítimas:
-                            </p>
-                            <ul className="space-y-2 pl-2">
-                                <li className="flex items-start gap-2.5">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                                    <span>Personalizar sua experiência e manter histórico de progresso em aulas e cursos.</span>
-                                </li>
-                                <li className="flex items-start gap-2.5">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                                    <span>Corrigir avaliações dissertativas e registrar notas emitidas pelos instrutores.</span>
-                                </li>
-                                <li className="flex items-start gap-2.5">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                                    <span>Emitir certificados oficiais de conclusão com chave de validação pública.</span>
-                                </li>
-                                <li className="flex items-start gap-2.5">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-                                    <span>Garantir a integridade, segurança cibernética e autenticidade da conta.</span>
-                                </li>
-                            </ul>
-                        </section>
+                <section id="direitos" className="scroll-mt-32 space-y-3">
+                    <h2 className="text-base sm:text-lg font-semibold text-zinc-950 flex items-center gap-2.5 border-b border-zinc-100 pb-2">
+                        <span className="h-6 w-6 rounded-md bg-zinc-100 text-zinc-700 text-xs flex items-center justify-center font-mono font-medium">04</span>
+                        Direitos do Titular (LGPD)
+                    </h2>
+                    <p>
+                        Em conformidade com o Artigo 18 da LGPD, você possui a qualquer momento o direito de:
+                    </p>
+                    <ul className="space-y-1.5 pl-4 list-disc marker:text-amber-500">
+                        <li>Confirmar a existência e requerer acesso aos seus dados;</li>
+                        <li>Solicitar a correção de dados incompletos ou inexatos;</li>
+                        <li>Requerer a anonimização, bloqueio ou eliminação de dados excessivos;</li>
+                        <li>Solicitar a portabilidade ou revogar consentimentos previamente concedidos.</li>
+                    </ul>
+                </section>
 
-                        <section className="space-y-2">
-                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
-                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">3</span>
-                                Segurança e Sigilo
-                            </h2>
-                            <p>
-                                Adotamos padrões rigorosos de segurança técnica, incluindo criptografia de dados em trânsito (HTTPS/TLS) e repouso, políticas de controle de acesso restrito e armazenamento seguro. Nós <strong>não vendemos, não alugamos e não compartilhamos</strong> seus dados pessoais com terceiros para fins comerciais.
-                            </p>
-                        </section>
+                <section id="cookies" className="scroll-mt-32 space-y-3">
+                    <h2 className="text-base sm:text-lg font-semibold text-zinc-950 flex items-center gap-2.5 border-b border-zinc-100 pb-2">
+                        <span className="h-6 w-6 rounded-md bg-zinc-100 text-zinc-700 text-xs flex items-center justify-center font-mono font-medium">05</span>
+                        Cookies e Armazenamento Local
+                    </h2>
+                    <p>
+                        Utilizamos somente cookies e tokens de sessão estritamente funcionais, destinados a manter sua sessão autenticada com segurança e persistir preferências de navegação. Não utilizamos rastreadores para redes de anúncios nem pixels de terceiros.
+                    </p>
+                </section>
 
-                        <section className="space-y-2">
-                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
-                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">4</span>
-                                Direitos do Titular (LGPD)
-                            </h2>
-                            <p>
-                                Em consonância com a legislação brasileira, você possui o direito de confirmar a existência de tratamento, solicitar o acesso, correção ou a exclusão definitiva dos seus dados através das configurações de perfil da plataforma ou entrando em contato com a equipe de privacidade.
-                            </p>
-                        </section>
-
-                        <section className="space-y-2">
-                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
-                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">5</span>
-                                Cookies e Sessão
-                            </h2>
-                            <p>
-                                Utilizamos cookies estritamente necessários para manter sua autenticação ativa durante o uso e registrar suas preferências de interface. Não utilizamos cookies de rastreamento para redes de publicidade de terceiros.
-                            </p>
-                        </section>
-
-                        <section className="space-y-2">
-                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
-                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">6</span>
-                                Contato e DPO
-                            </h2>
-                            <p>
-                                Caso tenha quaisquer dúvidas, comentários ou requisições relativas aos seus dados pessoais e a esta Política de Privacidade, envie uma mensagem através do canal de suporte oficial da plataforma.
-                            </p>
-                        </section>
-                    </div>
-
-                    {/* Bottom Links */}
-                    <div className="mt-12 pt-8 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <Link
-                            to="/termos"
-                            className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-900 font-medium transition-colors"
-                        >
-                            <span>Consultar Termos de Uso</span>
-                            <ExternalLink className="w-3 h-3 text-zinc-400" />
-                        </Link>
-
-                        <Link
-                            to="/"
-                            className="text-xs text-zinc-500 hover:text-zinc-800 transition-colors"
-                        >
-                            Voltar para a página inicial
-                        </Link>
-                    </div>
-
-                </div>
-            </main>
-
-            {/* Clean Footer */}
-            <footer className="w-full max-w-4xl mx-auto px-6 py-6 text-center text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-zinc-200/60">
-                <p>&copy; 2026 Brilha Mais</p>
-                <div className="flex gap-4">
-                    <Link to="/termos" className="hover:text-zinc-600 transition-colors">Termos de Uso</Link>
-                    <span>·</span>
-                    <span className="text-zinc-600 font-medium">Privacidade</span>
-                </div>
-            </footer>
-        </div>
+                <section id="contato" className="scroll-mt-32 space-y-3">
+                    <h2 className="text-base sm:text-lg font-semibold text-zinc-950 flex items-center gap-2.5 border-b border-zinc-100 pb-2">
+                        <span className="h-6 w-6 rounded-md bg-zinc-100 text-zinc-700 text-xs flex items-center justify-center font-mono font-medium">06</span>
+                        Contato e Encarregado (DPO)
+                    </h2>
+                    <p>
+                        Para exercer seus direitos de titular ou sanar qualquer dúvida referente a esta política, entre em contato diretamente com o nosso Encarregado pelo Tratamento de Dados Pessoais (DPO) através dos canais de suporte da plataforma.
+                    </p>
+                </section>
+            </div>
+        </LegalLayout>
     );
 };
 
