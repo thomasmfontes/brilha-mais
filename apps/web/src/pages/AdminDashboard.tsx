@@ -1247,25 +1247,25 @@ export default function AdminDashboard() {
 
             {activeTab === 'users' && (
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
                     className="space-y-6"
                 >
-
-
-                    <div className="hidden xl:block bg-card border border-border rounded-[2.5rem] shadow-sm relative z-20">
+                    {/* Desktop Table View */}
+                    <div className="hidden xl:block bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden relative z-20">
                         {/* Header Interno com Filtros */}
-                        <div className="px-8 py-5 border-b border-border bg-slate-50/20 rounded-t-[2.4rem]">
-                            <div className="flex items-center justify-between gap-6">
-                                <div className="flex flex-col md:flex-row gap-3 items-center">
-                                    <div className="relative w-full md:w-72 group">
-                                        <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                        <div className="p-3.5 border-b border-slate-100 bg-slate-50/50">
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex flex-col md:flex-row gap-2.5 items-center flex-1">
+                                    <div className="relative w-full md:w-64">
+                                        <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                                         <input
                                             type="text"
-                                            placeholder="Busca rápida..."
+                                            placeholder="Buscar usuários..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-[11px] font-black outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50 transition-all placeholder:text-slate-400 text-slate-950"
+                                            className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
                                         />
                                     </div>
 
@@ -1317,228 +1317,232 @@ export default function AdminDashboard() {
                                 </div>
 
                                 <div className="hidden md:flex items-center shrink-0">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-900 bg-slate-100/50 px-4 py-2 rounded-xl border border-slate-100 whitespace-nowrap">
-                                        TOTAL: <span className="text-primary ml-1"><CountUp value={filteredUsers.length} /></span>
+                                    <span className="text-xs text-slate-500">
+                                        Total: <strong className="text-slate-900 font-semibold">{filteredUsers.length}</strong> {filteredUsers.length === 1 ? 'usuário' : 'usuários'}
                                     </span>
                                 </div>
                             </div>
                         </div>
+
                         <div className="w-full overflow-x-auto custom-scrollbar">
                             <table className="w-full text-left min-w-[1000px]">
                                 <thead>
-                                <tr className="border-b border-slate-100 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 bg-slate-50/50">
-                                    <th className="px-5 py-3.5 w-[25%] min-w-[200px]">Usuário</th>
-                                    <th className="px-5 py-3.5 w-[15%]">Função</th>
-                                    <th className="px-5 py-3.5 w-[15%]">Turma</th>
-                                    <th className="px-5 py-3.5 w-[15%]">Área</th>
-                                    <th className="px-5 py-3.5 w-[15%]">Localidade</th>
-                                    <th className="px-5 py-3.5 w-[15%] text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {isLoading ? (
-                                    <>
-                                        <UserSkeleton />
-                                        <UserSkeleton />
-                                        <UserSkeleton />
-                                    </>
-                                ) : filteredUsers.length > 0 ? filteredUsers.map((user) => (
-                                    <tr key={user.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition-colors group">
-                                        <td className="px-5 py-3.5 group-last:rounded-bl-[2.4rem]">
-                                            <div className="flex items-center gap-3">
-                                                <button 
-                                                    onClick={() => setPreviewAvatar({ 
-                                                        id: user.id,
-                                                        url: user.avatarUrl?.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`, 
-                                                        name: user.name || '' 
-                                                    })}
-                                                    className="relative h-10 w-10 rounded-full flex items-center justify-center font-black text-primary border border-primary/20 bg-primary/10 shrink-0 overflow-hidden group/avatar shadow-sm hover:border-primary/50 transition-all hover:scale-105 active:scale-95"
-                                                    title="Clique para expandir"
-                                                >
-                                                    {user.avatarUrl
-                                                        ? <img src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`} alt={user.name || ''} className={`h-full w-full object-cover transition-all ${isUpdatingAvatarFor === user.id ? 'opacity-30 blur-[2px]' : 'group-hover/avatar:scale-110'}`} referrerPolicy="no-referrer" />
-                                                        : <span className={isUpdatingAvatarFor === user.id ? 'opacity-0' : ''}>{user.name?.charAt(0) || '?'}</span>
-                                                    }
-                                                    
-                                                    {isUpdatingAvatarFor === user.id && (
-                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/5">
-                                                            <LucideLoader2 className="h-4 w-4 text-primary animate-spin" />
+                                    <tr className="border-b border-slate-200/80 text-xs font-semibold text-slate-600 bg-slate-50/75">
+                                        <th className="px-5 py-3 w-[26%] min-w-[200px]">Usuário</th>
+                                        <th className="px-5 py-3 w-[14%]">Função</th>
+                                        <th className="px-5 py-3 w-[18%]">Turmas</th>
+                                        <th className="px-5 py-3 w-[18%]">Áreas</th>
+                                        <th className="px-5 py-3 w-[14%]">Localidade</th>
+                                        <th className="px-5 py-3 w-[10%] text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {isLoading ? (
+                                        <>
+                                            <UserSkeleton />
+                                            <UserSkeleton />
+                                            <UserSkeleton />
+                                        </>
+                                    ) : filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                                        <tr key={user.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors">
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    <button 
+                                                        onClick={() => setPreviewAvatar({ 
+                                                            id: user.id,
+                                                            url: user.avatarUrl?.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`, 
+                                                            name: user.name || '' 
+                                                        })}
+                                                        className="relative h-9 w-9 rounded-full flex items-center justify-center font-medium text-xs text-slate-600 border border-slate-200/80 bg-slate-100 shrink-0 overflow-hidden shadow-2xs hover:border-amber-400 hover:ring-2 hover:ring-amber-400/20 transition-all"
+                                                        title="Clique para visualizar ou alterar foto"
+                                                    >
+                                                        {user.avatarUrl
+                                                            ? <img src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`} alt={user.name || ''} className={`h-full w-full object-cover ${isUpdatingAvatarFor === user.id ? 'opacity-30 blur-[2px]' : ''}`} referrerPolicy="no-referrer" />
+                                                            : <span className={isUpdatingAvatarFor === user.id ? 'opacity-0' : ''}>{user.name?.charAt(0) || '?'}</span>
+                                                        }
+                                                        
+                                                        {isUpdatingAvatarFor === user.id && (
+                                                            <div className="absolute inset-0 flex items-center justify-center bg-black/5">
+                                                                <LucideLoader2 className="h-3.5 w-3.5 text-amber-500 animate-spin" />
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                    <div className="min-w-0">
+                                                        {editingNameFor === user.id ? (
+                                                            <input
+                                                                autoFocus
+                                                                className="font-medium bg-white border border-amber-500 rounded px-1.5 py-0.5 outline-none text-xs w-40 text-slate-900"
+                                                                value={editingNameValue}
+                                                                onChange={e => setEditingNameValue(e.target.value)}
+                                                                onBlur={async () => {
+                                                                    if (editingNameValue.trim() && editingNameValue !== user.name) {
+                                                                        await api.put(`/users/${user.id}/name`, { name: editingNameValue.trim() });
+                                                                        setUsers(prev => prev.map(u => u.id === user.id ? { ...u, name: editingNameValue.trim() } : u));
+                                                                    }
+                                                                    setEditingNameFor(null);
+                                                                }}
+                                                                onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); if (e.key === 'Escape') setEditingNameFor(null); }}
+                                                            />
+                                                        ) : (
+                                                            <p className="font-semibold text-sm text-slate-900 cursor-pointer hover:text-amber-600 transition-colors flex items-center gap-1.5 leading-snug group/name" onClick={() => { setEditingNameFor(user.id); setEditingNameValue(user.name || ''); }}>
+                                                                <span className="truncate">{user.name}</span>
+                                                                <LucidePencil className="h-3 w-3 text-slate-400 opacity-0 group-hover/name:opacity-100 transition-opacity shrink-0" />
+                                                            </p>
+                                                        )}
+                                                        <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                {updatingRoleFor === user.id ? (
+                                                    <div className="flex items-center justify-center h-7 w-20">
+                                                        <LoadingSpinner size="xs" />
+                                                    </div>
+                                                ) : (
+                                                    <RoleSelect
+                                                        value={user.role}
+                                                        onChange={(val) => handleUpdateRole(user.id, val)}
+                                                        currentUserRole={currentUserRole}
+                                                    />
+                                                )}
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                {updatingRoleFor === user.id ? (
+                                                    <div className="flex items-center">
+                                                        <LoadingSpinner size="xs" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-wrap items-center gap-1.5">
+                                                        {user.turmas?.map((t, i) => (
+                                                            <span key={`turma-${i}`} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium">
+                                                                {t.name}
+                                                            </span>
+                                                        ))}
+                                                        {user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
+                                                            <button
+                                                                onClick={() => handleOpenTurmaModal(user)}
+                                                                className="h-6 w-6 rounded-md border border-dashed border-slate-200 hover:border-slate-300 hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors inline-flex items-center justify-center shrink-0"
+                                                                title="Gerenciar Turmas"
+                                                            >
+                                                                <LucidePlus className="h-3 w-3" />
+                                                            </button>
+                                                        )}
+                                                        {(!user.turmas || user.turmas.length === 0) && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
+                                                            <span className="text-xs text-slate-400 italic">Acesso Geral</span>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                    {updatingRoleFor === user.id ? (
+                                                        <div className="flex items-center">
+                                                            <LoadingSpinner size="xs" />
                                                         </div>
-                                                    )}
-                                                </button>
-                                                <div>
-                                                    {editingNameFor === user.id ? (
-                                                        <input
-                                                            autoFocus
-                                                            className="font-bold bg-transparent border-b border-primary outline-none text-sm w-40"
-                                                            value={editingNameValue}
-                                                            onChange={e => setEditingNameValue(e.target.value)}
-                                                            onBlur={async () => {
-                                                                if (editingNameValue.trim() && editingNameValue !== user.name) {
-                                                                    await api.put(`/users/${user.id}/name`, { name: editingNameValue.trim() });
-                                                                    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, name: editingNameValue.trim() } : u));
-                                                                }
-                                                                setEditingNameFor(null);
-                                                            }}
-                                                            onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); if (e.key === 'Escape') setEditingNameFor(null); }}
-                                                        />
-                                                    ) : (
-                                                        <p className="font-bold cursor-pointer hover:text-primary transition-colors group flex items-center gap-1" onClick={() => { setEditingNameFor(user.id); setEditingNameValue(user.name || ''); }}>
-                                                            {user.name}
-                                                            <LucidePencil className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
-                                                        </p>
-                                                    )}
-                                                    <p className="text-xs text-muted-foreground">{user.email}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-5 py-3.5">
-                                            {updatingRoleFor === user.id ? (
-                                                <div className="flex items-center justify-center h-8 w-24">
-                                                    <LoadingSpinner size="sm" />
-                                                </div>
-                                            ) : (
-                                                <RoleSelect
-                                                    value={user.role}
-                                                    onChange={(val) => handleUpdateRole(user.id, val)}
-                                                    currentUserRole={currentUserRole}
-                                                />
-                                            )}
-                                        </td>
-                                        <td className="px-5 py-3.5">
-                                            {updatingRoleFor === user.id ? (
-                                                <div className="flex items-center">
-                                                    <LoadingSpinner size="xs" />
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {user.turmas?.map((t, i) => (
-                                                        <span key={`turma-${i}`} className="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">
-                                                            {t.name}
+                                                    ) : user.role === 'SUPER_ADMIN' ? (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/60 text-xs font-medium">
+                                                            Super Admin
                                                         </span>
-                                                    ))}
-                                                    {user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' && (
+                                                    ) : user.role === 'ADMIN' ? (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/60 text-xs font-medium">
+                                                            Acesso Geral
+                                                        </span>
+                                                    ) : (
+                                                        <>
+                                                            {user.role === 'INSTRUCTOR' && user.assignedAreas.map((a, i) => (
+                                                                <span key={`ins-${i}`} className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 text-xs font-medium">
+                                                                    {a.category.name}
+                                                                </span>
+                                                            ))}
+                                                            {user.role === 'STUDENT' && user.turmas?.map(t => t.areas?.map((a, i) => (
+                                                                <span key={`stu-${t.id}-${i}`} className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-xs font-medium">
+                                                                    {a.category.name}
+                                                                </span>
+                                                            )))}
+                                                        </>
+                                                    )}
+
+                                                    {user.role === 'INSTRUCTOR' && (
                                                         <button
-                                                            onClick={() => handleOpenTurmaModal(user)}
-                                                            className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground transition-colors"
+                                                            onClick={() => handleOpenAreaModal(user)}
+                                                            className="h-6 w-6 rounded-md border border-dashed border-slate-200 hover:border-amber-300 hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-colors inline-flex items-center justify-center shrink-0"
+                                                            title="Gerenciar Áreas"
                                                         >
                                                             <LucidePlus className="h-3 w-3" />
                                                         </button>
                                                     )}
-                                                    {(!user.turmas || user.turmas.length === 0) && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
-                                                        <span className="text-[10px] text-muted-foreground/50 italic">N/A</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    {updatingRoleFor === user.id ? (
+                                                        <LoadingSpinner size="xs" />
+                                                    ) : isSuperAdminOrGlobal && user.role !== 'SUPER_ADMIN' ? (
+                                                        <LocationSelect
+                                                            value={user.locationId || null}
+                                                            onChange={(val) => handleUpdateUserLocation(user.id, val)}
+                                                            options={locations}
+                                                        />
+                                                    ) : (
+                                                        <span className="text-xs text-slate-500 font-medium">
+                                                            {user.location?.name || 'Global'}
+                                                        </span>
                                                     )}
                                                 </div>
-                                            )}
-                                        </td>
-                                        <td className="px-5 py-3.5">
-                                            <div className="flex flex-wrap gap-1.5">
-                                                            {updatingRoleFor === user.id ? (
-                                                                <div className="flex items-center">
-                                                                    <LoadingSpinner size="xs" />
-                                                                </div>
-                                                            ) : user.role === 'SUPER_ADMIN' ? (
-                                                                <span className="px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-[0.15em] border border-indigo-100 shadow-sm">
-                                                                    Acesso Geral
-                                                                </span>
-                                                            ) : user.role === 'ADMIN' ? (
-                                                                <span className="px-3 py-1.5 rounded-full bg-purple-50 text-purple-600 text-[9px] font-black uppercase tracking-[0.15em] border border-purple-100 shadow-sm">
-                                                                    Admin
-                                                                </span>
-                                                            ) : (
-                                                                <>
-                                                                    {user.role === 'INSTRUCTOR' && user.assignedAreas.map((a, i) => (
-                                                                        <span key={`ins-${i}`} className="px-3 py-1.5 rounded-lg bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest border border-primary/10">
-                                                                            {a.category.name}
-                                                                        </span>
-                                                                    ))}
-                                                                    {user.role === 'STUDENT' && user.turmas?.map(t => t.areas?.map((a, i) => (
-                                                                        <span key={`stu-${t.id}-${i}`} className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
-                                                                            {a.category.name}
-                                                                        </span>
-                                                                    )))}
-                                                                </>
-                                                            )}
-
-                                                            {user.role === 'INSTRUCTOR' && (
-                                                                <button
-                                                                    onClick={() => handleOpenAreaModal(user)}
-                                                                    className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground transition-colors"
-                                                                >
-                                                                    <LucidePlus className="h-3 w-3" />
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-5 py-3.5">
-                                                        <div className="flex items-center gap-3">
-                                                            {updatingRoleFor === user.id ? (
-                                                                <LoadingSpinner size="sm" />
-                                                            ) : isSuperAdminOrGlobal && user.role !== 'SUPER_ADMIN' ? (
-                                                                <LocationSelect
-                                                                    value={user.locationId || null}
-                                                                    onChange={(val) => handleUpdateUserLocation(user.id, val)}
-                                                                    options={locations}
-                                                                />
-                                                            ) : (
-                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                                    {user.location?.name || 'Global'}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                        <td className="px-5 py-3.5 text-right group-last:rounded-br-[2.4rem]">
-                                            <div className="flex justify-end gap-1 text-right">
-                                                {user.role === 'STUDENT' && (
+                                            </td>
+                                            <td className="px-5 py-3.5 text-right">
+                                                <div className="flex justify-end items-center gap-1">
+                                                    {user.role === 'STUDENT' && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedUser(user);
+                                                                setIsMaterialsModalOpen(true);
+                                                            }}
+                                                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                                                            title="Materiais do Aluno"
+                                                        >
+                                                            <LucideFolder className="h-4 w-4" />
+                                                        </button>
+                                                    )}
                                                     <button
-                                                        onClick={() => {
-                                                            setSelectedUser(user);
-                                                            setIsMaterialsModalOpen(true);
-                                                        }}
-                                                        className="p-2 rounded-xl bg-white/5 transition-colors text-primary hover:bg-primary/10"
-                                                        title="Materiais do Aluno"
+                                                        onClick={() => handleDeleteUser(user.id)}
+                                                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                                        title="Excluir Usuário"
                                                     >
-                                                        <LucideFolder className="h-4 w-4" />
+                                                        <LucideTrash2 className="h-4 w-4" />
                                                     </button>
-                                                )}
-                                                <button
-                                                    onClick={() => handleDeleteUser(user.id)}
-                                                    className="p-2 rounded-xl bg-white/5 transition-colors text-destructive hover:bg-destructive/10"
-                                                >
-                                                    <LucideTrash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan={6} className="px-5 py-8 text-center text-muted-foreground font-medium text-xs">
-                                            Nenhum usuário encontrado.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan={6} className="px-5 py-12 text-center text-slate-400 text-xs">
+                                                Nenhum usuário encontrado para a busca atual.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
                             </table>
                         </div>
                     </div>
 
                     {/* Mobile Card List */}
                     <div className="xl:hidden space-y-4">
-                        <div className="bg-card border border-border rounded-[2.5rem] p-4 shadow-sm space-y-3">
-                            <div className="relative group">
-                                <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                        <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs space-y-3">
+                            <div className="relative">
+                                <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                                 <input
                                     type="text"
                                     placeholder="Buscar usuários..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-black outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 text-slate-950"
+                                    className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
                                 />
                             </div>
 
                             <div className="space-y-2">
                                 {userLocationId === undefined && currentUserRole === null ? (
-                                    <div className="h-12 w-full bg-slate-100 rounded-2xl animate-shimmer border border-slate-200/50" />
+                                    <div className="h-9 w-full bg-slate-100 rounded-lg animate-pulse" />
                                 ) : isSuperAdminOrGlobal && (
                                     <FilterSelect
                                         icon={LucideMapPin}
@@ -1578,212 +1582,164 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                         </div>
+
                         {isLoading ? (
                             <>
                                 <UserCardSkeleton />
                                 <UserCardSkeleton />
                             </>
                         ) : filteredUsers.length > 0 ? filteredUsers.map((user) => (
-                            <div key={user.id} className="bg-white border border-slate-100 rounded-[2.5rem] p-6 shadow-sm space-y-6 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <div className={`h-1.5 w-1.5 rounded-full ${user.role === 'ADMIN' ? 'bg-purple-500' : user.role === 'INSTRUCTOR' ? 'bg-blue-500' : 'bg-emerald-500'} shadow-sm animate-pulse`} />
-                                </div>
-
-                                <div className="flex items-center gap-5">
-                                    <button 
-                                        onClick={() => setPreviewAvatar({ 
-                                            id: user.id,
-                                            url: user.avatarUrl?.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`, 
-                                            name: user.name || '' 
-                                        })}
-                                        className="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-primary border-2 border-slate-100 bg-slate-50 shrink-0 overflow-hidden shadow-sm relative group/avatar hover:border-primary/50 transition-all hover:scale-105"
-                                    >
-                                        {user.avatarUrl
-                                            ? <img src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`} alt={user.name || ''} className={`h-full w-full object-cover transition-all ${isUpdatingAvatarFor === user.id ? 'opacity-30 blur-[2px]' : 'group-hover/avatar:scale-110'}`} referrerPolicy="no-referrer" />
-                                            : <span className={`text-xl uppercase ${isUpdatingAvatarFor === user.id ? 'opacity-0' : ''}`}>{user.name?.charAt(0) || '?'}</span>
-                                        }
-                                        
-                                        {isUpdatingAvatarFor === user.id && (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/5">
-                                                <LucideLoader2 className="h-5 w-5 text-primary animate-spin" />
-                                            </div>
-                                        )}
-                                    </button>
-                                    <div className="min-w-0 flex-1">
-                                        {editingNameFor === user.id ? (
-                                            <input
-                                                autoFocus
-                                                className="font-black text-lg bg-transparent border-b-2 border-primary outline-none text-slate-900 w-full mb-1"
-                                                value={editingNameValue}
-                                                onChange={e => setEditingNameValue(e.target.value)}
-                                                onBlur={async () => {
-                                                    if (editingNameValue.trim() && editingNameValue !== user.name) {
-                                                        await api.put(`/users/${user.id}/name`, { name: editingNameValue.trim() });
-                                                        setUsers(prev => prev.map(u => u.id === user.id ? { ...u, name: editingNameValue.trim() } : u));
-                                                    }
-                                                    setEditingNameFor(null);
-                                                }}
-                                                onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); if (e.key === 'Escape') setEditingNameFor(null); }}
-                                            />
-                                        ) : (
-                                            <h3 className="font-black text-lg text-slate-900 truncate leading-snug cursor-pointer hover:text-primary transition-colors flex items-center gap-2 group/name" onClick={() => { setEditingNameFor(user.id); setEditingNameValue(user.name || ''); }}>
-                                                {user.name}
-                                                <LucidePencil className="h-3.5 w-3.5 opacity-0 group-hover/name:opacity-30 transition-opacity shrink-0" />
-                                            </h3>
-                                        )}
-                                        <p className="text-sm font-medium text-slate-500 truncate lowercase">{user.email}</p>
-                                        <div className="mt-1">
-                                            {isSuperAdminOrGlobal ? (
-                                                <select
-                                                    value={user.locationId || ""}
-                                                    onChange={(e) => handleUpdateUserLocation(user.id, e.target.value || null)}
-                                                    className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[9px] font-black uppercase tracking-widest text-slate-500 outline-none"
-                                                >
-                                                    <option value="">Global</option>
-                                                    {locations.map(loc => (
-                                                        <option key={loc.id} value={loc.id}>{loc.name}</option>
-                                                    ))}
-                                                </select>
-                                            ) : (
-                                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
-                                                    {user.location?.name || 'Global'}
-                                                </span>
+                            <div key={user.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-4">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <button 
+                                            onClick={() => setPreviewAvatar({ 
+                                                id: user.id,
+                                                url: user.avatarUrl?.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`, 
+                                                name: user.name || '' 
+                                            })}
+                                            className="h-11 w-11 rounded-full flex items-center justify-center font-medium text-xs text-slate-600 border border-slate-200/80 bg-slate-100 shrink-0 overflow-hidden shadow-2xs hover:border-amber-400 transition-all"
+                                        >
+                                            {user.avatarUrl
+                                                ? <img src={user.avatarUrl.startsWith('http') ? user.avatarUrl : `${API_URL}${user.avatarUrl}`} alt={user.name || ''} className={`h-full w-full object-cover ${isUpdatingAvatarFor === user.id ? 'opacity-30 blur-[2px]' : ''}`} referrerPolicy="no-referrer" />
+                                                : <span className={`text-sm ${isUpdatingAvatarFor === user.id ? 'opacity-0' : ''}`}>{user.name?.charAt(0) || '?'}</span>
+                                            }
+                                            
+                                            {isUpdatingAvatarFor === user.id && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/5">
+                                                    <LucideLoader2 className="h-4 w-4 text-amber-500 animate-spin" />
+                                                </div>
                                             )}
+                                        </button>
+                                        <div className="min-w-0 flex-1">
+                                            {editingNameFor === user.id ? (
+                                                <input
+                                                    autoFocus
+                                                    className="font-semibold text-base bg-white border border-amber-500 rounded px-1.5 py-0.5 outline-none text-slate-900 w-full mb-1"
+                                                    value={editingNameValue}
+                                                    onChange={e => setEditingNameValue(e.target.value)}
+                                                    onBlur={async () => {
+                                                        if (editingNameValue.trim() && editingNameValue !== user.name) {
+                                                            await api.put(`/users/${user.id}/name`, { name: editingNameValue.trim() });
+                                                            setUsers(prev => prev.map(u => u.id === user.id ? { ...u, name: editingNameValue.trim() } : u));
+                                                        }
+                                                        setEditingNameFor(null);
+                                                    }}
+                                                    onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); if (e.key === 'Escape') setEditingNameFor(null); }}
+                                                />
+                                            ) : (
+                                                <h3 className="font-semibold text-sm text-slate-900 truncate leading-snug cursor-pointer hover:text-amber-600 transition-colors flex items-center gap-1.5 group/name" onClick={() => { setEditingNameFor(user.id); setEditingNameValue(user.name || ''); }}>
+                                                    <span className="truncate">{user.name}</span>
+                                                    <LucidePencil className="h-3 w-3 opacity-0 group-hover/name:opacity-50 transition-opacity shrink-0" />
+                                                </h3>
+                                            )}
+                                            <p className="text-xs text-slate-400 truncate">{user.email}</p>
                                         </div>
                                     </div>
+
+                                    <RoleSelect
+                                        value={user.role}
+                                        onChange={(val) => handleUpdateRole(user.id, val)}
+                                        currentUserRole={currentUserRole}
+                                    />
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-6 pt-2">
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                                                <LucideUsers className="h-3 w-3" /> Turmas Atribuídas
-                                            </p>
-                                            <span className="text-[9px] font-bold text-slate-300 bg-slate-50 px-2 py-0.5 rounded-md">{user.turmas?.length || 0} turmas</span>
-                                        </div>
-                                        <div className="flex flex-wrap gap-2 min-h-[32px]">
+                                <div className="space-y-3 pt-3 border-t border-slate-100 text-xs">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="text-slate-400 font-medium">Turmas:</span>
+                                        <div className="flex flex-wrap items-center justify-end gap-1.5">
                                             {user.turmas?.map((t, i) => (
-                                                <span key={`turma-mb-${i}`} className="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-600 text-[10px] font-black uppercase tracking-tight border border-slate-100 shadow-sm">
+                                                <span key={`turma-mb-${i}`} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium">
                                                     {t.name}
                                                 </span>
                                             ))}
                                             {user.role !== 'ADMIN' && (
                                                 <button
                                                     onClick={() => handleOpenTurmaModal(user)}
-                                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all text-[10px] font-black uppercase tracking-tight shadow-sm hover:shadow-md"
+                                                    className="h-5 px-2 rounded-md border border-dashed border-slate-200 hover:border-slate-300 text-slate-500 text-[11px] inline-flex items-center gap-1 transition-colors"
                                                 >
                                                     <LucidePlus className="h-3 w-3" /> Gerenciar
                                                 </button>
                                             )}
                                             {(!user.turmas || user.turmas.length === 0) && user.role === 'ADMIN' && (
-                                                <span className="text-[10px] text-slate-300 font-bold italic py-1.5">Acesso Global</span>
+                                                <span className="text-slate-400 italic">Acesso Global</span>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 pt-4 border-t border-slate-50">
-                                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                                                    <LucideShield className="h-3 w-3" /> Nível de Acesso
-                                                </p>
-                                                <p className="text-[9px] font-bold text-slate-300 leading-none">Define permissões de sistema</p>
-                                            </div>
-
-                                            {updatingRoleFor === user.id ? (
-                                                <div className="h-10 w-full sm:w-40 flex items-center justify-center bg-slate-50 rounded-2xl">
-                                                    <LoadingSpinner size="sm" />
-                                                </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="text-slate-400 font-medium">Áreas:</span>
+                                        <div className="flex flex-wrap items-center justify-end gap-1.5">
+                                            {user.role === 'ADMIN' ? (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200/60 text-xs font-medium">
+                                                    Acesso Geral
+                                                </span>
                                             ) : (
-                                                <div className={`flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl pl-5 pr-4 py-3 w-full sm:w-48 shadow-sm group-hover/role:bg-white transition-all focus-within:ring-4 focus-within:ring-primary/10 focus-within:border-primary ${(user.role === 'SUPER_ADMIN' && currentUserRole !== 'SUPER_ADMIN') ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
-                                                    <select
-                                                        value={user.role}
-                                                        disabled={user.role === 'SUPER_ADMIN' && currentUserRole !== 'SUPER_ADMIN'}
-                                                        onChange={(e) => handleUpdateRole(user.id, e.target.value)}
-                                                        className={`appearance-none bg-transparent border-none p-0 text-[10px] font-black uppercase tracking-widest outline-none w-full ${(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'text-purple-600' : user.role === 'INSTRUCTOR' ? 'text-blue-600' : 'text-emerald-600'} ${(user.role === 'SUPER_ADMIN' && currentUserRole !== 'SUPER_ADMIN') ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                                                    >
-                                                        <option value="STUDENT">Aluno</option>
-                                                        <option value="INSTRUCTOR">Instrutor</option>
-                                                        <option value="ADMIN">Administrador</option>
-                                                        {(currentUserRole === 'SUPER_ADMIN' || user.role === 'SUPER_ADMIN') && (
-                                                            <option value="SUPER_ADMIN">Super Admin</option>
-                                                        )}
-                                                    </select>
-                                                    <LucideUserCog className="h-4 w-4 opacity-30 pointer-events-none shrink-0" />
-                                                </div>
+                                                <>
+                                                    {user.role === 'INSTRUCTOR' && user.assignedAreas.map((a, i) => (
+                                                        <span key={`ins-${i}`} className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 text-xs font-medium">
+                                                            {a.category.name}
+                                                        </span>
+                                                    ))}
+                                                    {user.role === 'STUDENT' && user.turmas?.map(t => t.areas?.map((a, i) => (
+                                                        <span key={`stu-mb-${t.id}-${i}`} className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-xs font-medium">
+                                                            {a.category.name}
+                                                        </span>
+                                                    )))}
+                                                    {user.role === 'INSTRUCTOR' && (
+                                                        <button
+                                                            onClick={() => handleOpenAreaModal(user)}
+                                                            className="h-5 px-2 rounded-md border border-dashed border-slate-200 hover:border-amber-300 text-slate-500 text-[11px] inline-flex items-center gap-1 transition-colors"
+                                                        >
+                                                            <LucidePlus className="h-3 w-3" /> Áreas
+                                                        </button>
+                                                    )}
+                                                </>
                                             )}
                                         </div>
+                                    </div>
 
-                                        <div className="space-y-3 pt-2">
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                                                    <LucideLayoutGrid className="h-3 w-3" /> Áreas de Atuação
-                                                </p>
-                                            </div>
-                                            <div className="flex flex-wrap gap-2 min-h-[32px]">
-                                                {updatingRoleFor === user.id ? (
-                                                    <div className="flex items-center">
-                                                        <LoadingSpinner size="xs" />
-                                                    </div>
-                                                ) : user.role === 'ADMIN' ? (
-                                                    <div className="flex-1 p-3 rounded-2xl bg-purple-50/50 border border-purple-100/50">
-                                                        <p className="text-[9px] font-black uppercase tracking-[0.1em] text-purple-600 flex items-center gap-2">
-                                                            <LucideShieldCheck className="h-3 w-3" /> Administrador tem acesso a todas as áreas
-                                                        </p>
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        {user.role === 'INSTRUCTOR' && user.assignedAreas.map((a, i) => (
-                                                            <span key={`ins-${i}`} className="px-3 py-1.5 rounded-xl bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest border border-primary/10 shadow-sm">
-                                                                {a.category.name}
-                                                            </span>
-                                                        ))}
-                                                        {user.role === 'STUDENT' && user.turmas?.map(t => t.areas?.map((a, i) => (
-                                                            <span key={`stu-mb-${t.id}-${i}`} className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100 shadow-sm">
-                                                                {a.category.name}
-                                                            </span>
-                                                        )))}
-
-                                                        {user.role === 'INSTRUCTOR' && (
-                                                            <button
-                                                                onClick={() => handleOpenAreaModal(user)}
-                                                                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary transition-all text-[10px] font-black uppercase tracking-tight shadow-sm hover:shadow-md"
-                                                            >
-                                                                <LucidePlus className="h-3 w-3" /> Adicionar Área
-                                                            </button>
-                                                        )}
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="text-slate-400 font-medium">Localidade:</span>
+                                        {isSuperAdminOrGlobal && user.role !== 'SUPER_ADMIN' ? (
+                                            <LocationSelect
+                                                value={user.locationId || null}
+                                                onChange={(val) => handleUpdateUserLocation(user.id, val)}
+                                                options={locations}
+                                            />
+                                        ) : (
+                                            <span className="text-xs text-slate-600 font-medium">
+                                                {user.location?.name || 'Global'}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 
-                                <div className="pt-4 flex gap-3">
+                                <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
                                     {user.role === 'STUDENT' && (
                                         <button
                                             onClick={() => {
                                                 setSelectedUser(user);
                                                 setIsMaterialsModalOpen(true);
                                             }}
-                                            className="flex-1 py-4 rounded-2xl bg-slate-50 hover:bg-primary/5 text-slate-400 hover:text-primary text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-slate-100 hover:border-primary/20 flex items-center justify-center gap-3 group/materials shadow-sm"
+                                            className="h-8 px-3 rounded-lg border border-slate-200/80 hover:bg-amber-50 hover:border-amber-200 text-slate-600 hover:text-amber-700 text-xs font-medium transition-colors flex items-center gap-1.5"
                                         >
-                                            <LucideFolder className="h-4 w-4 group-hover/materials:scale-110 transition-transform" /> Materiais
+                                            <LucideFolder className="h-3.5 w-3.5" /> Materiais
                                         </button>
                                     )}
                                     <button
                                         onClick={() => handleDeleteUser(user.id)}
-                                        className={`${user.role === 'STUDENT' ? 'flex-[0.5]' : 'flex-1'} py-4 rounded-2xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-slate-100 hover:border-red-100 flex items-center justify-center gap-3 group/delete shadow-sm`}
+                                        className="h-8 px-3 rounded-lg border border-slate-200/80 hover:bg-red-50 hover:border-red-200 text-slate-600 hover:text-red-600 text-xs font-medium transition-colors flex items-center gap-1.5"
                                     >
-                                        <LucideTrash2 className="h-4 w-4 group-hover/delete:scale-110 transition-transform" /> Excluir
+                                        <LucideTrash2 className="h-3.5 w-3.5" /> Excluir
                                     </button>
                                 </div>
                             </div>
                         )) : (
-                            <div className="bg-card border border-border rounded-[2.5rem] p-16 text-center shadow-sm">
-                                <LucideSearch className="h-10 w-10 text-slate-200 mx-auto mb-4" />
-                                <h3 className="text-slate-900 font-black uppercase tracking-tight">Nenhum usuário</h3>
-                                <p className="text-sm text-slate-400 mt-1">A busca por "{searchQuery}" não retornou resultados.</p>
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-2xs">
+                                <LucideSearch className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                                <h3 className="text-sm font-semibold text-slate-900">Nenhum usuário encontrado</h3>
+                                <p className="text-xs text-slate-400 mt-1">A busca por "{searchQuery}" não retornou resultados.</p>
                             </div>
                         )}
                     </div>
@@ -1792,87 +1748,78 @@ export default function AdminDashboard() {
 
             {/* Area Assignment Modal */}
             <PortalModal isOpen={isAreaModalOpen} onClose={() => setIsAreaModalOpen(false)} preventCloseOnOverlayClick={isSavingPermissions}>
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-full max-w-xl bg-card border border-border rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
-                >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
-
-                    <div className="mb-6 md:mb-10 relative shrink-0">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <h2 className="text-3xl font-black mb-2 flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                        <LucideShieldCheck className="h-6 w-6 text-primary" />
-                                    </div>
-                                    Áreas de Conhecimento
-                                </h2>
-                                <div className="mt-4 flex flex-wrap items-center gap-2">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60 leading-none">Editando áreas de</span>
-                                        <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[9px] font-black tracking-widest uppercase border border-primary/20">
-                                            {selectedUser?.name}
-                                        </span>
-                                    </div>
-                                    {selectedUser?.turmas && selectedUser.turmas.length > 0 && (
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60 leading-none">•</span>
-                                            <div className="flex gap-1">
-                                                {selectedUser.turmas.map((t, i) => (
-                                                    <span key={i} className="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-[9px] font-black tracking-widest uppercase border border-slate-200">
-                                                        {t.name}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                            <LucideLayoutGrid className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-lg font-semibold text-slate-900 leading-tight">Áreas de Atuação</h2>
+                                {selectedUser && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/60 text-xs font-medium truncate max-w-[160px]">
+                                        {selectedUser.name}
+                                    </span>
+                                )}
                             </div>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                                Selecione quais áreas de conhecimento este usuário tem acesso.
+                            </p>
                         </div>
                     </div>
 
-                    <div className="space-y-6 overflow-y-auto custom-scrollbar flex-1">
+                    <div className="space-y-2.5 overflow-y-auto pr-1 custom-scrollbar flex-1">
                         {isFetchingCategories ? (
-                            <div className="flex flex-col items-center justify-center py-12 space-y-4 w-full">
+                            <div className="flex flex-col items-center justify-center py-12 space-y-3 w-full">
                                 <LoadingSpinner size="md" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Carregando áreas...</p>
+                                <p className="text-xs text-slate-400">Carregando áreas...</p>
                             </div>
                         ) : categories.length === 0 ? (
-                            <p className="w-full text-center py-10 text-xs text-muted-foreground italic bg-slate-50 rounded-3xl border border-dashed border-slate-200">Nenhuma área cadastrada.</p>
+                            <p className="w-full text-center py-8 text-xs text-slate-400 italic bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                Nenhuma área cadastrada no sistema.
+                            </p>
                         ) : (
                             <div className="space-y-2">
                                 {categories.map(area => {
                                     const isInstructorAssigned = tempInstructorAreas.includes(area.id);
-                                    const isStudentAssigned = tempStudentAreas.includes(area.id);
-
                                     const showInstructorToggle = selectedUser?.role === 'INSTRUCTOR' || selectedUser?.role === 'ADMIN';
 
                                     return (
-                                        <div key={area.id} className="group p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary/30 transition-all duration-300 flex items-center justify-between gap-6 shadow-sm">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-inner">
-                                                    {getIconComponent(area.icon || "", "h-5 w-5")}
+                                        <div 
+                                            key={area.id} 
+                                            className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-4 ${
+                                                isInstructorAssigned 
+                                                    ? 'bg-amber-50/40 border-amber-200/80 shadow-2xs' 
+                                                    : 'bg-white border-slate-200/70 hover:border-slate-300'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                                                    isInstructorAssigned 
+                                                        ? 'bg-amber-100 text-amber-700' 
+                                                        : 'bg-slate-100 text-slate-500'
+                                                }`}>
+                                                    {getIconComponent(area.icon || "", "h-4 w-4")}
                                                 </div>
-                                                <div>
-                                                    <p className="font-bold text-sm tracking-tight text-slate-900">{area.name}</p>
-                                                </div>
+                                                <p className="font-medium text-sm text-slate-900 truncate">{area.name}</p>
                                             </div>
 
                                             <div className="flex items-center gap-3">
                                                 {showInstructorToggle && (
-                                                    <div className="flex flex-col items-center gap-1.5">
-                                                        <span className="text-[8px] font-black uppercase text-muted-foreground/50 tracking-widest">Lecionar</span>
-                                                        <button
-                                                            onClick={() => handleToggleArea(area.id, 'instructor', isInstructorAssigned || false)}
-                                                            className={`h-7 w-12 rounded-full flex items-center transition-all px-1 ${isInstructorAssigned ? 'bg-primary justify-end' : 'bg-slate-200 justify-start'}`}
-                                                        >
-                                                            <motion.div layout className="h-5 w-5 rounded-full bg-white shadow-md" />
-                                                        </button>
-                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleToggleArea(area.id, 'instructor', isInstructorAssigned || false)}
+                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                            isInstructorAssigned ? 'bg-amber-500' : 'bg-slate-200'
+                                                        }`}
+                                                    >
+                                                        <span 
+                                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                                                                isInstructorAssigned ? 'translate-x-5' : 'translate-x-0'
+                                                            }`} 
+                                                        />
+                                                    </button>
                                                 )}
-
                                             </div>
                                         </div>
                                     );
@@ -1881,23 +1828,32 @@ export default function AdminDashboard() {
                         )}
                     </div>
 
-                    <div className="pt-8 border-t border-white/10 flex gap-4 shrink-0">
+                    <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+                        <button 
+                            type="button"
+                            onClick={() => setIsAreaModalOpen(false)} 
+                            disabled={isSavingPermissions}
+                            className="h-10 px-4 rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-colors"
+                        >
+                            Cancelar
+                        </button>
                         <button
+                            type="button"
                             onClick={handleSaveAreas}
                             disabled={isSavingPermissions}
-                            className="flex-1 py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                            className="h-10 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {isSavingPermissions ? (
                                 <>
                                     <LoadingSpinner size="sm" variant="white" />
-                                    Salvando...
+                                    <span>Salvando...</span>
                                 </>
                             ) : (
                                 "Salvar Áreas"
                             )}
                         </button>
                     </div>
-                </motion.div>
+                </div>
             </PortalModal>
 
             {/* Turma Assignment Modal */}
@@ -2453,11 +2409,11 @@ function RoleSelect({
     const isDisabled = disabled || isLocked;
 
     const options = [
-        { id: 'STUDENT', name: 'Aluno', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-        { id: 'INSTRUCTOR', name: 'Instrutor', color: 'text-blue-600', bg: 'bg-blue-50' },
-        { id: 'ADMIN', name: 'Admin', color: 'text-purple-600', bg: 'bg-purple-50' },
+        { id: 'STUDENT', name: 'Aluno', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200/60' },
+        { id: 'INSTRUCTOR', name: 'Instrutor', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200/60' },
+        { id: 'ADMIN', name: 'Admin', color: 'text-purple-700', bg: 'bg-purple-50 border-purple-200/60' },
         ...(currentUserRole === 'SUPER_ADMIN' || value === 'SUPER_ADMIN'
-            ? [{ id: 'SUPER_ADMIN', name: 'Super', color: 'text-indigo-600', bg: 'bg-indigo-50' }]
+            ? [{ id: 'SUPER_ADMIN', name: 'Super Admin', color: 'text-amber-800', bg: 'bg-amber-50 border-amber-200/60' }]
             : []
         )
     ];
@@ -2475,37 +2431,31 @@ function RoleSelect({
     }, []);
 
     return (
-        <div className="relative w-32" ref={dropdownRef}>
+        <div className="relative inline-block" ref={dropdownRef}>
             <button
                 type="button"
                 onClick={() => !isDisabled && setIsOpen(!isOpen)}
                 className={`
-                    w-full flex items-center justify-between pl-3 pr-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider outline-none transition-all duration-300
-                    ${isOpen 
-                        ? 'bg-white border border-primary shadow-[0_4px_15px_-5px_rgba(249,115,22,0.15)] z-10 relative' 
-                        : 'bg-slate-50 border border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-sm shadow-sm'
-                    }
-                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                    h-7 inline-flex items-center gap-1.5 px-2.5 rounded-md text-xs font-medium border transition-colors outline-none
+                    ${selectedOption.bg} ${selectedOption.color}
+                    ${isOpen ? 'ring-2 ring-amber-500/20' : ''}
+                    ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:brightness-95'}
                 `}
             >
-                <div className={`truncate text-left flex-1 ${selectedOption.color} transition-colors`}>
-                    {selectedOption.name}
-                </div>
-                <div className={`shrink-0 transition-colors duration-300 ${isOpen ? 'text-primary' : 'text-slate-300 opacity-50'}`}>
-                    <LucideUserCog className="h-3.5 w-3.5" />
-                </div>
+                <span>{selectedOption.name}</span>
+                <LucideChevronDown className="h-3 w-3 opacity-60" />
             </button>
 
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -5, scale: 0.98 }}
+                        initial={{ opacity: 0, y: -4, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -5, scale: 0.98 }}
+                        exit={{ opacity: 0, y: -4, scale: 0.98 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
-                        className="absolute z-50 top-full left-0 mt-2 w-full bg-card border border-border rounded-[1.25rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden"
+                        className="absolute z-50 top-full left-0 mt-1.5 w-36 bg-white border border-slate-200/90 rounded-xl shadow-lg overflow-hidden"
                     >
-                        <div className="p-1.5 flex flex-col gap-1 relative bg-white">
+                        <div className="p-1 flex flex-col gap-0.5">
                             {options.map(opt => {
                                 const isSelected = value === opt.id;
                                 return (
@@ -2514,19 +2464,12 @@ function RoleSelect({
                                         type="button"
                                         onClick={() => { onChange(opt.id); setIsOpen(false); }}
                                         className={`
-                                            w-full text-left px-2.5 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all
-                                            ${isSelected 
-                                                ? `${opt.bg} ${opt.color}` 
-                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                            }
+                                            w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between
+                                            ${isSelected ? `${opt.bg} ${opt.color} font-semibold` : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
                                         `}
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-3 flex items-center justify-center shrink-0">
-                                                {isSelected && <LucideCheck className={`h-3 w-3 ${opt.color}`} />}
-                                            </div>
-                                            <span className="truncate">{opt.name}</span>
-                                        </div>
+                                        <span className="truncate">{opt.name}</span>
+                                        {isSelected && <LucideCheck className="h-3 w-3 shrink-0" />}
                                     </button>
                                 );
                             })}
@@ -2563,74 +2506,50 @@ function LocationSelect({
     }, []);
 
     return (
-        <div className="relative w-40" ref={dropdownRef}>
+        <div className="relative w-36" ref={dropdownRef}>
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className={`
-                    w-full flex items-center justify-between pl-3 pr-2 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest outline-none transition-all duration-300
-                    ${isOpen 
-                        ? 'bg-white border border-primary/30 shadow-[0_4px_15px_-5px_rgba(249,115,22,0.15)] z-10 relative' 
-                        : 'bg-slate-50 border border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-sm'
-                    }
-                    ${isActive ? 'text-primary' : 'text-slate-600'}
+                    w-full h-7 flex items-center justify-between px-2 rounded-md text-xs font-medium outline-none transition-colors border
+                    ${isOpen ? 'bg-white border-amber-500 ring-2 ring-amber-500/20' : 'bg-slate-50 border-slate-200/80 hover:bg-white hover:border-slate-300'}
+                    ${isActive ? 'text-slate-800' : 'text-slate-500'}
                 `}
             >
-                <div className="truncate text-left flex-1 transition-colors">
+                <span className="truncate text-left flex-1">
                     {selectedOption ? selectedOption.name : "Global"}
-                </div>
-                <div className={`shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : 'text-slate-400'}`}>
-                    <LucideChevronDown className="h-3 w-3" />
-                </div>
+                </span>
+                <LucideChevronDown className="h-3 w-3 text-slate-400 shrink-0 ml-1" />
             </button>
 
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -5, scale: 0.98 }}
+                        initial={{ opacity: 0, y: -4, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -5, scale: 0.98 }}
+                        exit={{ opacity: 0, y: -4, scale: 0.98 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
-                        className="absolute z-50 top-full right-0 mt-1.5 w-48 bg-card border border-border rounded-xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden"
+                        className="absolute z-50 top-full right-0 mt-1.5 w-48 bg-white border border-slate-200/90 rounded-xl shadow-lg overflow-hidden"
                     >
-                        <div className="p-1 flex flex-col gap-0.5 relative bg-white max-h-48 overflow-y-auto custom-scrollbar">
+                        <div className="max-h-[220px] overflow-y-auto custom-scrollbar p-1 flex flex-col gap-0.5">
                             <button
                                 type="button"
                                 onClick={() => { onChange(null); setIsOpen(false); }}
-                                className={`
-                                    w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all
-                                    ${!isActive ? 'bg-primary/5 text-primary' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
-                                `}
+                                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${!value ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
                             >
-                                <div className="flex items-center gap-2">
-                                    <div className="w-3 flex items-center justify-center shrink-0">
-                                        {!isActive && <LucideCheck className="h-3 w-3 text-primary" />}
-                                    </div>
-                                    <span className="truncate">Global</span>
-                                </div>
+                                Global
                             </button>
-                            
-                            {options.map(opt => {
-                                const isSelected = value === opt.id;
+                            {options.map(loc => {
+                                const isSelected = value === loc.id;
                                 return (
                                     <button
-                                        key={opt.id}
+                                        key={loc.id}
                                         type="button"
-                                        onClick={() => { onChange(opt.id); setIsOpen(false); }}
-                                        className={`
-                                            w-full text-left px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all
-                                            ${isSelected 
-                                                ? 'bg-primary/5 text-primary' 
-                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                            }
-                                        `}
+                                        onClick={() => { onChange(loc.id); setIsOpen(false); }}
+                                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between ${isSelected ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-3 flex items-center justify-center shrink-0">
-                                                {isSelected && <LucideCheck className="h-3 w-3 text-primary" />}
-                                            </div>
-                                            <span className="truncate">{opt.name}</span>
-                                        </div>
+                                        <span className="truncate">{loc.name}</span>
+                                        {isSelected && <LucideCheck className="h-3.5 w-3.5 text-amber-600 shrink-0 ml-1" />}
                                     </button>
                                 );
                             })}
@@ -2676,22 +2595,24 @@ function FilterSelect({
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className={`
-                    w-full lg:w-auto min-w-[140px] flex items-center justify-between pl-4 pr-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest outline-none transition-all duration-300
+                    w-full lg:w-auto min-w-[130px] h-9 flex items-center justify-between px-3 rounded-lg text-xs font-medium outline-none transition-all
                     ${isActive
-                        ? `bg-white border border-primary/30 shadow-[0_4px_15px_-5px_rgba(249,115,22,0.15)] text-slate-900 group`
-                        : isOpen ? 'bg-slate-50 border border-slate-300 text-slate-900 shadow-sm' : 'bg-transparent border border-transparent hover:bg-slate-50 hover:border-slate-200 text-slate-600'
+                        ? 'bg-amber-50/80 border border-amber-300 text-amber-900 shadow-2xs'
+                        : isOpen 
+                            ? 'bg-slate-100 border border-slate-300 text-slate-900' 
+                            : 'bg-white border border-slate-200/80 hover:bg-slate-50 hover:border-slate-300 text-slate-600'
                     }
                 `}
             >
-                <div className="flex items-center gap-2.5 flex-1 min-w-0 pr-4">
-                    <div className={`transition-colors duration-300 shrink-0 ${isActive ? 'text-primary' : isOpen ? 'text-slate-900' : 'text-slate-400'}`}>
+                <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+                    <div className={`shrink-0 transition-colors ${isActive ? 'text-amber-600' : 'text-slate-400'}`}>
                         <Icon className="h-3.5 w-3.5" />
                     </div>
-                    <span className={`truncate text-left flex-1 ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>
+                    <span className="truncate text-left flex-1">
                         {isActive && selectedOption ? selectedOption.name : placeholder}
                     </span>
                 </div>
-                <div className={`shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-slate-900' : isActive ? 'text-primary' : 'text-slate-300'}`}>
+                <div className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-slate-900' : isActive ? 'text-amber-600' : 'text-slate-400'}`}>
                     <LucideChevronDown className="h-3 w-3" />
                 </div>
             </button>
@@ -2699,30 +2620,20 @@ function FilterSelect({
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -5, scale: 0.98 }}
+                        initial={{ opacity: 0, y: -4, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -5, scale: 0.98 }}
+                        exit={{ opacity: 0, y: -4, scale: 0.98 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
-                        className="absolute z-50 top-full left-0 mt-2 w-[220px] bg-card border border-border rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden"
+                        className="absolute z-50 top-full left-0 mt-1.5 w-[200px] bg-white border border-slate-200/90 rounded-xl shadow-lg overflow-hidden"
                     >
-                        <div className="max-h-[280px] overflow-y-auto custom-scrollbar p-1.5 flex flex-col gap-1">
+                        <div className="max-h-[260px] overflow-y-auto custom-scrollbar p-1 flex flex-col gap-0.5">
                             <button
                                 type="button"
                                 onClick={() => { onChange('ALL'); setIsOpen(false); }}
-                                className={`
-                                    w-full text-left px-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all
-                                    ${value === 'ALL' 
-                                        ? 'bg-slate-100 text-slate-900' 
-                                        : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
-                                    }
-                                `}
+                                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${value === 'ALL' ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
                             >
-                                <div className="flex items-center gap-2">
-                                    <div className="w-3" />
-                                    {placeholder}
-                                </div>
+                                Todas as opções
                             </button>
-                            
                             {options.map(opt => {
                                 const isSelected = value === opt.id;
                                 return (
@@ -2730,20 +2641,10 @@ function FilterSelect({
                                         key={opt.id}
                                         type="button"
                                         onClick={() => { onChange(opt.id); setIsOpen(false); }}
-                                        className={`
-                                            w-full text-left px-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all
-                                            ${isSelected 
-                                                ? 'bg-primary/5 text-primary' 
-                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                                            }
-                                        `}
+                                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between ${isSelected ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-3 flex items-center justify-center shrink-0">
-                                                {isSelected && <LucideCheck className="h-3 w-3 text-primary" />}
-                                            </div>
-                                            <span className="truncate">{opt.name}</span>
-                                        </div>
+                                        <span className="truncate">{opt.name}</span>
+                                        {isSelected && <LucideCheck className="h-3.5 w-3.5 text-amber-600 shrink-0 ml-1" />}
                                     </button>
                                 );
                             })}
