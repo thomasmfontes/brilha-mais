@@ -273,17 +273,11 @@ export default function InstructorSubmissions() {
     const filteredSubmissions = submissions;
 
     return (
-        <div className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
+        <div className="space-y-8 w-full pb-10">
             {/* Header Area - Clean V2 */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                    <div className="flex items-center gap-2 mb-1.5">
-                        <span className="w-2 h-2 rounded-full bg-amber-500" />
-                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                            Gestão Pedagógica
-                        </span>
-                    </div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
                         Correções de Desafios
                     </h1>
                     <p className="text-sm text-slate-500 mt-1">
