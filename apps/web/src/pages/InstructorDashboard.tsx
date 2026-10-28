@@ -301,22 +301,22 @@ export default function InstructorDashboard() {
 
 
     return (
-        <div className="space-y-10">
+        <div className="space-y-6">
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:px-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2 uppercase">Painel do Instrutor</h1>
-                    <p className="text-muted-foreground text-xs md:text-lg">Gestão de conteúdos e desempenho.</p>
+                    <h1 className="text-xl font-bold tracking-tight text-slate-900">Painel do Instrutor</h1>
+                    <p className="text-xs text-slate-500 mt-0.5">Gestão de conteúdos e desempenho.</p>
                 </div>
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="w-full md:w-auto bg-primary text-primary-foreground px-6 py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all whitespace-nowrap text-xs"
+                    className="h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-2 whitespace-nowrap self-start sm:self-auto"
                 >
-                    <LucidePlus className="h-5 w-5" /> Novo Curso
+                    <LucidePlus className="h-4 w-4" /> Novo Curso
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:px-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <StatCard
                     title="Total Alunos"
                     value={stats?.totalStudents || 0}
@@ -334,13 +334,13 @@ export default function InstructorDashboard() {
             </div>
 
             {hasError && !isLoadingCourses && (
-                <div className="bg-amber-50 border border-amber-200 rounded-[2rem] p-8 md:p-12 text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="h-16 w-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600">
-                        <LucideAlertCircle className="h-8 w-8" />
+                <div className="bg-amber-50/50 border border-amber-200 rounded-xl p-6 text-center space-y-4">
+                    <div className="h-12 w-12 bg-amber-100 rounded-xl flex items-center justify-center mx-auto text-amber-600">
+                        <LucideAlertCircle className="h-6 w-6" />
                     </div>
-                    <div className="max-w-md mx-auto space-y-2">
-                        <h2 className="text-xl font-black uppercase tracking-tight text-amber-900">Instabilidade Detectada</h2>
-                        <p className="text-amber-700/80 font-bold text-sm leading-relaxed">
+                    <div className="max-w-md mx-auto space-y-1">
+                        <h2 className="text-base font-semibold text-amber-900">Instabilidade Detectada</h2>
+                        <p className="text-amber-700/80 text-xs leading-relaxed">
                             Não conseguimos carregar todos os dados. Isso geralmente acontece durante atualizações do sistema.
                         </p>
                     </div>
@@ -349,380 +349,439 @@ export default function InstructorDashboard() {
                             fetchUser();
                             fetchInitialData();
                         }}
-                        className="bg-amber-600 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-700 transition-all shadow-lg shadow-amber-200 active:scale-95 flex items-center gap-2 mx-auto"
+                        className="h-9 px-4 bg-amber-600 text-white rounded-lg font-medium text-xs hover:bg-amber-700 transition-colors shadow-2xs active:scale-95 inline-flex items-center gap-2 mx-auto"
                     >
-                        <LucideRefreshCw className="h-4 w-4" /> Tentar Novamente
+                        <LucideRefreshCw className="h-3.5 w-3.5" /> Tentar Novamente
                     </button>
                 </div>
             )}
 
-
-            <div className="flex gap-4 border-b border-slate-200">
+            {/* Segmented Control Tabs */}
+            <div className="inline-flex p-1 bg-slate-100 rounded-xl gap-1 w-fit">
                 <button
                     onClick={() => setActiveTab('cursos')}
-                    className={`pb-4 font-black uppercase tracking-widest text-sm transition-all border-b-2 ${activeTab === 'cursos' ? 'text-primary border-primary' : 'text-slate-400 border-transparent hover:text-slate-600'}`}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        activeTab === 'cursos'
+                            ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                            : 'text-slate-500 hover:text-slate-900'
+                    }`}
                 >
                     Cursos
                 </button>
                 <button
                     onClick={() => setActiveTab('turmas')}
-                    className={`pb-4 font-black uppercase tracking-widest text-sm transition-all border-b-2 ${activeTab === 'turmas' ? 'text-primary border-primary' : 'text-slate-400 border-transparent hover:text-slate-600'}`}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        activeTab === 'turmas'
+                            ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                            : 'text-slate-500 hover:text-slate-900'
+                    }`}
                 >
                     Chamadas
                 </button>
             </div>
 
             {activeTab === 'cursos' ? (
-            <div className="bg-white md:border md:border-slate-200 md:rounded-3xl overflow-hidden shadow-sm">
-                <div className="p-6 border-b border-slate-100 bg-slate-50 md:bg-white px-4 md:px-6">
-                    <h2 className="text-base md:text-lg font-black tracking-tight text-slate-800 uppercase">Meus Cursos</h2>
-                </div>
+                <div className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
+                    <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div>
+                            <h2 className="text-sm font-semibold text-slate-900">Meus Cursos</h2>
+                            <p className="text-xs text-slate-500 mt-0.5">Gerencie seus cursos publicados e rascunhos</p>
+                        </div>
+                    </div>
 
-                {/* Desktop Version */}
-                <div className="hidden md:block">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="border-b border-slate-100 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 bg-slate-50/50">
-                                <th className="px-8 py-4 text-center">Informações do Curso</th>
-                                {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && <th className="px-8 py-4 text-center">Criador</th>}
-                                <th className="px-8 py-4">Status</th>
-                                <th className="px-8 py-4 text-center">Alunos</th>
-                                <th className="px-8 py-4 text-right">Gerenciamento</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {isLoadingCourses ? (
-                                [...Array(3)].map((_, i) => (
-                                    <tr key={i} className="border-b border-slate-100 last:border-0">
-                                        <td className="px-8 py-5">
-                                            <div className="flex items-center gap-4">
-                                                <Skeleton className="h-12 w-20" variant="rounded" />
-                                                <div className="space-y-2">
-                                                    <Skeleton className="h-4 w-40" variant="rectangle" />
-                                                    <Skeleton className="h-3 w-20" variant="rectangle" />
-                                                </div>
-                                            </div>
-                                        </td>
-                                        {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
-                                            <td className="px-8 py-5 text-center">
-                                                <Skeleton className="h-6 w-24 mx-auto" variant="rounded" />
-                                            </td>
-                                        )}
-                                        <td className="px-8 py-5">
-                                            <Skeleton className="h-8 w-24 mx-auto" variant="rounded" />
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <Skeleton className="h-9 w-12 mx-auto" variant="rounded" />
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <div className="flex justify-end gap-2">
-                                                <Skeleton className="h-9 w-9" variant="rounded" />
-                                                <Skeleton className="h-9 w-9" variant="rounded" />
-                                                <Skeleton className="h-9 w-9" variant="rounded" />
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                courses.map((course, idx) => (
-                                    <tr key={idx} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors group">
-                                        <td className="px-8 py-5">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-12 w-20 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
-                                                    <img
-                                                        src={resolveThumbnail(course.thumbnail)}
-                                                        alt=""
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="font-black text-sm text-slate-900 group-hover:text-primary transition-colors uppercase tracking-tight leading-snug">{course.title}</span>
-                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                                            {course.categoryName || (course.categoryName || (typeof course.category === 'object' ? (course.category as any)?.name : (course.category || 'Sem categoria')))}
-                                                        </span>
-                                                        {course.isGlobal && (
-                                                            <span className="text-[8px] font-black bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-md border border-indigo-100 uppercase tracking-tighter">Global</span>
-                                                        )}
+                    {/* Desktop Version */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="border-b border-slate-100 text-xs font-medium text-slate-500 bg-slate-50/75">
+                                    <th className="px-5 py-3">Informações do Curso</th>
+                                    {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
+                                        <th className="px-5 py-3">Criador</th>
+                                    )}
+                                    <th className="px-5 py-3">Status</th>
+                                    <th className="px-5 py-3 text-center">Alunos</th>
+                                    <th className="px-5 py-3 text-right">Gerenciamento</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {isLoadingCourses ? (
+                                    [...Array(3)].map((_, i) => (
+                                        <tr key={i}>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    <Skeleton className="h-10 w-16" variant="rounded" />
+                                                    <div className="space-y-1.5">
+                                                        <Skeleton className="h-4 w-40" variant="rectangle" />
+                                                        <Skeleton className="h-3 w-20" variant="rectangle" />
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
-                                            <td className="px-8 py-5 text-center">
-                                                <span className="text-xs font-bold text-slate-600 uppercase tracking-tight">{(course as any).instructorName}</span>
                                             </td>
-                                        )}
-                                        <td className="px-8 py-5">
-                                            <button
-                                                onClick={() => toggleStatus(course)}
-                                                disabled={updatingStatusId === course.id}
-                                                className={`min-w-[80px] h-8 flex items-center justify-center rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all ${updatingStatusId === course.id ? 'opacity-50' : 'hover:scale-105 active:scale-95'} ${course.status === 'Publicado' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100'}`}
-                                                title={course.status === 'Publicado' ? 'Clique para Privatizar' : 'Clique para Publicar'}
-                                            >
-                                                {updatingStatusId === course.id ? (
-                                                    <LoadingSpinner size="xs" variant="current" />
-                                                ) : (
-                                                    course.status
-                                                )}
-                                            </button>
-                                        </td>
-                                        <td className="px-8 py-5 text-center">
-                                            <Link
-                                                to={`/instructor/course/${course.id}/progress`}
-                                                className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 hover:border-primary/30 hover:bg-primary/5 transition-all group/student flex items-center gap-2 w-fit mx-auto"
-                                            >
-                                                <LucideUsers className="h-3 w-3 text-slate-400 group-hover/student:text-primary transition-colors" />
-                                                <span className="text-sm font-black text-slate-700 group-hover/student:text-primary transition-colors">{course.students}</span>
-                                            </Link>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <div className="flex justify-end gap-2">
-                                                <Link to={`/instructor/course/${course.id}/syllabus`} className="p-2.5 rounded-lg bg-slate-900 text-white hover:bg-primary transition-all shadow-md group/btn" title="Gerenciar Grade">
-                                                    <LucideLayout className="h-3.5 w-3.5" />
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleEdit(course)}
-                                                    className="p-2.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:border-primary hover:text-primary transition-all"
-                                                    title="Editar"
-                                                >
-                                                    <LucideEdit className="h-3.5 w-3.5" />
-                                                </button>
-                                                <button
-                                                    onClick={() => setConfirmModal({
-                                                        message: "Excluir este curso?",
-                                                        subtext: "Todos os módulos e aulas vinculadas serão removidos permanentemente.",
-                                                        onConfirm: async () => {
-                                                            setIsSaving(true);
-                                                            try {
-                                                                await api.delete(`/courses/${course.id}`);
-                                                                toast.success("Curso excluído com sucesso!");
-                                                                setConfirmModal(null);
-                                                                fetchInitialData();
-                                                            } catch (error) {
-                                                                toast.error("Erro ao excluir curso.");
-                                                            } finally {
-                                                                setIsSaving(false);
-                                                            }
-                                                        }
-                                                    })}
-                                                    className="p-2.5 rounded-lg bg-white border border-slate-200 text-slate-300 hover:border-destructive hover:text-destructive transition-all"
-                                                    title="Excluir"
-                                                >
-                                                    <LucideTrash2 className="h-3.5 w-3.5" />
-                                                </button>
-                                            </div>
+                                            {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
+                                                <td className="px-5 py-3.5">
+                                                    <Skeleton className="h-4 w-24" variant="rectangle" />
+                                                </td>
+                                            )}
+                                            <td className="px-5 py-3.5">
+                                                <Skeleton className="h-7 w-20" variant="rounded" />
+                                            </td>
+                                            <td className="px-5 py-3.5 text-center">
+                                                <Skeleton className="h-7 w-12 mx-auto" variant="rounded" />
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex justify-end gap-1.5">
+                                                    <Skeleton className="h-8 w-8" variant="rounded" />
+                                                    <Skeleton className="h-8 w-8" variant="rounded" />
+                                                    <Skeleton className="h-8 w-8" variant="rounded" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : courses.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-5 py-12 text-center">
+                                            <LucideFileText className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                                            <p className="text-sm font-medium text-slate-700">Nenhum curso encontrado</p>
+                                            <p className="text-xs text-slate-400 mt-0.5">Comece criando um novo curso no botão acima</p>
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                ) : (
+                                    courses.map((course, idx) => (
+                                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-16 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                                                        <img
+                                                            src={resolveThumbnail(course.thumbnail)}
+                                                            alt=""
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="font-medium text-sm text-slate-900 group-hover:text-amber-600 transition-colors leading-snug line-clamp-1">
+                                                            {course.title}
+                                                        </span>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <span className="text-xs text-slate-400 font-normal">
+                                                                {course.categoryName || (typeof course.category === 'object' ? (course.category as any)?.name : (course.category || 'Sem categoria'))}
+                                                            </span>
+                                                            {course.isGlobal && (
+                                                                <span className="text-[11px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded border border-slate-200">
+                                                                    Global
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
+                                                <td className="px-5 py-3.5">
+                                                    <span className="text-xs font-medium text-slate-600">{(course as any).instructorName || '—'}</span>
+                                                </td>
+                                            )}
+                                            <td className="px-5 py-3.5">
+                                                <button
+                                                    onClick={() => toggleStatus(course)}
+                                                    disabled={updatingStatusId === course.id}
+                                                    className={`h-7 px-2.5 rounded-md text-xs font-medium border transition-colors inline-flex items-center gap-1.5 ${
+                                                        updatingStatusId === course.id ? 'opacity-50' : ''
+                                                    } ${
+                                                        course.status === 'Publicado'
+                                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 hover:bg-emerald-100/80'
+                                                            : 'bg-amber-50 text-amber-700 border-amber-200/80 hover:bg-amber-100/80'
+                                                    }`}
+                                                    title={course.status === 'Publicado' ? 'Clique para Privatizar' : 'Clique para Publicar'}
+                                                >
+                                                    {updatingStatusId === course.id ? (
+                                                        <LoadingSpinner size="xs" variant="current" />
+                                                    ) : (
+                                                        <>
+                                                            <span className={`w-1.5 h-1.5 rounded-full ${course.status === 'Publicado' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                                            {course.status}
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </td>
+                                            <td className="px-5 py-3.5 text-center">
+                                                <Link
+                                                    to={`/instructor/course/${course.id}/progress`}
+                                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 text-slate-700 hover:border-amber-400 hover:text-amber-700 transition-colors text-xs font-medium"
+                                                >
+                                                    <LucideUsers className="h-3.5 w-3.5 text-slate-400" />
+                                                    <span>{course.students}</span>
+                                                </Link>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex justify-end gap-1.5">
+                                                    <Link
+                                                        to={`/instructor/course/${course.id}/syllabus`}
+                                                        className="p-1.5 rounded-lg bg-slate-900 text-white hover:bg-amber-500 transition-colors shadow-2xs"
+                                                        title="Gerenciar Grade"
+                                                    >
+                                                        <LucideLayout className="h-3.5 w-3.5" />
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleEdit(course)}
+                                                        className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+                                                        title="Editar"
+                                                    >
+                                                        <LucideEdit className="h-3.5 w-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setConfirmModal({
+                                                            message: "Excluir este curso?",
+                                                            subtext: "Todos os módulos e aulas vinculadas serão removidos permanentemente.",
+                                                            onConfirm: async () => {
+                                                                setIsSaving(true);
+                                                                try {
+                                                                    await api.delete(`/courses/${course.id}`);
+                                                                    toast.success("Curso excluído com sucesso!");
+                                                                    setConfirmModal(null);
+                                                                    fetchInitialData();
+                                                                } catch (error) {
+                                                                    toast.error("Erro ao excluir curso.");
+                                                                } finally {
+                                                                    setIsSaving(false);
+                                                                }
+                                                            }
+                                                        })}
+                                                        className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors"
+                                                        title="Excluir"
+                                                    >
+                                                        <LucideTrash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
 
-                {/* Mobile: Course List (Cards) - Now inside the container to benefit from styles */}
-                <div className="md:hidden space-y-4 p-4 border-t border-slate-100">
-                    {isLoadingCourses ? (
-                        [1, 2, 3].map((_, i) => (
-                            <div key={i} className="bg-white border border-slate-100 rounded-2xl p-4 space-y-4">
-                                <div className="flex gap-4">
-                                    <Skeleton className="h-16 w-24" variant="rounded" />
-                                    <div className="flex-1 space-y-2">
-                                        <Skeleton className="h-4 w-3/4" variant="rectangle" />
-                                        <Skeleton className="h-3 w-1/2" variant="rectangle" />
+                    {/* Mobile: Course List (Cards) */}
+                    <div className="md:hidden divide-y divide-slate-100">
+                        {isLoadingCourses ? (
+                            [1, 2, 3].map((_, i) => (
+                                <div key={i} className="p-4 space-y-3">
+                                    <div className="flex gap-3">
+                                        <Skeleton className="h-14 w-20" variant="rounded" />
+                                        <div className="flex-1 space-y-1.5">
+                                            <Skeleton className="h-4 w-3/4" variant="rectangle" />
+                                            <Skeleton className="h-3 w-1/2" variant="rectangle" />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="pt-4 border-t border-slate-50 flex justify-between">
-                                    <Skeleton className="h-6 w-20" variant="rounded" />
-                                    <div className="flex gap-2">
-                                        <Skeleton className="h-8 w-8" variant="rounded" />
-                                        <Skeleton className="h-8 w-8" variant="rounded" />
-                                    </div>
-                                </div>
+                            ))
+                        ) : courses.length === 0 ? (
+                            <div className="text-center py-8 px-4">
+                                <LucideFileText className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-xs font-medium text-slate-500">Nenhum curso criado ainda.</p>
                             </div>
-                        ))
-                    ) : courses.length === 0 ? (
-                        <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                            <LucideFileText className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                            <p className="text-sm font-bold text-slate-500">Nenhum curso criado ainda.</p>
-                        </div>
-                    ) : (
-                        courses.map((course, idx) => (
-                            <div key={idx} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all">
-                                <div className="flex gap-4 mb-4">
-                                    <div className="h-16 w-24 rounded-lg overflow-hidden border border-slate-100 bg-slate-50 shrink-0">
-                                        <img
-                                            src={resolveThumbnail(course.thumbnail)}
-                                            alt=""
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-black text-sm text-slate-900 line-clamp-2 uppercase tracking-tight">{course.title}</h3>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                                {course.categoryName || (course.categoryName || (typeof course.category === 'object' ? (course.category as any)?.name : (course.category || 'Sem categoria')))}
-                                            </span>
-                                            {course.isGlobal && (
-                                                <span className="text-[8px] font-black bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-md border border-indigo-100 uppercase tracking-tighter">Global</span>
+                        ) : (
+                            courses.map((course, idx) => (
+                                <div key={idx} className="p-4 space-y-3">
+                                    <div className="flex gap-3">
+                                        <div className="h-14 w-20 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                                            <img
+                                                src={resolveThumbnail(course.thumbnail)}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-medium text-sm text-slate-900 line-clamp-2 leading-snug">{course.title}</h3>
+                                            <div className="flex items-center gap-1.5 mt-1">
+                                                <span className="text-xs text-slate-400 font-normal">
+                                                    {course.categoryName || (typeof course.category === 'object' ? (course.category as any)?.name : (course.category || 'Sem categoria'))}
+                                                </span>
+                                                {course.isGlobal && (
+                                                    <span className="text-[10px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">Global</span>
+                                                )}
+                                            </div>
+                                            {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
+                                                <span className="text-xs text-slate-500 block mt-1">
+                                                    {(course as any).instructorName}
+                                                </span>
                                             )}
                                         </div>
-                                        {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
-                                            <span className="text-[8px] font-black text-primary uppercase tracking-[0.15em] mt-1 bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10 w-fit">
-                                                {(course as any).instructorName}
-                                            </span>
-                                        )}
                                     </div>
-                                </div>
 
-                                <div className="pt-4 border-t border-slate-50 flex items-center justify-between gap-3">
-                                    <button
-                                        onClick={() => toggleStatus(course)}
-                                        disabled={updatingStatusId === course.id}
-                                        className={`flex-1 h-9 flex items-center justify-center rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${course.status === 'Publicado' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}
-                                    >
-                                        {updatingStatusId === course.id ? <LoadingSpinner size="xs" variant="current" /> : course.status}
-                                    </button>
-
-                                    <div className="flex gap-2">
-                                        <Link to={`/instructor/course/${course.id}/progress`} className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-600 flex items-center justify-center shadow-sm active:bg-slate-50">
-                                            <LucideUsers className="h-4 w-4" />
-                                        </Link>
-                                        <Link to={`/instructor/course/${course.id}/syllabus`} className="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-md active:bg-primary transition-colors">
-                                            <LucideLayout className="h-4 w-4" />
-                                        </Link>
-                                        <button onClick={() => handleEdit(course)} className="h-9 w-9 rounded-xl border border-slate-200 text-slate-600 flex items-center justify-center active:bg-slate-50">
-                                            <LucideEdit className="h-4 w-4" />
-                                        </button>
+                                    <div className="pt-2 flex items-center justify-between gap-2">
                                         <button
-                                            onClick={() => setConfirmModal({
-                                                message: "Excluir?",
-                                                onConfirm: async () => {
-                                                    setIsSaving(true);
-                                                    try {
-                                                        await api.delete(`/courses/${course.id}`);
-                                                        toast.success("Excluído!");
-                                                        setConfirmModal(null);
-                                                        fetchInitialData();
-                                                    } catch (error) {
-                                                        toast.error("Erro.");
-                                                    } finally {
-                                                        setIsSaving(false);
-                                                    }
-                                                }
-                                            })}
-                                            className="h-9 w-9 rounded-xl border border-slate-200 text-slate-300 flex items-center justify-center hover:text-destructive active:bg-red-50"
+                                            onClick={() => toggleStatus(course)}
+                                            disabled={updatingStatusId === course.id}
+                                            className={`h-8 px-2.5 rounded-lg text-xs font-medium border transition-colors inline-flex items-center gap-1.5 ${
+                                                course.status === 'Publicado'
+                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+                                                    : 'bg-amber-50 text-amber-700 border-amber-200/80'
+                                            }`}
                                         >
-                                            <LucideTrash2 className="h-4 w-4" />
+                                            {updatingStatusId === course.id ? <LoadingSpinner size="xs" variant="current" /> : (
+                                                <>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${course.status === 'Publicado' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                                    {course.status}
+                                                </>
+                                            )}
                                         </button>
+
+                                        <div className="flex gap-1.5">
+                                            <Link
+                                                to={`/instructor/course/${course.id}/progress`}
+                                                className="h-8 px-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 flex items-center gap-1 text-xs font-medium"
+                                            >
+                                                <LucideUsers className="h-3.5 w-3.5" />
+                                                <span>{course.students}</span>
+                                            </Link>
+                                            <Link
+                                                to={`/instructor/course/${course.id}/syllabus`}
+                                                className="h-8 w-8 rounded-lg bg-slate-900 text-white flex items-center justify-center hover:bg-amber-500 transition-colors shadow-2xs"
+                                            >
+                                                <LucideLayout className="h-3.5 w-3.5" />
+                                            </Link>
+                                            <button
+                                                onClick={() => handleEdit(course)}
+                                                className="h-8 w-8 rounded-lg border border-slate-200 text-slate-600 flex items-center justify-center hover:bg-slate-100 transition-colors"
+                                            >
+                                                <LucideEdit className="h-3.5 w-3.5" />
+                                            </button>
+                                            <button
+                                                onClick={() => setConfirmModal({
+                                                    message: "Excluir?",
+                                                    onConfirm: async () => {
+                                                        setIsSaving(true);
+                                                        try {
+                                                            await api.delete(`/courses/${course.id}`);
+                                                            toast.success("Excluído!");
+                                                            setConfirmModal(null);
+                                                            fetchInitialData();
+                                                        } catch (error) {
+                                                            toast.error("Erro.");
+                                                        } finally {
+                                                            setIsSaving(false);
+                                                        }
+                                                    }
+                                                })}
+                                                className="h-8 w-8 rounded-lg border border-slate-200 text-slate-400 flex items-center justify-center hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors"
+                                            >
+                                                <LucideTrash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
-                    )}
+                            ))
+                        )}
+                    </div>
                 </div>
-            </div>
             ) : (
-            <div className="bg-white md:border md:border-slate-200 md:rounded-3xl overflow-hidden shadow-sm">
-                <div className="p-6 border-b border-slate-100 bg-slate-50 md:bg-white px-4 md:px-6">
-                    <h2 className="text-base md:text-lg font-black tracking-tight text-slate-800 uppercase">Minhas Turmas</h2>
-                </div>
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {isLoadingTurmas ? (
-                        [1, 2, 3].map(i => (
-                            <div key={i} className="bg-slate-50 border border-slate-200 rounded-3xl p-6 h-48 space-y-4">
-                                <Skeleton className="h-6 w-3/4" variant="rounded" />
-                                <Skeleton className="h-4 w-full" variant="rectangle" />
-                                <Skeleton className="h-12 w-full mt-4" variant="rounded" />
-                            </div>
-                        ))
-                    ) : myTurmas.length === 0 ? (
-                        <div className="col-span-full text-center py-10">
-                            <p className="text-slate-500 font-bold">Você não está atribuído a nenhuma turma presencial.</p>
+                /* Chamadas Tab */
+                <div className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
+                    <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div>
+                            <h2 className="text-sm font-semibold text-slate-900">Minhas Turmas</h2>
+                            <p className="text-xs text-slate-500 mt-0.5">Turmas presenciais e listas de chamada</p>
                         </div>
-                    ) : (
-                        myTurmas.map((turma, idx) => (
-                            <div key={idx} className="bg-slate-50 border border-slate-200 rounded-3xl p-6 flex flex-col justify-between hover:border-primary/50 hover:bg-primary/5 transition-all">
-                                <div>
-                                    <h3 className="font-black text-lg text-slate-900 mb-2 uppercase tracking-tight">{turma.name}</h3>
-                                    {turma.description && <p className="text-sm text-slate-500 mb-4 line-clamp-2">{turma.description}</p>}
+                    </div>
+                    <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {isLoadingTurmas ? (
+                            [1, 2, 3].map(i => (
+                                <div key={i} className="bg-slate-50/75 border border-slate-200/80 rounded-xl p-5 space-y-3">
+                                    <Skeleton className="h-5 w-3/4" variant="rounded" />
+                                    <Skeleton className="h-3.5 w-full" variant="rectangle" />
+                                    <Skeleton className="h-9 w-full mt-3" variant="rounded" />
                                 </div>
-                                <Link 
-                                    to={`/instructor/turma/${turma.id}/meetings`}
-                                    className="mt-4 bg-primary text-white text-center py-3 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-md hover:bg-primary/90 transition-all"
-                                >
-                                    Gerenciar Chamadas
-                                </Link>
+                            ))
+                        ) : myTurmas.length === 0 ? (
+                            <div className="col-span-full text-center py-10">
+                                <LucideUsers className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-sm font-medium text-slate-600">Você não está atribuído a nenhuma turma presencial.</p>
                             </div>
-                        ))
-                    )}
+                        ) : (
+                            myTurmas.map((turma, idx) => (
+                                <div key={idx} className="bg-white border border-slate-200/80 rounded-xl p-5 flex flex-col justify-between hover:border-amber-300 transition-all shadow-2xs">
+                                    <div>
+                                        <h3 className="font-semibold text-base text-slate-900 mb-1 leading-snug">{turma.name}</h3>
+                                        {turma.description && <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{turma.description}</p>}
+                                    </div>
+                                    <Link 
+                                        to={`/instructor/turma/${turma.id}/meetings`}
+                                        className="mt-4 h-9 px-3 bg-slate-900 hover:bg-amber-500 text-white rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                                    >
+                                        <LucideLayout className="h-3.5 w-3.5" />
+                                        Gerenciar Chamadas
+                                    </Link>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
-            </div>
             )}
 
             {/* Create Course Modal */}
             <PortalModal isOpen={isCreateModalOpen} onClose={handleCloseModal} preventCloseOnOverlayClick={isSaving}>
                 <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
+                    initial={{ scale: 0.96, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-full max-w-lg bg-card border border-border rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-10 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+                    exit={{ scale: 0.96, opacity: 0 }}
+                    className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xl flex flex-col max-h-[90vh] overflow-hidden"
                 >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
-
-                    <div className="mb-6 md:mb-10 relative shrink-0">
-                        <div className="flex justify-between items-center mb-2">
-                            <h2 className="text-3xl font-black tracking-tight text-slate-900">{editingCourse ? 'Editar Conteúdo' : 'Novo Conteúdo'}</h2>
-                            <button onClick={handleCloseModal} className="p-2 rounded-2xl hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-all border border-transparent hover:border-slate-100">
-                                <LucideX className="h-6 w-6" />
-                            </button>
+                    <div className="mb-5 flex items-start justify-between shrink-0">
+                        <div>
+                            <h2 className="text-lg font-bold tracking-tight text-slate-900">
+                                {editingCourse ? 'Editar Conteúdo' : 'Novo Conteúdo'}
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-0.5">Preencha as informações para gerenciar seu curso.</p>
                         </div>
-                        <p className="text-slate-500 font-medium leading-tight">Preencha as informações para gerenciar seu curso com excelência.</p>
+                        <button
+                            onClick={handleCloseModal}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                        >
+                            <LucideX className="h-5 w-5" />
+                        </button>
                     </div>
 
                     <form className="flex-1 flex flex-col min-h-0" onSubmit={handleSave}>
-                        <div className="flex-1 overflow-y-auto custom-scrollbar space-y-6 pb-6">
-                            <div className="space-y-3">
-                                <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Título do Curso</label>
+                        <div className="flex-1 overflow-y-auto space-y-4 pr-1 pb-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-slate-700">Título do Curso</label>
                                 <input
                                     required
                                     type="text"
                                     value={newCourse.title}
                                     onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
                                     placeholder="Ex: Domine o Mercado de Capitais"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-300 shadow-sm"
+                                    className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 gap-6">
-                                <div className="space-y-3">
-                                    <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Área / Categoria</label>
+                            <div className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-slate-700">Área / Categoria</label>
                                     <div className="relative">
                                         <select
                                             required
                                             value={newCourse.category}
                                             onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer shadow-sm"
+                                            className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 appearance-none cursor-pointer focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors pr-9"
                                         >
                                             <option value="" disabled>Selecione uma categoria</option>
                                             {assignedCategories.length > 0 ? (
                                                 assignedCategories.map((cat) => (
-                                                    <option key={cat.id} value={cat.id} className="text-slate-900">
+                                                    <option key={cat.id} value={cat.id}>
                                                         {cat.name}
-                                                     </option>
+                                                    </option>
                                                 ))
                                             ) : (
                                                 <option value="" disabled>Nenhuma área atribuída</option>
                                             )}
                                         </select>
-                                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                             <LucidePlus className="h-4 w-4 rotate-45" />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Criador do Curso</label>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-slate-700">Criador do Curso</label>
                                     <div className="relative">
                                         {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') ? (
                                             <>
@@ -730,12 +789,12 @@ export default function InstructorDashboard() {
                                                     required
                                                     value={newCourse.instructorId}
                                                     onChange={(e) => setNewCourse({ ...newCourse, instructorId: e.target.value })}
-                                                    className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer shadow-sm"
+                                                    className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 appearance-none cursor-pointer focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors pr-9"
                                                 >
                                                     <option value="" disabled>Selecione um instrutor</option>
                                                     {instructors.length > 0 ? (
                                                         instructors.map((inst) => (
-                                                            <option key={inst.id} value={inst.id} className="text-slate-900">
+                                                            <option key={inst.id} value={inst.id}>
                                                                 {inst.name || inst.email} ({inst.role})
                                                             </option>
                                                         ))
@@ -743,60 +802,60 @@ export default function InstructorDashboard() {
                                                         <option value="" disabled>Carregando instrutores...</option>
                                                     )}
                                                 </select>
-                                                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                                     <LucideUsers className="h-4 w-4" />
                                                 </div>
                                             </>
                                         ) : (
-                                            <div className="w-full bg-slate-100/50 border border-slate-200 rounded-3xl px-8 py-5 font-bold text-slate-500 flex items-center justify-between shadow-inner">
+                                            <div className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 text-sm font-medium text-slate-600 flex items-center justify-between">
                                                 <span>{editingCourse ? (editingCourse as any).instructorName : 'Você (Criador)'}</span>
-                                                <LucideUsers className="h-4 w-4 text-slate-300" />
+                                                <LucideUsers className="h-4 w-4 text-slate-400" />
                                             </div>
                                         )}
                                     </div>
-                                    <div className="mt-2 flex items-start gap-2 bg-amber-50/50 border border-amber-100/50 p-3 rounded-2xl">
-                                        <LucideInfo className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
-                                        <p className="text-[9px] font-bold text-amber-600/80 uppercase tracking-tight leading-relaxed">
-                                            Acesso Compartilhado: Este curso é visível para todos os instrutores da mesma Área e Localidade.
-                                        </p>
-                                    </div>
+                                    <p className="text-[11px] text-slate-400 mt-1">
+                                        Acesso Compartilhado: Visível para instrutores da mesma Área e Localidade.
+                                    </p>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Configurações de Visibilidade</label>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-slate-700">Configurações de Visibilidade</label>
                                     <div 
-                                        className={`flex flex-col gap-4 p-5 rounded-[2rem] border-2 transition-all duration-300 cursor-pointer group ${newCourse.isGlobal ? 'bg-primary/5 border-primary/20 shadow-lg shadow-primary/5' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}`}
+                                        className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer ${
+                                            newCourse.isGlobal ? 'bg-amber-50/40 border-amber-200' : 'bg-slate-50/50 border-slate-200 hover:border-slate-300'
+                                        }`}
                                         onClick={() => setNewCourse({ ...newCourse, isGlobal: !newCourse.isGlobal })}
                                     >
-                                        <div className="flex items-center justify-between">
-                                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-500 ${newCourse.isGlobal ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-slate-100 text-slate-400'}`}>
-                                                {newCourse.isGlobal ? <LucideGlobe className="h-5 w-5" /> : <LucideLock className="h-5 w-5" />}
+                                        <div className="flex items-center gap-3">
+                                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                                                newCourse.isGlobal ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-600'
+                                            }`}>
+                                                {newCourse.isGlobal ? <LucideGlobe className="h-4 w-4" /> : <LucideLock className="h-4 w-4" />}
                                             </div>
-                                            <div className={`w-11 h-6 rounded-full relative transition-all duration-500 ${newCourse.isGlobal ? 'bg-primary shadow-md shadow-primary/10' : 'bg-slate-300'}`}>
-                                                <motion.div 
-                                                    animate={{ x: newCourse.isGlobal ? 22 : 4 }}
-                                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                                    className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
-                                                />
+                                            <div>
+                                                <p className="text-xs font-semibold text-slate-900 leading-tight">Curso Global</p>
+                                                <p className="text-[11px] text-slate-500 mt-0.5">Visível em todas as unidades da rede</p>
                                             </div>
                                         </div>
-                                        <div className="min-w-0">
-                                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900 leading-none">Curso Global</p>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight mt-1.5 leading-tight">Visível em todas as unidades da rede</p>
+                                        <div className={`w-10 h-5 rounded-full relative transition-colors ${newCourse.isGlobal ? 'bg-amber-500' : 'bg-slate-300'}`}>
+                                            <motion.div 
+                                                animate={{ x: newCourse.isGlobal ? 22 : 2 }}
+                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                                className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-xs"
+                                            />
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Localidade Selection for Admins/Super Admins */}
                                 {!newCourse.isGlobal && (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') && (
-                                    <div className="space-y-3">
-                                        <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Localidade do Curso</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-medium text-slate-700">Localidade do Curso</label>
                                         <div className="relative">
                                             <select
                                                 required={!newCourse.isGlobal}
                                                 value={newCourse.locationId || ""}
                                                 onChange={(e) => setNewCourse({ ...newCourse, locationId: e.target.value || null })}
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer shadow-sm"
+                                                className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 appearance-none cursor-pointer focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors pr-9"
                                             >
                                                 <option value="">Global / Sem Unidade</option>
                                                 {locations.map((loc) => (
@@ -805,38 +864,38 @@ export default function InstructorDashboard() {
                                                     </option>
                                                 ))}
                                             </select>
-                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                                 <LucideMapPin className="h-4 w-4" />
                                             </div>
                                         </div>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase ml-1">Define em qual unidade este curso local será exibido</p>
+                                        <p className="text-[11px] text-slate-400">Define em qual unidade este curso local será exibido</p>
                                     </div>
                                 )}
 
-                                <div className="space-y-3">
-                                <div className="flex items-center justify-between ml-1">
-                                    <label className="text-[11px] uppercase font-black tracking-[0.2em] text-slate-400">Identidade Visual</label>
-                                    <button 
-                                        type="button"
-                                        onClick={() => setIsGuideModalOpen(true)}
-                                        className="text-[10px] font-black text-primary bg-primary/5 px-3 py-1 rounded-full border border-primary/10 hover:bg-primary hover:text-white transition-all flex items-center gap-1.5"
-                                    >
-                                        <LucideInfo className="h-3 w-3" />
-                                        GUIA DE CAPAS
-                                    </button>
-                                </div>
-                                    <div className="w-full h-40 bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center gap-3 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden text-center group shadow-sm">
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-xs font-medium text-slate-700">Identidade Visual (Capa)</label>
+                                        <button 
+                                            type="button"
+                                            onClick={() => setIsGuideModalOpen(true)}
+                                            className="text-xs font-medium text-amber-600 hover:text-amber-700 flex items-center gap-1"
+                                        >
+                                            <LucideInfo className="h-3.5 w-3.5" />
+                                            Guia de Capas
+                                        </button>
+                                    </div>
+                                    <div className="w-full h-36 bg-slate-50 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-amber-400 hover:bg-amber-50/30 transition-all cursor-pointer relative overflow-hidden text-center group">
                                         {isUploading ? (
-                                            <div className="flex flex-col items-center gap-3 w-full px-10">
-                                                <LoadingSpinner size="md" />
+                                            <div className="flex flex-col items-center gap-2 w-full px-8">
+                                                <LoadingSpinner size="sm" />
                                                 <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                                                     <motion.div
-                                                        className="bg-primary h-full"
+                                                        className="bg-amber-500 h-full"
                                                         initial={{ width: 0 }}
                                                         animate={{ width: `${uploadProgress}%` }}
                                                     />
                                                 </div>
-                                                <span className="text-[10px] font-black text-primary uppercase">
+                                                <span className="text-xs font-medium text-slate-600">
                                                     {uploadProgress === 100 ? 'Processando...' : `${uploadProgress}%`}
                                                 </span>
                                             </div>
@@ -848,17 +907,20 @@ export default function InstructorDashboard() {
                                                         alt="Thumbnail"
                                                         className="absolute inset-0 w-full h-full object-cover"
                                                     />
-                                                    <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 backdrop-blur-sm rounded-[2rem]">
-                                                        <LucideImage className="h-6 w-6 text-white" />
-                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Trocar Imagem</span>
+                                                    <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5">
+                                                        <LucideImage className="h-5 w-5 text-white" />
+                                                        <span className="text-xs font-medium text-white">Trocar Imagem</span>
                                                     </div>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <div className="p-4 rounded-2xl bg-white border border-slate-100 text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all shadow-sm">
-                                                        <LucideImage className="h-6 w-6" />
+                                                    <div className="p-2.5 rounded-lg bg-white border border-slate-200 text-slate-400 group-hover:text-amber-600 transition-colors shadow-2xs">
+                                                        <LucideImage className="h-5 w-5" />
                                                     </div>
-                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-primary transition-colors">Subir Imagem</span>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-700">Subir Imagem de Capa</p>
+                                                        <p className="text-[11px] text-slate-400">Recomendado 1920x1080 (16:9)</p>
+                                                    </div>
                                                 </>
                                             )
                                         )}
@@ -868,18 +930,26 @@ export default function InstructorDashboard() {
                             </div>
                         </div>
 
-                        <div className="pt-6 border-t border-slate-100 shrink-0 bg-white">
+                        <div className="pt-4 border-t border-slate-100 shrink-0 flex items-center justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={handleCloseModal}
+                                disabled={isSaving}
+                                className="h-10 px-4 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium text-xs transition-colors"
+                            >
+                                Cancelar
+                            </button>
                             <button
                                 disabled={isSaving}
                                 type="submit"
-                                className="w-full bg-primary text-primary-foreground py-6 rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/30 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] flex items-center gap-2 disabled:opacity-50"
                             >
                                 {isSaving ? (
-                                    <LoadingSpinner size="sm" variant="white" />
+                                    <LoadingSpinner size="xs" variant="white" />
                                 ) : (
-                                    <LucideSave className="h-6 w-6" />
+                                    <LucideSave className="h-4 w-4" />
                                 )}
-                                {isSaving ? 'Salvando...' : (editingCourse ? 'Salvar Alterações' : 'Salvar Projeto')}
+                                {isSaving ? 'Salvando...' : (editingCourse ? 'Salvar Alterações' : 'Criar Curso')}
                             </button>
                         </div>
                     </form>
@@ -896,106 +966,86 @@ export default function InstructorDashboard() {
                 confirmText="Sim, Excluir"
             />
 
-            {/* Modal de Guia de Capas - Redesign Premium */}
+            {/* Modal de Guia de Capas */}
             <PortalModal isOpen={isGuideModalOpen} onClose={() => setIsGuideModalOpen(false)}>
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 30 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    className="relative z-10 bg-white rounded-[3rem] overflow-hidden max-w-2xl w-full shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border border-slate-100 max-h-[90vh] flex flex-col"
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    className="relative z-10 bg-white rounded-2xl overflow-hidden max-w-xl w-full shadow-xl border border-slate-200/80 max-h-[90vh] flex flex-col"
                 >
-                    {/* Header Premium com Gradiente Sutil */}
-                    <div className="relative p-8 md:p-10 pb-6 shrink-0">
-                        <div className="flex justify-between items-start">
-                            <div className="space-y-1">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full">
-                                    <LucideImage className="h-3.5 w-3.5" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Padrão de Qualidade</span>
-                                </div>
-                                <h2 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">
-                                    Guia de <span className="text-primary">Capas</span>
-                                </h2>
-                                <p className="text-slate-500 font-medium text-sm">
-                                    Sua capa é o primeiro contato do aluno com o curso.
-                                </p>
-                            </div>
-                            <button 
-                                onClick={() => setIsGuideModalOpen(false)} 
-                                className="p-3 rounded-2xl hover:bg-slate-50 text-slate-400 hover:text-slate-900 transition-all border border-transparent hover:border-slate-100"
-                            >
-                                <LucideX className="h-6 w-6" />
-                            </button>
+                    <div className="p-5 border-b border-slate-100 flex items-start justify-between shrink-0">
+                        <div>
+                            <h2 className="text-lg font-bold tracking-tight text-slate-900">
+                                Guia de Capas
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                                Recomendações visuais para boa apresentação do curso.
+                            </p>
                         </div>
+                        <button 
+                            onClick={() => setIsGuideModalOpen(false)} 
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                        >
+                            <LucideX className="h-5 w-5" />
+                        </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto px-8 md:px-10 pb-10 custom-scrollbar space-y-10">
+                    <div className="flex-1 overflow-y-auto p-5 space-y-6">
                         {/* 1. O Formato e Resolução */}
-                        <section className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">01</div>
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">Formato & Resolução</h3>
-                            </div>
+                        <section className="space-y-3">
+                            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">01. Formato & Resolução</h3>
                             
-                            <div className="relative aspect-video rounded-[2rem] overflow-hidden group shadow-2xl">
+                            <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
                                 <img 
                                     src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200" 
                                     alt="Exemplo de Layout" 
                                     className="w-full h-full object-cover"
                                 />
-                                {/* Overlay de Guia Visual */}
-                                <div className="absolute inset-0 border-[16px] border-white/10 backdrop-blur-[2px]">
-                                    <div className="absolute inset-0 border border-dashed border-white/40 m-4 rounded-xl flex items-center justify-center">
-                                        <div className="bg-slate-900/80 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 text-center">
-                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Área Segura</p>
-                                            <p className="text-xs font-bold text-white/60">Mantenha textos importantes aqui</p>
-                                        </div>
+                                <div className="absolute inset-0 border-[12px] border-black/10 backdrop-blur-[1px] flex items-center justify-center">
+                                    <div className="bg-slate-900/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20 text-center">
+                                        <p className="text-xs font-semibold text-white">Área Segura Central</p>
+                                        <p className="text-[11px] text-white/70">Mantenha os elementos principais aqui</p>
                                     </div>
                                 </div>
-                                <div className="absolute top-6 left-6 flex gap-2">
-                                    <div className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg">1920 x 1080</div>
-                                    <div className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg">16:9</div>
+                                <div className="absolute top-3 left-3 flex gap-1.5">
+                                    <span className="px-2 py-0.5 bg-emerald-600 text-white rounded text-[11px] font-medium">1920 × 1080</span>
+                                    <span className="px-2 py-0.5 bg-slate-900/80 text-white rounded text-[11px] font-medium">16:9</span>
                                 </div>
                             </div>
                         </section>
 
                         {/* 2. Dicas de Composição */}
-                        <section className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">02</div>
-                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">Composição de Sucesso</h3>
-                            </div>
+                        <section className="space-y-3">
+                            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">02. Dicas de Composição</h3>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="p-6 rounded-[2rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl transition-all group">
-                                    <div className="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <LucideEdit className="h-5 w-5 text-primary" />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                                    <div className="h-8 w-8 rounded-lg bg-amber-50 border border-amber-200/60 text-amber-600 flex items-center justify-center mb-2.5">
+                                        <LucideEdit className="h-4 w-4" />
                                     </div>
-                                    <h4 className="text-sm font-black uppercase tracking-tight mb-2">Tipografia</h4>
-                                    <p className="text-xs text-slate-500 leading-relaxed font-medium">Use fontes legíveis com alto contraste. Evite textos muito pequenos ou decorados demais.</p>
+                                    <h4 className="text-xs font-semibold text-slate-900 mb-1">Tipografia</h4>
+                                    <p className="text-xs text-slate-500 leading-relaxed">Use fontes legíveis e com alto contraste. Evite textos minúsculos ou excesso de efeitos.</p>
                                 </div>
-                                <div className="p-6 rounded-[2rem] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-xl transition-all group">
-                                    <div className="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <LucideLayout className="h-5 w-5 text-primary" />
+                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                                    <div className="h-8 w-8 rounded-lg bg-amber-50 border border-amber-200/60 text-amber-600 flex items-center justify-center mb-2.5">
+                                        <LucideLayout className="h-4 w-4" />
                                     </div>
-                                    <h4 className="text-sm font-black uppercase tracking-tight mb-2">Hierarquia</h4>
-                                    <p className="text-xs text-slate-500 leading-relaxed font-medium">O assunto principal deve ser o foco. Não polua a imagem com muitas logos ou elementos.</p>
+                                    <h4 className="text-xs font-semibold text-slate-900 mb-1">Hierarquia</h4>
+                                    <p className="text-xs text-slate-500 leading-relaxed">O assunto principal deve ser o ponto focal. Não polua a capa com excesso de logotipos.</p>
                                 </div>
                             </div>
                         </section>
 
                         {/* 3. Dica Final */}
-                        <div className="p-8 rounded-[2.5rem] bg-slate-900 text-white relative overflow-hidden group shadow-2xl">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/40 transition-colors" />
-                            <div className="relative space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-2xl bg-white/10 flex items-center justify-center">
-                                        <LucideAlertTriangle className="h-5 w-5 text-amber-400" />
-                                    </div>
-                                    <h4 className="text-[11px] font-black uppercase tracking-[0.2em]">Dica de Especialista</h4>
-                                </div>
-                                <p className="text-sm font-medium leading-relaxed text-slate-300">
-                                    O sistema aplica um leve gradiente escuro na base da imagem para garantir a leitura do título do curso. <span className="text-white font-black">Mantenha rostos e elementos cruciais na parte superior ou central.</span>
-                                </p>
+                        <div className="p-4 rounded-xl bg-slate-900 text-white space-y-2">
+                            <div className="flex items-center gap-2 text-amber-400">
+                                <LucideAlertTriangle className="h-4 w-4" />
+                                <h4 className="text-xs font-semibold">Dica Importante</h4>
                             </div>
+                            <p className="text-xs text-slate-300 leading-relaxed">
+                                Um gradiente sutil é aplicado na base dos cards para leitura do título. <strong className="text-white font-medium">Posicione rostos e elementos importantes no centro ou topo.</strong>
+                            </p>
                         </div>
                     </div>
                 </motion.div>
@@ -1008,33 +1058,32 @@ export default function InstructorDashboard() {
 function StatCard({ title, value, change, icon, isLoading }: { title: string, value: number, change: string, icon: React.ReactNode, isLoading?: boolean }) {
     if (isLoading) {
         return (
-            <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-sm space-y-4">
+            <div className="p-5 rounded-xl border border-slate-200/80 bg-white shadow-2xs space-y-3">
                 <div className="flex items-center justify-between">
-                    <div className="h-9 w-9 bg-slate-300 rounded-lg animate-shimmer" />
-                    <div className="h-4 w-20 bg-slate-200 rounded animate-shimmer" />
+                    <div className="h-9 w-9 bg-slate-200 rounded-lg animate-shimmer" />
+                    <div className="h-4 w-20 bg-slate-100 rounded animate-shimmer" />
                 </div>
-                <div className="space-y-2">
-                    <div className="h-3 w-24 bg-slate-200 rounded animate-shimmer" />
-                    <div className="h-8 w-16 bg-slate-300 rounded animate-shimmer" />
+                <div className="space-y-1.5">
+                    <div className="h-3 w-20 bg-slate-100 rounded animate-shimmer" />
+                    <div className="h-7 w-16 bg-slate-200 rounded animate-shimmer" />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-sm space-y-4 group hover:border-primary/30 transition-all hover:shadow-md">
+        <div className="p-5 rounded-xl border border-slate-200/80 bg-white shadow-2xs space-y-3 hover:border-slate-300 transition-all">
             <div className="flex items-center justify-between">
-                <div className="h-9 w-9 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center text-slate-900 group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                <div className="h-9 w-9 bg-amber-50 border border-amber-200/60 rounded-lg flex items-center justify-center text-amber-600">
                     {icon}
                 </div>
-                <div className="flex flex-col items-end">
-                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Tendência</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">{change}</span>
-                </div>
+                <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                    {change}
+                </span>
             </div>
             <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1 border-l-2 border-primary pl-2">{title}</p>
-                <p className="text-3xl font-black text-slate-900 tracking-tight"><CountUp value={value} /></p>
+                <p className="text-xs font-medium text-slate-500 mb-0.5">{title}</p>
+                <p className="text-2xl font-bold tracking-tight text-slate-900"><CountUp value={value} /></p>
             </div>
         </div>
     );
