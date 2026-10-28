@@ -15,6 +15,18 @@ interface SyllabusListProps {
     isLessonLocked: (mIdx: number, lIdx: number) => boolean;
 }
 
+const normalizeTitle = (str: string) => {
+    if (!str) return '';
+    if (str === str.toUpperCase() && str.length > 3) {
+        const lowerExceptions = new Set(['de', 'da', 'do', 'das', 'dos', 'em', 'e', 'para', 'com', 'por', 'a', 'o']);
+        return str.toLowerCase().split(' ').map((word, idx) => {
+            if (idx > 0 && lowerExceptions.has(word)) return word;
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+    }
+    return str;
+};
+
 const SyllabusList = ({
     modules,
     expandedModules,
@@ -54,7 +66,7 @@ const SyllabusList = ({
                                     Módulo {mIdx + 1}
                                 </span>
                                 <span className="text-xs font-semibold text-slate-900 truncate">
-                                    {module.title}
+                                    {normalizeTitle(module.title)}
                                 </span>
                             </div>
                         </div>
@@ -113,7 +125,7 @@ const SyllabusList = ({
                                                 <p className={`text-xs leading-tight truncate ${
                                                     isActive ? 'font-semibold text-slate-900' : lesson.completed ? 'text-slate-500' : 'text-slate-700'
                                                 }`}>
-                                                    {lesson.title}
+                                                    {normalizeTitle(lesson.title)}
                                                 </p>
                                             </div>
 

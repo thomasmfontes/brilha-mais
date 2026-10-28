@@ -19,6 +19,18 @@ import CustomPDFViewer from "../components/CustomPDFViewer";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+const normalizeTitle = (str: string) => {
+    if (!str) return '';
+    if (str === str.toUpperCase() && str.length > 3) {
+        const lowerExceptions = new Set(['de', 'da', 'do', 'das', 'dos', 'em', 'e', 'para', 'com', 'por', 'a', 'o']);
+        return str.toLowerCase().split(' ').map((word, idx) => {
+            if (idx > 0 && lowerExceptions.has(word)) return word;
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+    }
+    return str;
+};
+
 export default function CoursePage() {
     const { id } = useParams();
     const courses = useCourseStore(state => state.courses);
@@ -399,9 +411,9 @@ export default function CoursePage() {
                                 <span>Painel</span>
                             </Link>
                             <span className="text-slate-300">/</span>
-                            <span className="text-xs text-slate-500 truncate max-w-xs">{course.title}</span>
+                            <span className="text-xs text-slate-500 truncate max-w-xs">{normalizeTitle(course.title)}</span>
                             <span className="text-slate-300">/</span>
-                            <span className="text-xs font-semibold text-slate-800 truncate max-w-md">{currentLesson?.title}</span>
+                            <span className="text-xs font-semibold text-slate-800 truncate max-w-md">{normalizeTitle(currentLesson?.title)}</span>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                             <button 
@@ -454,7 +466,7 @@ export default function CoursePage() {
 
                         <div className="flex-1 px-3 text-center truncate">
                             <p className="text-[10px] text-slate-400 font-medium leading-none mb-0.5 uppercase tracking-wider">Aula atual</p>
-                            <p className="text-xs font-semibold text-slate-900 truncate">{currentLesson?.title}</p>
+                            <p className="text-xs font-semibold text-slate-900 truncate">{normalizeTitle(currentLesson?.title)}</p>
                         </div>
 
                         <div className="flex items-center gap-1.5 shrink-0">
@@ -846,7 +858,7 @@ export default function CoursePage() {
                     <div className="px-5 py-4 border-b border-slate-200/80 bg-white">
                         <div className="flex items-center justify-between gap-3 mb-2">
                             <h2 className="text-sm font-bold text-slate-900 truncate tracking-tight" title={course.title}>
-                                {course.title}
+                                {normalizeTitle(course.title)}
                             </h2>
                             <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60 shrink-0">
                                 {progressPct}%
