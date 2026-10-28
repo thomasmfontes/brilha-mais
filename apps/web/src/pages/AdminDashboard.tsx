@@ -112,20 +112,20 @@ const UserCardSkeleton = () => (
 );
 
 const CategorySkeleton = () => (
-    <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
-        <div className="flex items-start justify-between mb-6">
-            <div className="space-y-2">
-                <Skeleton className="h-5 w-32" variant="rounded" />
-                <Skeleton className="h-3 w-20" variant="rectangle" />
-            </div>
-            <Skeleton className="h-8 w-8" variant="rounded" />
+    <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-4">
+        <div className="flex items-start justify-between">
+            <Skeleton className="h-10 w-10" variant="rounded" />
+            <Skeleton className="h-6 w-14" variant="rounded" />
         </div>
-        <div className="space-y-3">
-            <Skeleton className="h-3 w-16" variant="rectangle" />
-            <div className="flex -space-x-2">
-                {[1, 2, 3].map(i => (
-                    <Skeleton key={i} className="h-8 w-8 border-2 border-card" variant="circle" />
-                ))}
+        <div className="space-y-1.5">
+            <Skeleton className="h-5 w-28" variant="rounded" />
+            <Skeleton className="h-3 w-20" variant="rectangle" />
+        </div>
+        <div className="pt-4 border-t border-slate-100 space-y-2">
+            <Skeleton className="h-3 w-24" variant="rectangle" />
+            <div className="flex gap-1.5">
+                <Skeleton className="h-5 w-16" variant="rounded" />
+                <Skeleton className="h-5 w-20" variant="rounded" />
             </div>
         </div>
     </div>
@@ -1014,22 +1014,21 @@ export default function AdminDashboard() {
             )}
 
             {activeTab === 'areas' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-8"
-                >
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:px-0">
-                        <h2 className="text-xl md:text-2xl font-black tracking-tight uppercase">Áreas de Conhecimento</h2>
+                <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">Áreas de Conhecimento</h2>
+                            <p className="text-xs text-slate-500 mt-0.5">Categorias para organização de cursos e instrutores.</p>
+                        </div>
                         <button
                             onClick={() => { setEditingCategory(null); setCategoryName(""); setCategoryIcon("LucideLayoutGrid"); setIsCategoryModalOpen(true); }}
-                            className="w-full md:w-auto bg-primary text-primary-foreground px-6 py-3.5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-[transform,shadow,background-color] text-xs"
+                            className="h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs transition-all active:scale-[0.98] shadow-xs flex items-center justify-center gap-2 self-start sm:self-auto"
                         >
-                            <LucidePlus className="h-5 w-5" /> Nova Área
+                            <LucidePlus className="h-4 w-4" /> Nova Área
                         </button>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:px-0">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                         {isLoading ? (
                             <>
                                 <CategorySkeleton />
@@ -1037,53 +1036,59 @@ export default function AdminDashboard() {
                                 <CategorySkeleton />
                             </>
                         ) : filteredCategories.map(area => (
-                            <div key={area.id} className="p-8 rounded-[2.5rem] bg-card border border-border backdrop-blur-md relative group shadow-sm flex flex-col justify-between">
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className="space-y-2 flex-1">
-                                        <div className="p-3 rounded-2xl bg-primary/10 text-primary w-fit mb-4">
-                                            {getIconComponent(area.icon || "LucideLayoutGrid")}
+                            <div key={area.id} className="p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 transition-all shadow-2xs flex flex-col justify-between group">
+                                <div>
+                                    <div className="flex items-start justify-between gap-3 mb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                                            {getIconComponent(area.icon || "LucideLayoutGrid", "h-5 w-5")}
                                         </div>
-                                        <h3 className="text-xl font-bold">{area.name}</h3>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{area._count?.courses || 0} cursos cadastrados</p>
+                                        <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={() => {
+                                                    setEditingCategory(area);
+                                                    setCategoryName(area.name);
+                                                    setCategoryIcon(area.icon || "LucideLayoutGrid");
+                                                    setIsCategoryModalOpen(true);
+                                                }}
+                                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                                                title="Editar Área"
+                                            >
+                                                <LucideEdit2 className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteCategory(area.id)}
+                                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                title="Excluir Área"
+                                            >
+                                                <LucideTrash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => {
-                                                setEditingCategory(area);
-                                                setCategoryName(area.name);
-                                                setCategoryIcon(area.icon || "LucideLayoutGrid");
-                                                setIsCategoryModalOpen(true);
-                                            }}
-                                            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-muted-foreground hover:text-primary"
-                                        >
-                                            <LucideEdit2 className="h-4 w-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteCategory(area.id)}
-                                            className="p-2 rounded-xl bg-white/5 transition-colors text-destructive hover:bg-destructive/10"
-                                        >
-                                            <LucideTrash2 className="h-4 w-4" />
-                                        </button>
-                                    </div>
+
+                                    <h3 className="text-base font-semibold text-slate-900 group-hover:text-amber-600 transition-colors leading-snug">
+                                        {area.name}
+                                    </h3>
+                                    <p className="text-xs text-slate-400 mt-0.5">
+                                        {area._count?.courses || 0} {(area._count?.courses === 1) ? 'curso cadastrado' : 'cursos cadastrados'}
+                                    </p>
                                 </div>
 
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-                                        <span>Instrutores Atribuídos</span>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
+                                <div className="pt-4 mt-4 border-t border-slate-100 space-y-2">
+                                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
+                                        Instrutores Atribuídos
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5">
                                         {area.instructors && area.instructors.length > 0 ? area.instructors.map((ins, idx) => (
-                                            <span key={idx} className="px-3 py-1 rounded-full bg-muted border border-border text-[10px] font-bold">
+                                            <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-50 text-slate-700 border border-slate-200/60 text-xs font-medium">
                                                 {ins.user.name}
                                             </span>
-                                        )) : <span className="text-[10px] text-muted-foreground italic">Nenhum instrutor</span>}
+                                        )) : <span className="text-xs text-slate-400 italic">Nenhum instrutor atribuído</span>}
                                     </div>
                                 </div>
-
                             </div>
                         ))}
                     </div>
-                </motion.div>
+                </div>
             )}
 
             {activeTab === 'turmas' && (
@@ -2106,36 +2111,62 @@ export default function AdminDashboard() {
 
             {/* Category CRUD Modal */}
             <PortalModal isOpen={isCategoryModalOpen} onClose={() => setIsCategoryModalOpen(false)}>
-                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-full max-w-xl bg-card border border-border rounded-[2rem] p-8 md:p-12 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground" />
-                    <h2 className="text-3xl font-black mb-10 flex items-center gap-4">
-                        <div className="p-3 rounded-2xl bg-primary/10 text-primary">
-                            <LucidePlus className="h-6 w-6" />
-                        </div>
-                        {editingCategory ? 'Editar Área' : 'Nova Área'}
-                    </h2>
-                    <div className="space-y-6 overflow-y-auto custom-scrollbar">
-                        <div>
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Área</label>
-                            <input className="w-full bg-slate-50 border border-slate-200 rounded-[1.5rem] px-6 py-4 outline-none font-bold mt-2 text-slate-900 shadow-sm focus:ring-2 focus:ring-primary/20 transition-all"
-                                placeholder="Ex: Tecnologia, Inglês, etc." value={categoryName} onChange={(e) => setCategoryName(e.target.value)} />
+                <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                            <LucidePlus className="h-5 w-5" />
                         </div>
                         <div>
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Ícone Representativo</label>
-                            <div className="grid grid-cols-5 md:grid-cols-6 gap-2 mt-2 bg-slate-50/50 p-3 rounded-[1.5rem] border border-slate-100">
+                            <h2 className="text-lg font-semibold text-slate-900 leading-tight">
+                                {editingCategory ? 'Editar Área' : 'Nova Área'}
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                                Defina o nome e o ícone representativo da área.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-1">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-700">Nome da Área</label>
+                            <input 
+                                className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                                placeholder="Ex: Tecnologia, Inglês, etc." 
+                                value={categoryName} 
+                                onChange={(e) => setCategoryName(e.target.value)} 
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-700">Ícone Representativo</label>
+                            <div className="grid grid-cols-6 sm:grid-cols-7 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 max-h-48 overflow-y-auto custom-scrollbar">
                                 {availableIcons.map((item) => (
-                                    <button key={item.icon} onClick={() => setCategoryIcon(item.icon)}
-                                        className={`aspect-square rounded-xl flex items-center justify-center transition-all ${categoryIcon === item.icon ? 'bg-primary text-white scale-105 shadow-md' : 'bg-white text-slate-400 hover:text-primary hover:bg-primary/5'}`}>
-                                        {getIconComponent(item.icon, "h-5 w-5")}
+                                    <button 
+                                        key={item.icon} 
+                                        type="button"
+                                        onClick={() => setCategoryIcon(item.icon)}
+                                        className={`aspect-square rounded-lg flex items-center justify-center transition-all ${categoryIcon === item.icon ? 'bg-amber-500 text-white shadow-xs scale-105' : 'bg-white text-slate-500 hover:text-amber-600 hover:bg-amber-50 border border-slate-200/60'}`}
+                                    >
+                                        {getIconComponent(item.icon, "h-4 w-4")}
                                     </button>
                                 ))}
                             </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-100">
-                        <button onClick={() => setIsCategoryModalOpen(false)} className="bg-slate-100 text-slate-600 py-4 rounded-xl font-black uppercase tracking-widest transition-all hover:bg-slate-200 text-xs">Cancelar</button>
-                        <button onClick={handleSaveCategory} disabled={isSavingCategory} className="bg-primary text-primary-foreground py-4 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-xs">
+
+                    <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+                        <button 
+                            type="button"
+                            onClick={() => setIsCategoryModalOpen(false)} 
+                            className="h-10 px-4 rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={handleSaveCategory} 
+                            disabled={isSavingCategory} 
+                            className="h-10 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
                             {isSavingCategory ? (
                                 <>
                                     <LoadingSpinner size="sm" variant="white" />
@@ -2144,7 +2175,7 @@ export default function AdminDashboard() {
                             ) : 'Salvar Área'}
                         </button>
                     </div>
-                </motion.div>
+                </div>
             </PortalModal>
 
             {/* Turma CRUD Modal */}
