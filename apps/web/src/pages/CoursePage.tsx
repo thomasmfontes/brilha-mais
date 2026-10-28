@@ -526,220 +526,230 @@ export default function CoursePage() {
                                     </div>
                                 )}
                                 {currentLesson.contentType === 'QUIZ' && (
-                                    <div className="w-full bg-card p-6 md:p-8 min-h-[400px] flex flex-col">
-                                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-                                            <div>
-                                                <h2 className="text-lg font-bold text-slate-900 tracking-tight">Mini Teste</h2>
-                                                <p className="text-xs text-slate-500">Valide seu conhecimento sobre a aula</p>
-                                            </div>
-                                            {currentLesson.quiz?.questions && !quizSubmitted && (!currentLesson.completed || Object.keys(quizAnswers).length > 0) && (
-                                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-xs font-medium text-slate-600">
-                                                    <span>Questão {currentQuestionIdx + 1} de {currentLesson.quiz.questions.length}</span>
+                                    <div className="w-full bg-slate-50/50 p-6 md:p-10 min-h-[460px] flex items-center justify-center">
+                                        <div className="w-full max-w-2xl bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-2xs space-y-6">
+                                            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                                                <div>
+                                                    <h2 className="text-base font-semibold text-slate-900 tracking-tight">Mini Teste</h2>
+                                                    <p className="text-xs text-slate-500">Valide seu conhecimento sobre a aula</p>
                                                 </div>
-                                            )}
-                                        </div>
+                                                {currentLesson.quiz?.questions && !quizSubmitted && (!currentLesson.completed || Object.keys(quizAnswers).length > 0) && (
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-xs font-medium text-slate-600">
+                                                        <span>Questão {currentQuestionIdx + 1} de {currentLesson.quiz.questions.length}</span>
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                        <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col">
-                                            {(!quizSubmitted && (!currentLesson.completed || Object.keys(quizAnswers).length > 0)) ? (
-                                                <div key="quiz-interaction-block" className="flex-1 flex flex-col">
-                                                    <div className="flex-1">
-                                                        {(() => {
-                                                            const questions = currentLesson.quiz?.questions || [];
-                                                            const q = questions[currentQuestionIdx];
-                                                            if (!q) return null;
-                                                            return (
-                                                                <motion.div 
-                                                                    key={currentQuestionIdx}
-                                                                    initial={{ opacity: 0, x: 10 }}
-                                                                    animate={{ opacity: 1, x: 0 }}
-                                                                    className="space-y-4"
-                                                                >
-                                                                    <p className="font-semibold text-base text-slate-900 leading-snug">{q.text}</p>
-                                                                    <div className="grid gap-2.5">
-                                                                        {q.options.map((opt: any, oIdx: number) => {
-                                                                            const isSelected = quizAnswers[currentQuestionIdx] === oIdx;
-                                                                            const isCorrect = opt.isCorrect;
-                                                                            
-                                                                            let borderColor = 'border-slate-200';
-                                                                            let bgColor = 'bg-white';
-                                                                            let textColor = 'text-slate-700';
-                                                                            let iconBg = 'border-slate-200 text-transparent';
-                                                                            let iconInner = null;
+                                            <div className="w-full flex flex-col">
+                                                {(!quizSubmitted && (!currentLesson.completed || Object.keys(quizAnswers).length > 0)) ? (
+                                                    <div key="quiz-interaction-block" className="flex flex-col">
+                                                        <div>
+                                                            {(() => {
+                                                                const questions = currentLesson.quiz?.questions || [];
+                                                                const q = questions[currentQuestionIdx];
+                                                                if (!q) return null;
+                                                                return (
+                                                                    <motion.div 
+                                                                        key={currentQuestionIdx}
+                                                                        initial={{ opacity: 0, y: 6 }}
+                                                                        animate={{ opacity: 1, y: 0 }}
+                                                                        className="space-y-4"
+                                                                    >
+                                                                        <p className="font-semibold text-sm md:text-base text-slate-900 leading-snug">{q.text}</p>
+                                                                        <div className="grid gap-2.5">
+                                                                            {q.options.map((opt: any, oIdx: number) => {
+                                                                                const isSelected = quizAnswers[currentQuestionIdx] === oIdx;
+                                                                                const isCorrect = opt.isCorrect;
+                                                                                
+                                                                                let borderColor = 'border-slate-200';
+                                                                                let bgColor = 'bg-white';
+                                                                                let textColor = 'text-slate-700';
+                                                                                let iconBg = 'border-slate-300 bg-white text-transparent';
+                                                                                let iconInner = null;
 
-                                                                            if (showFeedback) {
-                                                                                if (isCorrect) {
-                                                                                    borderColor = 'border-emerald-300';
-                                                                                    bgColor = 'bg-emerald-50/70';
-                                                                                    textColor = 'text-emerald-950 font-medium';
-                                                                                    iconBg = 'border-emerald-500 bg-emerald-500 text-white';
+                                                                                if (showFeedback) {
+                                                                                    if (isCorrect) {
+                                                                                        borderColor = 'border-emerald-300';
+                                                                                        bgColor = 'bg-emerald-50/70';
+                                                                                        textColor = 'text-emerald-950 font-medium';
+                                                                                        iconBg = 'border-emerald-500 bg-emerald-500 text-white';
+                                                                                        iconInner = <LucideCheck className="h-3 w-3" />;
+                                                                                    } else if (isSelected && !isCorrect) {
+                                                                                        borderColor = 'border-rose-300';
+                                                                                        bgColor = 'bg-rose-50/70';
+                                                                                        textColor = 'text-rose-950 font-medium';
+                                                                                        iconBg = 'border-rose-500 bg-rose-500 text-white';
+                                                                                        iconInner = <LucideX className="h-3 w-3" />;
+                                                                                    } else {
+                                                                                        borderColor = 'border-slate-100';
+                                                                                        bgColor = 'bg-slate-50/50';
+                                                                                        textColor = 'text-slate-400';
+                                                                                        iconBg = 'border-slate-200 bg-slate-100/50';
+                                                                                    }
+                                                                                } else if (isSelected) {
+                                                                                    borderColor = 'border-amber-400';
+                                                                                    bgColor = 'bg-amber-50/40';
+                                                                                    textColor = 'text-slate-900 font-medium';
+                                                                                    iconBg = 'border-amber-500 bg-amber-500 text-white';
                                                                                     iconInner = <LucideCheck className="h-3 w-3" />;
-                                                                                } else if (isSelected && !isCorrect) {
-                                                                                    borderColor = 'border-rose-300';
-                                                                                    bgColor = 'bg-rose-50/70';
-                                                                                    textColor = 'text-rose-950 font-medium';
-                                                                                    iconBg = 'border-rose-500 bg-rose-500 text-white';
-                                                                                    iconInner = <LucideX className="h-3 w-3" />;
-                                                                                } else {
-                                                                                    borderColor = 'border-slate-100';
-                                                                                    bgColor = 'bg-slate-50/50';
-                                                                                    textColor = 'text-slate-400';
-                                                                                    iconBg = 'border-slate-200';
                                                                                 }
-                                                                            } else if (isSelected) {
-                                                                                borderColor = 'border-amber-400';
-                                                                                bgColor = 'bg-amber-50/50';
-                                                                                textColor = 'text-slate-900 font-medium';
-                                                                                iconBg = 'border-amber-500 bg-amber-500 text-white';
-                                                                                iconInner = <LucideCheck className="h-3 w-3" />;
-                                                                            }
 
-                                                                            const showExplanation = showFeedback && isCorrect && q.explanation;
-                                                                            return (
-                                                                                <div
-                                                                                    key={oIdx}
-                                                                                    onClick={() => {
-                                                                                        if (!showFeedback) setQuizAnswers({ ...quizAnswers, [currentQuestionIdx]: oIdx });
-                                                                                    }}
-                                                                                    className={`rounded-xl border text-left text-sm transition-all ${borderColor} ${bgColor} ${textColor} ${
-                                                                                        (!showFeedback && !isSelected) ? 'hover:border-slate-300 hover:bg-slate-50 cursor-pointer' : ''
-                                                                                    } ${isSelected && !showFeedback ? 'ring-1 ring-amber-300/40' : ''}`}
-                                                                                >
-                                                                                    <div className="p-3.5 flex items-center justify-between gap-3">
-                                                                                        <span className="flex-1">{opt.text}</span>
-                                                                                        <div className={`h-5 w-5 shrink-0 rounded-full border flex items-center justify-center transition-all ${iconBg}`}>
-                                                                                            {iconInner}
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    {showExplanation && (
-                                                                                        <div className="px-3.5 pb-3 border-t border-emerald-200/50">
-                                                                                            <div className="flex items-start gap-2 pt-2">
-                                                                                                <LucideBookOpen className="h-3.5 w-3.5 shrink-0 text-emerald-600 mt-0.5" />
-                                                                                                <div>
-                                                                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 mb-0.5">Explicação</p>
-                                                                                                    <p className="text-xs text-emerald-900 leading-relaxed">{q.explanation}</p>
-                                                                                                </div>
+                                                                                const showExplanation = showFeedback && isCorrect && q.explanation;
+                                                                                return (
+                                                                                    <div
+                                                                                        key={oIdx}
+                                                                                        onClick={() => {
+                                                                                            if (!showFeedback) setQuizAnswers({ ...quizAnswers, [currentQuestionIdx]: oIdx });
+                                                                                        }}
+                                                                                        className={`rounded-xl border text-left text-xs md:text-sm transition-all ${borderColor} ${bgColor} ${textColor} ${
+                                                                                            (!showFeedback && !isSelected) ? 'hover:border-slate-300 hover:bg-slate-50/80 cursor-pointer' : ''
+                                                                                        } ${isSelected && !showFeedback ? 'ring-1 ring-amber-300/40' : ''}`}
+                                                                                    >
+                                                                                        <div className="p-3.5 flex items-center justify-between gap-3">
+                                                                                            <span className="flex-1">{opt.text}</span>
+                                                                                            <div className={`h-5 w-5 shrink-0 rounded-full border flex items-center justify-center transition-all ${iconBg}`}>
+                                                                                                {iconInner}
                                                                                             </div>
                                                                                         </div>
-                                                                                    )}
-                                                                                </div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                </motion.div>
-                                                            );
-                                                        })()}
-                                                    </div>
-
-                                                    <div key="quiz-actions" className="flex items-center gap-3 mt-8 pt-6 border-t border-slate-100">
-                                                        {!showFeedback ? (
-                                                                <button 
-                                                                    key="btn-confirm-answer"
-                                                                    onClick={() => setShowFeedback(true)}
-                                                                    disabled={quizAnswers[currentQuestionIdx] === undefined}
-                                                                    className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-semibold text-xs shadow-2xs disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                                                                >
-                                                                    <span>Confirmar resposta</span>
-                                                                    <LucideCheck className="h-4 w-4" />
-                                                                </button>
-                                                        ) : (
-                                                            <div key="quiz-nav-feedback" className="flex items-center gap-3 w-full">
-                                                                <button 
-                                                                    key="btn-prev-q"
-                                                                    onClick={handlePrevQuestion}
-                                                                    disabled={currentQuestionIdx === 0}
-                                                                    className="flex-1 py-2.5 px-4 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-lg font-medium text-xs disabled:opacity-0 transition-colors flex items-center justify-center gap-1.5"
-                                                                >
-                                                                    <LucideChevronLeft className="h-3.5 w-3.5" />
-                                                                    <span>Anterior</span>
-                                                                </button>
-                                                                
-                                                                {currentQuestionIdx < (currentLesson.quiz?.questions?.length || 0) - 1 ? (
-                                                                    <button 
-                                                                        key="btn-next-q"
-                                                                        onClick={handleNextQuestion}
-                                                                        className="flex-[2] py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold text-xs shadow-2xs transition-colors flex items-center justify-center gap-1.5"
-                                                                    >
-                                                                        <span>Próxima pergunta</span>
-                                                                        <LucideChevronRight className="h-3.5 w-3.5" />
-                                                                    </button>
-                                                                ) : (
-                                                                    <button 
-                                                                        key="btn-finish-quiz"
-                                                                        onClick={handleQuizSubmit} 
-                                                                        disabled={isSubmittingQuiz || Object.keys(quizAnswers).length < (currentLesson.quiz?.questions?.length || 0)}
-                                                                        className="flex-[2] py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-semibold text-xs shadow-2xs disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5"
-                                                                    >
-                                                                        {isSubmittingQuiz ? (
-                                                                            <span className="flex items-center gap-2">
-                                                                                <div className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                                                Processando...
-                                                                            </span>
-                                                                        ) : (
-                                                                            <span className="flex items-center gap-1.5">
-                                                                                Finalizar teste
-                                                                                <LucideZap className="h-3.5 w-3.5 fill-current" />
-                                                                            </span>
-                                                                        )}
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div key="quiz-results-block" className="text-center py-6 flex flex-col items-center justify-center">
-                                                    <div className="h-12 w-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mb-3">
-                                                        <LucideCheck className="h-6 w-6" />
-                                                    </div>
-                                                    <h3 className="text-xl font-bold text-slate-900 tracking-tight mb-1">Parabéns!</h3>
-                                                    <p className="text-slate-500 text-xs mb-6">Você concluiu este mini teste</p>
-                                                    
-                                                    <div className="w-full max-w-xl mx-auto bg-white rounded-2xl p-6 md:p-8 mb-6 text-left border border-slate-200/80 shadow-2xs">
-                                                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-                                                            <div>
-                                                                <h4 className="text-xs font-semibold text-slate-900">Desempenho Geral</h4>
-                                                                <p className="text-xs text-slate-500">Resumo do teste</p>
-                                                            </div>
-                                                            <div className="bg-amber-50 text-amber-800 border border-amber-200/60 px-2.5 py-1 rounded-md text-xs font-semibold">
-                                                                {(currentLesson.quiz?.questions || []).filter((q: any, idx: number) => quizAnswers[idx] === q.options.findIndex((o: any) => o.isCorrect)).length} / {currentLesson.quiz?.questions?.length} Acertos
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <div className="divide-y divide-slate-100 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
-                                                            {(currentLesson.quiz?.questions || []).map((q: any, idx: number) => {
-                                                                const selectedIdx = quizAnswers[idx];
-                                                                const correctIdx = q.options.findIndex((o: any) => o.isCorrect);
-                                                                const isCorrect = selectedIdx === correctIdx;
-                                                                
-                                                                return (
-                                                                    <div key={idx} className="py-4 flex items-start gap-3 first:pt-0 last:pb-0">
-                                                                        <div className={`h-6 w-6 shrink-0 rounded-full flex items-center justify-center text-xs ${
-                                                                            isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-                                                                        }`}>
-                                                                            {isCorrect ? <LucideCheck className="h-3.5 w-3.5" /> : <LucideX className="h-3.5 w-3.5" />}
+                                                                                        {showExplanation && (
+                                                                                            <div className="px-3.5 pb-3 border-t border-emerald-200/50">
+                                                                                                <div className="flex items-start gap-2 pt-2">
+                                                                                                    <LucideBookOpen className="h-3.5 w-3.5 shrink-0 text-emerald-600 mt-0.5" />
+                                                                                                    <div>
+                                                                                                        <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 mb-0.5">Explicação</p>
+                                                                                                        <p className="text-xs text-emerald-900 leading-relaxed">{q.explanation}</p>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </div>
+                                                                                );
+                                                                            })}
                                                                         </div>
-                                                                        <div className="flex-1 min-w-0 space-y-1.5">
-                                                                            <p className="text-xs font-semibold text-slate-900">{q.text}</p>
-                                                                            <div className="text-xs">
-                                                                                <span className="text-slate-400 text-[11px] block">
-                                                                                    {isCorrect ? 'Resposta correta:' : 'A resposta correta é:'}
-                                                                                </span>
-                                                                                <span className={`font-medium ${isCorrect ? 'text-emerald-700' : 'text-slate-800'}`}>
-                                                                                    {q.options[correctIdx]?.text}
-                                                                                </span>
-                                                                            </div>
-                                                                            {q.explanation && (
-                                                                                <p className="text-xs text-slate-500 border-t border-slate-100 pt-1 mt-1">{q.explanation}</p>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
+                                                                    </motion.div>
                                                                 );
-                                                            })}
+                                                            })()}
+                                                        </div>
+
+                                                        <div key="quiz-actions" className="flex items-center gap-3 mt-8 pt-6 border-t border-slate-100">
+                                                            {!showFeedback ? (
+                                                                    <button 
+                                                                        key="btn-confirm-answer"
+                                                                        onClick={() => setShowFeedback(true)}
+                                                                        disabled={quizAnswers[currentQuestionIdx] === undefined}
+                                                                        className={`w-full py-2.5 px-4 rounded-lg font-semibold text-xs transition-colors flex items-center justify-center gap-2 ${
+                                                                            quizAnswers[currentQuestionIdx] === undefined
+                                                                                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
+                                                                                : 'bg-amber-500 hover:bg-amber-600 text-white shadow-2xs active:scale-[0.99]'
+                                                                        }`}
+                                                                    >
+                                                                        <span>Confirmar resposta</span>
+                                                                        <LucideCheck className="h-4 w-4" />
+                                                                    </button>
+                                                            ) : (
+                                                                <div key="quiz-nav-feedback" className="flex items-center gap-3 w-full">
+                                                                    <button 
+                                                                        key="btn-prev-q"
+                                                                        onClick={handlePrevQuestion}
+                                                                        disabled={currentQuestionIdx === 0}
+                                                                        className="flex-1 py-2.5 px-4 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-lg font-medium text-xs disabled:opacity-0 transition-colors flex items-center justify-center gap-1.5"
+                                                                    >
+                                                                        <LucideChevronLeft className="h-3.5 w-3.5" />
+                                                                        <span>Anterior</span>
+                                                                    </button>
+                                                                    
+                                                                    {currentQuestionIdx < (currentLesson.quiz?.questions?.length || 0) - 1 ? (
+                                                                        <button 
+                                                                            key="btn-next-q"
+                                                                            onClick={handleNextQuestion}
+                                                                            className="flex-[2] py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold text-xs shadow-2xs transition-colors flex items-center justify-center gap-1.5"
+                                                                        >
+                                                                            <span>Próxima pergunta</span>
+                                                                            <LucideChevronRight className="h-3.5 w-3.5" />
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button 
+                                                                            key="btn-finish-quiz"
+                                                                            onClick={handleQuizSubmit} 
+                                                                            disabled={isSubmittingQuiz || Object.keys(quizAnswers).length < (currentLesson.quiz?.questions?.length || 0)}
+                                                                            className={`flex-[2] py-2.5 px-4 rounded-lg font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 ${
+                                                                                isSubmittingQuiz || Object.keys(quizAnswers).length < (currentLesson.quiz?.questions?.length || 0)
+                                                                                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
+                                                                                    : 'bg-amber-500 hover:bg-amber-600 text-white shadow-2xs active:scale-[0.99]'
+                                                                            }`}
+                                                                        >
+                                                                            {isSubmittingQuiz ? (
+                                                                                <span className="flex items-center gap-2">
+                                                                                    <div className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                                                    Processando...
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="flex items-center gap-1.5">
+                                                                                    Finalizar teste
+                                                                                    <LucideZap className="h-3.5 w-3.5 fill-current" />
+                                                                                </span>
+                                                                            )}
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
+                                                ) : (
+                                                    <div key="quiz-results-block" className="text-center py-4 flex flex-col items-center justify-center">
+                                                        <div className="h-11 w-11 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mb-3">
+                                                            <LucideCheck className="h-5 w-5" />
+                                                        </div>
+                                                        <h3 className="text-lg font-bold text-slate-900 tracking-tight mb-0.5">Parabéns!</h3>
+                                                        <p className="text-slate-500 text-xs mb-5">Você concluiu este mini teste</p>
+                                                        
+                                                        <div className="w-full bg-slate-50/70 rounded-xl p-5 mb-5 text-left border border-slate-200/70">
+                                                            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200/60">
+                                                                <div>
+                                                                    <h4 className="text-xs font-semibold text-slate-900">Desempenho Geral</h4>
+                                                                    <p className="text-[11px] text-slate-500">Resumo do teste</p>
+                                                                </div>
+                                                                <div className="bg-amber-50 text-amber-800 border border-amber-200/60 px-2.5 py-1 rounded-md text-xs font-semibold">
+                                                                    {(currentLesson.quiz?.questions || []).filter((q: any, idx: number) => quizAnswers[idx] === q.options.findIndex((o: any) => o.isCorrect)).length} / {currentLesson.quiz?.questions?.length} Acertos
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div className="divide-y divide-slate-200/60 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                                                {(currentLesson.quiz?.questions || []).map((q: any, idx: number) => {
+                                                                    const selectedIdx = quizAnswers[idx];
+                                                                    const correctIdx = q.options.findIndex((o: any) => o.isCorrect);
+                                                                    const isCorrect = selectedIdx === correctIdx;
+                                                                    
+                                                                    return (
+                                                                        <div key={idx} className="py-3.5 flex items-start gap-3 first:pt-0 last:pb-0">
+                                                                            <div className={`h-5 w-5 shrink-0 rounded-full flex items-center justify-center text-xs mt-0.5 ${
+                                                                                isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                                                                            }`}>
+                                                                                {isCorrect ? <LucideCheck className="h-3 w-3" /> : <LucideX className="h-3 w-3" />}
+                                                                            </div>
+                                                                            <div className="flex-1 min-w-0 space-y-1">
+                                                                                <p className="text-xs font-semibold text-slate-900">{q.text}</p>
+                                                                                <div className="text-xs">
+                                                                                    <span className="text-slate-400 text-[11px] block">
+                                                                                        {isCorrect ? 'Resposta correta:' : 'A resposta correta é:'}
+                                                                                    </span>
+                                                                                    <span className={`font-medium ${isCorrect ? 'text-emerald-700' : 'text-slate-800'}`}>
+                                                                                        {q.options[correctIdx]?.text}
+                                                                                    </span>
+                                                                                </div>
+                                                                                {q.explanation && (
+                                                                                    <p className="text-xs text-slate-500 border-t border-slate-200/50 pt-1 mt-1">{q.explanation}</p>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
 
-                                                </div>
-                                            )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 )}
