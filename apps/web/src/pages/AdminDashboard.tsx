@@ -1093,101 +1093,90 @@ export default function AdminDashboard() {
 
             {activeTab === 'turmas' && (
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="space-y-8"
+                    transition={{ duration: 0.2 }}
+                    className="space-y-6"
                 >
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:px-0">
-                        <h2 className="text-xl md:text-2xl font-black tracking-tight uppercase">Gestão de Turmas</h2>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">Gestão de Turmas</h2>
+                            <p className="text-xs text-slate-500 mt-0.5">Gerencie as turmas, áreas vinculadas e localidades de atendimento.</p>
+                        </div>
                         <button
-                            onClick={() => { setEditingTurma(null); setTurmaName(""); setTurmaDescription(""); setIsTurmaModalOpen(true); }}
-                            className="w-full md:w-auto bg-primary text-primary-foreground px-6 py-3.5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-[transform,shadow,background-color] text-xs"
+                            onClick={() => { setEditingTurma(null); setTurmaName(""); setTurmaDescription(""); setTempLocationId(null); setIsTurmaModalOpen(true); }}
+                            className="w-full sm:w-auto h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-2 shrink-0"
                         >
-                            <LucidePlus className="h-5 w-5" /> Nova Turma
+                            <LucidePlus className="h-4 w-4" />
+                            <span>Nova Turma</span>
                         </button>
                     </div>
- 
-                    {/* Desktop Toolbar */}
-                    <div className="hidden md:block bg-card border border-border rounded-[2rem] p-4 shadow-sm mb-8">
-                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                             <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1">
-                                 <div className="relative group flex-1 max-w-md">
-                                     <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
-                                     <input
-                                         type="text"
-                                         placeholder="Buscar turmas..."
-                                         value={searchQuery}
-                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                         className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-[11px] font-black outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50 transition-all placeholder:text-slate-400 text-slate-950"
-                                     />
-                                 </div>
- 
-                                 <div className="flex flex-wrap gap-2 items-center">
-                                      {userLocationId === undefined && currentUserRole === null ? (
-                                          <FilterSkeleton />
-                                      ) : isSuperAdminOrGlobal && (
-                                          <FilterSelect
-                                              icon={LucideMapPin}
-                                              value={selectedLocationId}
-                                              onChange={setSelectedLocationId}
-                                              placeholder="Localidade"
-                                              options={locations.map(l => ({ id: l.id, name: l.name }))}
-                                          />
-                                      )}
-                                 </div>
-                             </div>
- 
-                             <div className="flex items-center shrink-0">
-                                 <span className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-900 bg-slate-100/50 px-4 py-2 rounded-xl border border-slate-100 whitespace-nowrap">
-                                     TOTAL: <span className="text-primary ml-1">{filteredTurmas.length}</span>
-                                 </span>
-                             </div>
-                         </div>
-                    </div>
 
-                    {/* Mobile Toolbar */}
-                    <div className="md:hidden bg-card border border-border rounded-[2.5rem] p-4 shadow-sm mb-8 space-y-3">
-                        <div className="relative group">
-                            <LucideSearch className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Buscar turmas..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-black outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-400 text-slate-950"
-                            />
+                    {/* Toolbar */}
+                    <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 flex-1">
+                            <div className="relative flex-1 max-w-md">
+                                <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar turmas..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                                />
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 items-center">
+                                {userLocationId === undefined && currentUserRole === null ? (
+                                    <div className="h-9 w-32 bg-slate-100 rounded-lg animate-pulse" />
+                                ) : isSuperAdminOrGlobal && (
+                                    <FilterSelect
+                                        icon={LucideMapPin}
+                                        value={selectedLocationId}
+                                        onChange={setSelectedLocationId}
+                                        placeholder="Localidade"
+                                        options={locations.map(l => ({ id: l.id, name: l.name }))}
+                                    />
+                                )}
+                            </div>
                         </div>
-                        {userLocationId === undefined && currentUserRole === null ? (
-                            <div className="h-12 w-full bg-slate-100 rounded-2xl animate-shimmer border border-slate-200/50" />
-                        ) : isSuperAdminOrGlobal && (
-                            <FilterSelect
-                                icon={LucideMapPin}
-                                value={selectedLocationId}
-                                onChange={setSelectedLocationId}
-                                placeholder="Localidade"
-                                options={locations.map(l => ({ id: l.id, name: l.name }))}
-                            />
-                        )}
+
+                        <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                            <span className="text-xs text-slate-500">
+                                Total: <strong className="text-slate-900 font-semibold">{filteredTurmas.length}</strong> {filteredTurmas.length === 1 ? 'turma' : 'turmas'}
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:px-0">
+                    {/* Turmas Grid */}
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                         {isLoading ? (
                             <>
                                 <CategorySkeleton />
                                 <CategorySkeleton />
                                 <CategorySkeleton />
                             </>
+                        ) : filteredTurmas.length === 0 ? (
+                            <div className="col-span-full py-12 px-4 text-center bg-white border border-slate-200/80 rounded-2xl">
+                                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center text-slate-400 mx-auto mb-3">
+                                    <LucideUsers className="h-6 w-6" />
+                                </div>
+                                <h3 className="text-sm font-semibold text-slate-900">Nenhuma turma encontrada</h3>
+                                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                                    {searchQuery ? 'Tente ajustar os filtros de busca para encontrar o que procura.' : 'Cadastre a primeira turma clicando no botão "Nova Turma" acima.'}
+                                </p>
+                            </div>
                         ) : filteredTurmas.map(turma => (
-                            <div key={turma.id} className="p-8 rounded-[2.5rem] bg-card border border-border backdrop-blur-md relative group shadow-sm flex flex-col justify-between">
-                                <div className="space-y-4">
-                                    <div className="flex items-start justify-between">
-                                        <div className="p-3 rounded-2xl bg-primary/10 text-primary w-fit mb-4">
-                                            <LucideUsers className="h-6 w-6" />
+                            <div key={turma.id} className="p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 transition-all shadow-2xs flex flex-col justify-between group">
+                                <div>
+                                    <div className="flex items-start justify-between gap-3 mb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                                            <LucideUsers className="h-5 w-5" />
                                         </div>
-                                        <div className="flex gap-2">
+                                        <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => handleOpenTurmaAreaModal(turma)}
-                                                className="p-2 rounded-xl bg-white/5 hover:bg-emerald-500/10 transition-colors text-muted-foreground hover:text-emerald-500"
+                                                className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
                                                 title="Gerenciar Áreas da Turma"
                                             >
                                                 <LucideLayoutGrid className="h-4 w-4" />
@@ -1200,52 +1189,56 @@ export default function AdminDashboard() {
                                                     setTempLocationId(turma.locationId || null);
                                                     setIsTurmaModalOpen(true);
                                                 }}
-                                                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-muted-foreground hover:text-primary"
+                                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                                                title="Editar Turma"
                                             >
                                                 <LucideEdit2 className="h-4 w-4" />
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteTurma(turma.id)}
-                                                className="p-2 rounded-xl bg-white/5 transition-colors text-destructive hover:bg-destructive/10"
+                                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                title="Excluir Turma"
                                             >
                                                 <LucideTrash2 className="h-4 w-4" />
                                             </button>
                                         </div>
                                     </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold">{turma.name}</h3>
-                                        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{turma.description || "Sem descrição"}</p>
-                                        <div className="flex flex-wrap gap-1.5 mt-4">
-                                            {turma.areas?.map((a, i) => (
-                                                <span key={i} className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">
-                                                    {a.category.name}
-                                                </span>
-                                            ))}
-                                            {(!turma.areas || turma.areas.length === 0) && (
-                                                <span className="text-[9px] text-muted-foreground/40 font-black uppercase tracking-widest italic">Nenhuma área atribuída</span>
+
+                                    <h3 className="text-base font-semibold text-slate-900 group-hover:text-amber-600 transition-colors leading-snug">
+                                        {turma.name}
+                                    </h3>
+                                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                                        {turma.description || "Sem descrição informada."}
+                                    </p>
+
+                                    <div className="mt-3.5 space-y-1.5">
+                                        <span className="text-[11px] font-medium text-slate-400 block">Áreas vinculadas:</span>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {turma.areas && turma.areas.length > 0 ? (
+                                                turma.areas.map((a, i) => (
+                                                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-xs font-medium">
+                                                        {a.category.name}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-xs text-slate-400 italic">Nenhuma área vinculada</span>
                                             )}
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="mt-8 pt-6 border-t border-border flex flex-col gap-4">
-                                     <div className="flex items-center justify-between w-full">
-                                         <div className="flex items-center gap-2">
-                                             <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center">
-                                                 <LucideUsers className="h-4 w-4 text-slate-300" />
-                                             </div>
-                                             <span className="text-xs font-bold text-slate-500">{turma._count?.users || 0} Integrantes</span>
-                                         </div>
-                                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{new Date(turma.createdAt).toLocaleDateString()}</span>
-                                     </div>
-                                     
-                                     <div className="flex items-center gap-2 px-3 py-2 bg-slate-50/50 rounded-xl border border-slate-100/50">
-                                         <LucideMapPin className="h-3 w-3 text-primary/40" />
-                                         <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                                             {turma.location?.name || 'Unidade Geral'}
-                                         </span>
-                                     </div>
-                                 </div>
+                                <div className="pt-4 mt-5 border-t border-slate-100 flex items-center justify-between gap-3 text-xs text-slate-500">
+                                    <div className="flex items-center gap-1.5">
+                                        <LucideUsers className="h-3.5 w-3.5 text-slate-400" />
+                                        <span className="font-medium text-slate-700">{turma._count?.users || 0}</span>
+                                        <span className="text-slate-400">{(turma._count?.users === 1) ? 'aluno' : 'alunos'}</span>
+                                    </div>
+
+                                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-slate-50 border border-slate-200/60 text-[11px] text-slate-600">
+                                        <LucideMapPin className="h-3 w-3 text-slate-400 shrink-0" />
+                                        <span className="truncate max-w-[120px]">{turma.location?.name || 'Unidade Geral'}</span>
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -1909,94 +1902,78 @@ export default function AdminDashboard() {
 
             {/* Turma Assignment Modal */}
             <PortalModal isOpen={isTurmaAssignmentModalOpen} onClose={() => setIsTurmaAssignmentModalOpen(false)} preventCloseOnOverlayClick={isSavingPermissions}>
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-full max-w-xl bg-card border border-border rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
-                >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
-
-                    <div className="mb-6 md:mb-10 relative shrink-0">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <h2 className="text-3xl font-black mb-2 flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                        <LucideUsers className="h-6 w-6 text-primary" />
-                                    </div>
-                                    Atribuir Turma
-                                </h2>
-                                <div className="mt-4 flex flex-wrap items-center gap-2">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60 leading-none">Editando turmas de</span>
-                                    <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[9px] font-black tracking-widest uppercase border border-primary/20">
-                                        {selectedUser?.name}
+                <div className="relative w-full max-w-xl bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                            <LucideUsers className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-lg font-semibold text-slate-900 leading-tight">Atribuir Turmas</h2>
+                                {selectedUser && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/60 text-xs font-medium truncate max-w-[160px]">
+                                        {selectedUser.name}
                                     </span>
-                                </div>
+                                )}
                             </div>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                                Selecione as turmas às quais este usuário pertence.
+                            </p>
                         </div>
                     </div>
 
-                    <div className="space-y-6 overflow-y-auto custom-scrollbar flex-1">
+                    <div className="space-y-3 overflow-y-auto pr-1 custom-scrollbar flex-1">
                         {isFetchingTurmas ? (
-                            <div className="flex flex-col items-center justify-center py-20 space-y-4 w-full">
+                            <div className="flex flex-col items-center justify-center py-16 space-y-3 w-full">
                                 <LoadingSpinner size="md" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Carregando turmas...</p>
+                                <p className="text-xs text-slate-400">Carregando turmas...</p>
                             </div>
                         ) : turmas.length === 0 ? (
-                            <div className="text-center py-20 bg-slate-50 rounded-[2.5rem] border border-dashed border-slate-200">
-                                <LucideUsers className="h-10 w-10 text-slate-200 mx-auto mb-4" />
-                                <p className="text-sm font-bold text-slate-400">Nenhuma turma cadastrada.</p>
+                            <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                <LucideUsers className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-xs text-slate-400 font-medium">Nenhuma turma cadastrada.</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full auto-rows-fr">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                                 {turmas.map(t => {
                                     const isAssigned = tempUserTurmas.includes(t.id);
                                     return (
                                         <button
                                             key={t.id}
+                                            type="button"
                                             onClick={() => handleToggleTurma(t.id, isAssigned)}
-                                            className={`group p-5 rounded-3xl border text-left flex items-start justify-between gap-4 transition-all duration-300 relative overflow-hidden h-full ${
+                                            className={`p-3.5 rounded-xl border text-left flex items-start justify-between gap-3 transition-all relative ${
                                                 isAssigned 
-                                                ? 'bg-primary/5 border-primary shadow-[0_8px_30px_-12px_rgba(249,115,22,0.2)]' 
-                                                : 'bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50/50 hover:shadow-sm'
+                                                    ? 'bg-amber-50/50 border-amber-300 shadow-2xs' 
+                                                    : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50'
                                             }`}
                                         >
-                                            <div className="min-w-0 flex-1 relative z-10">
-                                                <p className={`font-black text-sm uppercase tracking-tight mb-1.5 transition-colors ${isAssigned ? 'text-primary' : 'text-slate-900 group-hover:text-primary'}`}>
+                                            <div className="min-w-0 flex-1">
+                                                <p className={`font-semibold text-sm leading-snug ${isAssigned ? 'text-amber-900' : 'text-slate-900'}`}>
                                                     {t.name}
                                                 </p>
-                                                {t.description ? (
-                                                    <p className={`text-[10px] font-bold leading-relaxed line-clamp-2 transition-colors ${isAssigned ? 'text-primary/60' : 'text-slate-400'}`}>
+                                                {t.description && (
+                                                    <p className={`text-xs mt-1 line-clamp-2 ${isAssigned ? 'text-amber-700/80' : 'text-slate-400'}`}>
                                                         {t.description}
                                                     </p>
-                                                ) : (
-                                                    <p className="text-[9px] font-bold italic text-slate-300">Sem descrição</p>
                                                 )}
-                                                
-                                                <div className="mt-3 flex items-center gap-2">
-                                                    <div className="flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-md">
-                                                        <LucideMapPin className="h-2.5 w-2.5 text-slate-400" />
-                                                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">{t.location?.name || 'Geral'}</span>
+                                                {t.location && (
+                                                    <div className="flex items-center gap-1 mt-2 text-[11px] text-slate-400">
+                                                        <LucideMapPin className="h-3 w-3" />
+                                                        <span className="truncate">{t.location.name}</span>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
 
-                                            <div className="shrink-0 pt-0.5 relative z-10">
-                                                <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                                            <div className="shrink-0 pt-0.5">
+                                                <div className={`h-5 w-5 rounded-md border flex items-center justify-center transition-all ${
                                                     isAssigned 
-                                                    ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20' 
-                                                    : 'bg-white border-slate-200 text-transparent group-hover:border-primary/30 group-hover:scale-105'
+                                                        ? 'bg-amber-500 border-amber-500 text-white' 
+                                                        : 'bg-white border-slate-300 text-transparent'
                                                 }`}>
-                                                    <LucideCheck className={`h-3.5 w-3.5 transition-transform duration-300 ${isAssigned ? 'scale-100' : 'scale-0'}`} />
+                                                    <LucideCheck className="h-3.5 w-3.5" />
                                                 </div>
                                             </div>
-
-                                            {isAssigned && (
-                                                <motion.div 
-                                                    layoutId={`active-bg-${t.id}`}
-                                                    className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" 
-                                                />
-                                            )}
                                         </button>
                                     );
                                 })}
@@ -2004,85 +1981,103 @@ export default function AdminDashboard() {
                         )}
                     </div>
 
-                    <div className="pt-8 border-t border-white/10 flex gap-4 shrink-0">
+                    <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+                        <button 
+                            type="button"
+                            onClick={() => setIsTurmaAssignmentModalOpen(false)} 
+                            disabled={isSavingPermissions}
+                            className="h-10 px-4 rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-colors"
+                        >
+                            Cancelar
+                        </button>
                         <button
+                            type="button"
                             onClick={handleSaveUserTurmas}
                             disabled={isSavingPermissions}
-                            className="flex-1 py-4 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                            className="h-10 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {isSavingPermissions ? (
                                 <>
                                     <LoadingSpinner size="sm" variant="white" />
-                                    Salvando...
+                                    <span>Salvando...</span>
                                 </>
                             ) : (
-                                "Salvar Turma"
+                                "Salvar Turmas"
                             )}
                         </button>
                     </div>
-                </motion.div>
+                </div>
             </PortalModal>
 
             {/* Turma Area Assignment Modal */}
             <PortalModal isOpen={isTurmaAreaModalOpen} onClose={() => setIsTurmaAreaModalOpen(false)} preventCloseOnOverlayClick={isSavingPermissions}>
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-full max-w-xl bg-card border border-border rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
-                >
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/50 via-emerald-500 to-emerald-500/50" />
-
-                    <div className="mb-6 md:mb-10 relative shrink-0">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <h2 className="text-3xl font-black mb-2 flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                                        <LucideLayoutGrid className="h-6 w-6 text-emerald-500" />
-                                    </div>
-                                    Áreas da Turma
-                                </h2>
-                                <div className="mt-4 flex items-center gap-2">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60 leading-none">Editando áreas da turma</span>
-                                    <span className="px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-[9px] font-black tracking-widest uppercase border border-emerald-500/20">
-                                        {selectedTurmaForAreas?.name}
+                <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shrink-0">
+                            <LucideLayoutGrid className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-lg font-semibold text-slate-900 leading-tight">Áreas da Turma</h2>
+                                {selectedTurmaForAreas && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-xs font-medium truncate max-w-[160px]">
+                                        {selectedTurmaForAreas.name}
                                     </span>
-                                </div>
+                                )}
                             </div>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                                Selecione quais áreas de conhecimento esta turma terá acesso.
+                            </p>
                         </div>
                     </div>
 
-                    <div className="space-y-6 overflow-y-auto pr-2 md:pr-4 custom-scrollbar flex-1">
+                    <div className="space-y-2.5 overflow-y-auto pr-1 custom-scrollbar flex-1">
                         {isFetchingCategories ? (
-                            <div className="flex flex-col items-center justify-center py-12 space-y-4 w-full">
+                            <div className="flex flex-col items-center justify-center py-12 space-y-3 w-full">
                                 <LoadingSpinner size="md" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Carregando áreas...</p>
+                                <p className="text-xs text-slate-400">Carregando áreas...</p>
                             </div>
                         ) : categories.length === 0 ? (
-                            <p className="w-full text-center py-10 text-xs text-muted-foreground italic bg-slate-50 rounded-3xl border border-dashed border-slate-200">Nenhuma área cadastrada.</p>
+                            <p className="w-full text-center py-8 text-xs text-slate-400 italic bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                Nenhuma área cadastrada no sistema.
+                            </p>
                         ) : (
                             <div className="space-y-2">
                                 {categories.map(area => {
                                     const isAssigned = tempTurmaAreas.includes(area.id);
                                     return (
-                                        <div key={area.id} className="group p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-emerald-500/30 transition-all duration-300 flex items-center justify-between gap-6 shadow-sm">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform shadow-inner">
-                                                    {getIconComponent(area.icon || "", "h-5 w-5")}
+                                        <div 
+                                            key={area.id} 
+                                            className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-4 ${
+                                                isAssigned 
+                                                    ? 'bg-emerald-50/40 border-emerald-200/80 shadow-2xs' 
+                                                    : 'bg-white border-slate-200/70 hover:border-slate-300'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                                                    isAssigned 
+                                                        ? 'bg-emerald-100 text-emerald-700' 
+                                                        : 'bg-slate-100 text-slate-500'
+                                                }`}>
+                                                    {getIconComponent(area.icon || "", "h-4 w-4")}
                                                 </div>
-                                                <div>
-                                                    <p className="font-bold text-sm tracking-tight text-slate-900">{area.name}</p>
-                                                </div>
+                                                <p className="font-medium text-sm text-slate-900 truncate">{area.name}</p>
                                             </div>
 
-                                            <div className="flex items-center gap-3">
-                                                <button
-                                                    onClick={() => handleToggleArea(area.id, 'turma', isAssigned)}
-                                                    className={`h-7 w-12 rounded-full flex items-center transition-all px-1 ${isAssigned ? 'bg-emerald-500 justify-end' : 'bg-slate-200 justify-start'}`}
-                                                >
-                                                    <motion.div layout className="h-5 w-5 rounded-full bg-white shadow-md" />
-                                                </button>
-                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleArea(area.id, 'turma', isAssigned)}
+                                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                    isAssigned ? 'bg-emerald-600' : 'bg-slate-200'
+                                                }`}
+                                            >
+                                                <span 
+                                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                                                        isAssigned ? 'translate-x-5' : 'translate-x-0'
+                                                    }`} 
+                                                />
+                                            </button>
                                         </div>
                                     );
                                 })}
@@ -2090,23 +2085,32 @@ export default function AdminDashboard() {
                         )}
                     </div>
 
-                    <div className="pt-8 border-t border-white/10 flex gap-4 shrink-0">
+                    <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+                        <button 
+                            type="button"
+                            onClick={() => setIsTurmaAreaModalOpen(false)} 
+                            disabled={isSavingPermissions}
+                            className="h-10 px-4 rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-colors"
+                        >
+                            Cancelar
+                        </button>
                         <button
+                            type="button"
                             onClick={handleSaveTurmaAreas}
                             disabled={isSavingPermissions}
-                            className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                            className="h-10 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {isSavingPermissions ? (
                                 <>
                                     <LoadingSpinner size="sm" variant="white" />
-                                    Salvando...
+                                    <span>Salvando...</span>
                                 </>
                             ) : (
                                 "Salvar Áreas da Turma"
                             )}
                         </button>
                     </div>
-                </motion.div>
+                </div>
             </PortalModal>
 
             {/* Category CRUD Modal */}
@@ -2180,40 +2184,73 @@ export default function AdminDashboard() {
 
             {/* Turma CRUD Modal */}
             <PortalModal isOpen={isTurmaModalOpen} onClose={() => setIsTurmaModalOpen(false)}>
-                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-full max-w-xl bg-card border border-border rounded-[2rem] p-8 md:p-12 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground" />
-                    <h2 className="text-3xl font-black mb-10 flex items-center gap-4">
-                        <div className="p-3 rounded-2xl bg-primary/10 text-primary">
-                            <LucideUsers className="h-6 w-6" />
-                        </div>
-                        {editingTurma ? 'Editar Turma' : 'Nova Turma'}
-                    </h2>
-                    <div className="space-y-8 overflow-y-auto custom-scrollbar">
-                        <div>
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Turma</label>
-                            <input className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm"
-                                placeholder="Ex: Turma A 2024" value={turmaName} onChange={(e) => setTurmaName(e.target.value)} />
+                <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                            <LucideUsers className="h-5 w-5" />
                         </div>
                         <div>
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Descrição</label>
-                            <textarea className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm min-h-[100px] resize-none"
-                                placeholder="Sobre a turma..." value={turmaDescription} onChange={(e) => setTurmaDescription(e.target.value)} />
+                            <h2 className="text-lg font-semibold text-slate-900 leading-tight">
+                                {editingTurma ? 'Editar Turma' : 'Nova Turma'}
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                                Preencha as informações básicas e localidade da turma.
+                            </p>
                         </div>
+                    </div>
+
+                    <div className="space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-1">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-700">Nome da Turma</label>
+                            <input 
+                                className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                                placeholder="Ex: Turma A 2024" 
+                                value={turmaName} 
+                                onChange={(e) => setTurmaName(e.target.value)} 
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-700">Descrição</label>
+                            <textarea 
+                                className="w-full bg-white border border-slate-200/80 rounded-xl p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all resize-none min-h-[90px]"
+                                placeholder="Breve resumo ou observações sobre a turma..." 
+                                value={turmaDescription} 
+                                onChange={(e) => setTurmaDescription(e.target.value)} 
+                            />
+                        </div>
+
                         {isSuperAdminOrGlobal && (
-                            <div>
-                                <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Localidade</label>
-                                <select className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm"
-                                    value={tempLocationId || ""} onChange={(e) => setTempLocationId(e.target.value || null)}>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-slate-700">Localidade</label>
+                                <select 
+                                    className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3 text-sm text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                                    value={tempLocationId || ""} 
+                                    onChange={(e) => setTempLocationId(e.target.value || null)}
+                                >
                                     <option value="">Selecione uma localidade (Obrigatório)</option>
-                                    {locations.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}
+                                    {locations.map(loc => (
+                                        <option key={loc.id} value={loc.id}>{loc.name}</option>
+                                    ))}
                                 </select>
                             </div>
                         )}
                     </div>
-                    <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-100">
-                        <button onClick={() => setIsTurmaModalOpen(false)} className="bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest transition-all hover:bg-slate-200 text-xs">Cancelar</button>
-                        <button onClick={handleSaveTurma} disabled={isSavingTurma} className="bg-primary text-primary-foreground py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-xs">
+
+                    <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+                        <button 
+                            type="button"
+                            onClick={() => setIsTurmaModalOpen(false)} 
+                            className="h-10 px-4 rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={handleSaveTurma} 
+                            disabled={isSavingTurma} 
+                            className="h-10 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
                             {isSavingTurma ? (
                                 <>
                                     <LoadingSpinner size="sm" variant="white" />
@@ -2222,38 +2259,61 @@ export default function AdminDashboard() {
                             ) : 'Salvar Turma'}
                         </button>
                     </div>
-                </motion.div>
+                </div>
             </PortalModal>
 
             {/* Location Manager Modal */}
             <PortalModal isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)}>
-                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-full max-w-lg bg-card border border-border rounded-[2rem] p-8 md:p-12 shadow-2xl">
-                    <h2 className="text-3xl font-black mb-8 flex items-center gap-4">
-                        <div className="p-3 rounded-2xl bg-amber-50 text-amber-500">
-                            <LucideMapPin className="h-6 w-6" />
+                <div className="relative w-full max-w-md bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                            <LucideMapPin className="h-5 w-5" />
                         </div>
-                        {editingLocation ? 'Editar Localidade' : 'Nova Localidade'}
-                    </h2>
-                    <div className="space-y-6">
                         <div>
-                            <label className="text-[11px] uppercase font-black tracking-[0.15em] text-slate-800 ml-1">Nome da Localidade</label>
-                            <input className="w-full bg-slate-50 border border-slate-200 rounded-3xl px-8 py-5 outline-none font-bold mt-2 text-slate-900 shadow-sm"
-                                placeholder="Ex: Água Rasa, Cubatão..." value={locationName} onChange={(e) => setLocationName(e.target.value)} />
+                            <h2 className="text-lg font-semibold text-slate-900 leading-tight">
+                                {editingLocation ? 'Editar Localidade' : 'Nova Localidade'}
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                                Cadastre polos ou unidades de atendimento.
+                            </p>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 mt-10">
-                        <button onClick={() => setIsLocationModalOpen(false)} className="bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest transition-all hover:bg-slate-200 text-xs">Cancelar</button>
-                        <button onClick={handleSaveLocation} disabled={isSavingLocation} className="bg-primary text-primary-foreground py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 text-xs">
+
+                    <div className="space-y-4">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-700">Nome da Localidade</label>
+                            <input 
+                                className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                                placeholder="Ex: Água Rasa, Cubatão..." 
+                                value={locationName} 
+                                onChange={(e) => setLocationName(e.target.value)} 
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+                        <button 
+                            type="button"
+                            onClick={() => setIsLocationModalOpen(false)} 
+                            className="h-10 px-4 rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={handleSaveLocation} 
+                            disabled={isSavingLocation} 
+                            className="h-10 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
                             {isSavingLocation ? (
                                 <>
                                     <LoadingSpinner size="sm" variant="white" />
                                     <span>Salvando...</span>
                                 </>
-                            ) : 'Salvar'}
+                            ) : 'Salvar Localidade'}
                         </button>
                     </div>
-                </motion.div>
+                </div>
             </PortalModal>
 
             {/* Confirm Modal */}
