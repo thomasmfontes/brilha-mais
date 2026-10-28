@@ -331,11 +331,11 @@ export default function CoursePage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="relative z-10 w-full max-w-4xl flex flex-col lg:flex-row items-center gap-8 lg:gap-12"
+                className="relative z-10 w-full max-w-5xl flex flex-col lg:flex-row items-center gap-8 lg:gap-12"
             >
                 {/* Visual Side */}
-                <div className="w-full sm:w-80 lg:w-[340px] shrink-0">
-                    <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xs border border-slate-200/80 bg-slate-100">
+                <div className="w-full sm:max-w-md lg:max-w-lg lg:w-[480px] shrink-0">
+                    <div className="aspect-video rounded-2xl overflow-hidden shadow-2xs border border-slate-200/80 bg-slate-100">
                         <img 
                             src={resolveThumbnail(course.thumbnail)} 
                             alt={course.title} 
