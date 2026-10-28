@@ -51,9 +51,24 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  *,
+  *::before,
+  *::after {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   button:focus,
-  button:focus-visible {
-    outline: none;
+  button:focus-visible,
+  input:focus,
+  input:focus-visible,
+  select:focus,
+  select:focus-visible,
+  [role="button"]:focus,
+  [role="button"]:focus-visible,
+  [tabindex]:focus,
+  [tabindex]:focus-visible {
+    outline: none !important;
+    outline-offset: 0 !important;
   }
 }
 
