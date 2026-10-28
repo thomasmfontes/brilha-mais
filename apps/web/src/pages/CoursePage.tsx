@@ -855,7 +855,7 @@ export default function CoursePage() {
                 </div>
 
                 <div className="hidden lg:flex flex-col w-80 xl:w-96 flex-shrink-0 bg-white border-l border-slate-200/80 h-full overflow-hidden">
-                    <div className="px-5 py-4 border-b border-slate-200/80 bg-white">
+                    <div className="px-5 py-4 border-b border-slate-200/80 bg-white shrink-0 z-30">
                         <div className="flex items-center justify-between gap-3 mb-2">
                             <h2 className="text-sm font-bold text-slate-900 truncate tracking-tight" title={course.title}>
                                 {normalizeTitle(course.title)}
@@ -873,7 +873,7 @@ export default function CoursePage() {
                             </p>
                         </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar relative">
                         <SyllabusList modules={modules} expandedModules={expandedModules} setExpandedModules={setExpandedModules} currentModuleIdx={currentModuleIdx} currentLessonIdx={currentLessonIdx} isEnrolled={isEnrolled} userRole={userRole} goToLesson={goToLesson} formatDuration={formatDuration} totalModuleDuration={totalModuleDuration} isLessonLocked={isLessonLocked} />
                     </div>
                 </div>
@@ -908,7 +908,7 @@ export default function CoursePage() {
                                     <LucideX className="h-4 w-4" />
                                 </button>
                             </div>
-                            <div className="px-5 py-4 border-b border-slate-200/80 bg-white">
+                            <div className="px-5 py-4 border-b border-slate-200/80 bg-white shrink-0 z-30">
                                 <div className="flex items-center justify-between gap-3 mb-2">
                                     <span className="text-xs font-semibold text-slate-900">Progresso</span>
                                     <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60 shrink-0">
@@ -924,7 +924,7 @@ export default function CoursePage() {
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex-1 overflow-y-auto no-scrollbar">
+                            <div className="flex-1 overflow-y-auto no-scrollbar relative">
                                 <SyllabusList 
                                     modules={modules} 
                                     expandedModules={expandedModules} 
