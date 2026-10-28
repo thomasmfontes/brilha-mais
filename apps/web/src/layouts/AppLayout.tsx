@@ -201,87 +201,117 @@ export function AppLayout() {
 
     return (
         <div className="h-[100dvh] w-full bg-background text-foreground flex overflow-hidden">
-            {/* Sidebar Desktop */}
+            {/* Sidebar Desktop - V2 Minimalist */}
             <aside className={`
-                ${isSidebarOpen ? 'w-64' : 'w-20'}
-                hidden md:flex flex-col border-r border-slate-200/80 bg-white shadow-sm transition-[width] duration-300 h-full shrink-0 z-40
+                ${isSidebarOpen ? 'w-60' : 'w-[72px]'}
+                hidden md:flex flex-col border-r border-slate-200/80 bg-white transition-[width] duration-200 h-full shrink-0 z-40 select-none
             `}>
-                <div className="h-20 flex items-center px-6 mb-2">
-                    <div className="flex items-center gap-3">
-                        {isSidebarOpen ? (
-                            <img src={logo} alt="Brilha Mais" className="h-9 w-auto" />
-                        ) : (
-                            <img src={logo} alt="B" className="h-8 w-8 object-contain transition-all" />
+                {/* Brand Header */}
+                <div className={`h-16 flex items-center border-b border-slate-100 ${isSidebarOpen ? 'px-5' : 'justify-center'}`}>
+                    <Link to="/" className="flex items-center gap-2.5 focus:outline-none overflow-hidden">
+                        <img src={logo} alt="Brilha Mais" className="h-7 w-7 object-contain shrink-0" />
+                        {isSidebarOpen && (
+                            <span className="font-bold text-sm tracking-tight text-slate-900 whitespace-nowrap">
+                                Brilha Mais
+                            </span>
                         )}
-                    </div>
+                    </Link>
                 </div>
 
-                <nav className="flex-1 px-3 space-y-1 mt-2 overflow-y-auto no-scrollbar">
-                    <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                        {isSidebarOpen ? 'Menu' : '---'}
-                    </p>
-                    {menuItems.map((item: any) => (
-                        <Link
-                            key={`sidebar-link-${item.path}`}
-                            to={item.path}
-                            className={`
-                                flex items-center transition-colors group rounded-xl
-                                ${isSidebarOpen ? 'gap-3 px-3 py-2.5' : 'justify-center p-2.5'}
-                                ${location.pathname === item.path
-                                    ? 'bg-slate-900 text-white shadow-sm'
-                                    : 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'}
-                            `}
-                        >
-                            <div className="shrink-0">{item.icon}</div>
-                            {isSidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
-                        </Link>
-                    ))}
+                {/* Nav items */}
+                <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto no-scrollbar">
+                    {isSidebarOpen && (
+                        <p className="px-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                            Menu
+                        </p>
+                    )}
+                    {menuItems.map((item: any) => {
+                        const isActive = location.pathname === item.path;
+                        return (
+                            <Link
+                                key={`sidebar-link-${item.path}`}
+                                to={item.path}
+                                title={!isSidebarOpen ? item.label : undefined}
+                                className={`
+                                    flex items-center transition-all duration-150 rounded-lg group
+                                    ${isSidebarOpen ? 'gap-3 px-2.5 py-2' : 'justify-center p-2.5'}
+                                    ${isActive
+                                        ? 'bg-slate-100 text-slate-900 font-semibold'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-normal'}
+                                `}
+                            >
+                                <div className={`shrink-0 transition-colors ${isActive ? 'text-amber-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                                    {item.icon}
+                                </div>
+                                {isSidebarOpen && (
+                                    <span className="text-sm leading-none">{item.label}</span>
+                                )}
+                            </Link>
+                        );
+                    })}
 
                     {visibleAdminItems.length > 0 && (
-                        <div className="pt-6 space-y-1">
-                            <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                                {isSidebarOpen ? 'Gestão' : '---'}
-                            </p>
-                            {visibleAdminItems.map((item: any) => (
-                                <Link
-                                    key={`sidebar-admin-link-${item.path}`}
-                                    to={item.path}
-                                    className={`
-                                        flex items-center transition-colors group rounded-xl
-                                        ${isSidebarOpen ? 'gap-3 px-3 py-2.5' : 'justify-center p-2.5'}
-                                        ${location.pathname === item.path
-                                            ? 'bg-amber-50 text-amber-900 border border-amber-200/80 font-medium'
-                                            : 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'}
-                                    `}
-                                >
-                                    <div className="shrink-0">{item.icon}</div>
-                                    {isSidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
-                                </Link>
-                            ))}
+                        <div className="pt-5 space-y-1">
+                            {isSidebarOpen && (
+                                <p className="px-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                                    Gestão
+                                </p>
+                            )}
+                            {visibleAdminItems.map((item: any) => {
+                                const isActive = location.pathname === item.path;
+                                return (
+                                    <Link
+                                        key={`sidebar-admin-link-${item.path}`}
+                                        to={item.path}
+                                        title={!isSidebarOpen ? item.label : undefined}
+                                        className={`
+                                            flex items-center transition-all duration-150 rounded-lg group
+                                            ${isSidebarOpen ? 'gap-3 px-2.5 py-2' : 'justify-center p-2.5'}
+                                            ${isActive
+                                                ? 'bg-slate-100 text-slate-900 font-semibold'
+                                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-normal'}
+                                        `}
+                                    >
+                                        <div className={`shrink-0 transition-colors ${isActive ? 'text-amber-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                                            {item.icon}
+                                        </div>
+                                        {isSidebarOpen && (
+                                            <span className="text-sm leading-none">{item.label}</span>
+                                        )}
+                                    </Link>
+                                );
+                            })}
                         </div>
                     )}
                 </nav>
 
-                <div className="p-3 border-t border-slate-200/80 mt-auto space-y-1">
+                {/* Footer Utility Actions */}
+                <div className="p-3 border-t border-slate-100 mt-auto space-y-1">
                     <button
                         onClick={() => setIsSettingsOpen(true)}
+                        title={!isSidebarOpen ? 'Biometria' : undefined}
                         className={`
-                            flex items-center transition-colors w-full rounded-xl hover:bg-slate-50 text-slate-600 hover:text-slate-900
-                            ${isSidebarOpen ? 'gap-3 px-3 py-2.5' : 'justify-center p-2.5'}
+                            flex items-center transition-colors w-full rounded-lg hover:bg-slate-50 text-slate-600 hover:text-slate-900 group
+                            ${isSidebarOpen ? 'gap-3 px-2.5 py-2' : 'justify-center p-2.5'}
                         `}
                     >
-                        <LucideFingerprint className="h-5 w-5" />
-                        {isSidebarOpen && <span className="text-sm font-medium">Biometria</span>}
+                        <div className="shrink-0 text-slate-400 group-hover:text-slate-600">
+                            <LucideFingerprint className="h-5 w-5" />
+                        </div>
+                        {isSidebarOpen && <span className="text-sm font-normal">Biometria</span>}
                     </button>
                     <button
                         onClick={handleLogout}
+                        title={!isSidebarOpen ? 'Sair' : undefined}
                         className={`
-                            flex items-center transition-colors w-full rounded-xl hover:bg-red-50 text-red-600 hover:text-red-700
-                            ${isSidebarOpen ? 'gap-3 px-3 py-2.5' : 'justify-center p-2.5'}
+                            flex items-center transition-colors w-full rounded-lg hover:bg-red-50/70 text-slate-500 hover:text-red-600 group
+                            ${isSidebarOpen ? 'gap-3 px-2.5 py-2' : 'justify-center p-2.5'}
                         `}
                     >
-                        <LucideLogOut className="h-5 w-5" />
-                        {isSidebarOpen && <span className="text-sm font-medium">Sair</span>}
+                        <div className="shrink-0 text-slate-400 group-hover:text-red-600 transition-colors">
+                            <LucideLogOut className="h-5 w-5" />
+                        </div>
+                        {isSidebarOpen && <span className="text-sm font-normal">Sair</span>}
                     </button>
                 </div>
             </aside>
