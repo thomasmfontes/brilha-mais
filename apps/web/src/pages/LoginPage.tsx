@@ -76,10 +76,10 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen bg-[#FAFAF9] text-zinc-900 flex flex-col justify-between selection:bg-amber-100 selection:text-amber-900">
             {/* Top Navigation */}
-            <header className="w-full max-w-5xl mx-auto px-6 py-6 sm:py-8 flex items-center justify-between">
+            <header className="w-full max-w-5xl mx-auto px-6 py-6">
                 <Link
                     to="/"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200/80 bg-white text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-colors shadow-2xs"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-200/80 bg-white text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-colors shadow-xs"
                 >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     <span>Voltar ao início</span>
@@ -88,12 +88,12 @@ export default function LoginPage() {
 
             {/* Central Minimalist Card */}
             <main className="flex-1 flex items-center justify-center px-4 py-8">
-                <div className="w-full max-w-[380px] bg-white border border-zinc-200/80 rounded-2xl p-8 sm:p-9 shadow-[0_1px_3px_rgba(0,0,0,0.03),0_10px_24px_-8px_rgba(0,0,0,0.05)]">
+                <div className="w-full max-w-[390px] bg-white border border-zinc-200/80 rounded-2xl p-7 sm:p-9 shadow-sm">
                     
                     {/* Header: Logo & Title */}
                     <div className="flex flex-col items-center text-center mb-8">
-                        <Link to="/" className="mb-5 inline-block">
-                            <img src={logo} alt="Brilha Mais" className="h-11 w-auto object-contain" />
+                        <Link to="/" className="mb-5 inline-block focus:outline-none">
+                            <img src={logo} alt="Brilha Mais" className="h-11 w-auto object-contain mx-auto" />
                         </Link>
                         <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
                             Entrar na plataforma
@@ -110,7 +110,7 @@ export default function LoginPage() {
                             type="button"
                             onClick={() => handleSocialLogin('google')}
                             disabled={!!isRedirecting}
-                            className="w-full h-11 px-4 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50/80 active:bg-zinc-100 text-zinc-700 text-sm font-medium flex items-center justify-center gap-3 transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-3 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
                             {isRedirecting === 'google' ? (
                                 <LoadingSpinner size="sm" />
@@ -130,7 +130,7 @@ export default function LoginPage() {
                             type="button"
                             onClick={() => handleSocialLogin('microsoft')}
                             disabled={!!isRedirecting}
-                            className="w-full h-11 px-4 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50/80 active:bg-zinc-100 text-zinc-700 text-sm font-medium flex items-center justify-center gap-3 transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-3 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
                             {isRedirecting === 'microsoft' ? (
                                 <LoadingSpinner size="sm" />
@@ -148,9 +148,9 @@ export default function LoginPage() {
                         {/* Biometrics (Optional) */}
                         {showBiometricButton && (
                             <>
-                                <div className="relative py-2 flex items-center">
+                                <div className="relative py-1.5 flex items-center">
                                     <div className="flex-grow border-t border-zinc-100" />
-                                    <span className="flex-shrink mx-3 text-[11px] text-zinc-400">ou</span>
+                                    <span className="flex-shrink mx-3 text-[11px] font-medium text-zinc-400">ou</span>
                                     <div className="flex-grow border-t border-zinc-100" />
                                 </div>
 
@@ -158,7 +158,7 @@ export default function LoginPage() {
                                     type="button"
                                     onClick={handleBiometricLogin}
                                     disabled={!!isRedirecting}
-                                    className="w-full h-11 px-4 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50/80 active:bg-zinc-100 text-zinc-800 text-sm font-medium flex items-center justify-center gap-2.5 transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-2.5 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                 >
                                     {isRedirecting === 'biometric' ? (
                                         <LoadingSpinner size="sm" />
@@ -181,8 +181,8 @@ export default function LoginPage() {
 
             {/* Clean, Muted Footer */}
             <footer className="w-full max-w-5xl mx-auto px-6 py-6 text-center text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <p>&copy; 2026 Brilha Mais</p>
-                <div className="flex gap-4">
+                <p>&copy; 2026 Brilha Mais. Todos os direitos reservados.</p>
+                <div className="flex items-center gap-4">
                     <Link to="/termos" className="hover:text-zinc-600 transition-colors">Termos de Uso</Link>
                     <span>·</span>
                     <Link to="/privacidade" className="hover:text-zinc-600 transition-colors">Privacidade</Link>
