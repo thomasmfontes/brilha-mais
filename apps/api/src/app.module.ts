@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -17,10 +18,12 @@ import { EssaySubmissionModule } from './essay-submission/essay-submission.modul
 import { MaterialDownloadModule } from './material-download/material-download.module';
 import { LocationModule } from './location/location.module';
 import { InPersonMeetingModule } from './in-person-meeting/in-person-meeting.module';
+import { TalentModule } from './talent/talent.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
     AuthModule,
     UserModule,
     QuizModule,
@@ -36,6 +39,7 @@ import { InPersonMeetingModule } from './in-person-meeting/in-person-meeting.mod
     MaterialDownloadModule,
     LocationModule,
     InPersonMeetingModule,
+    TalentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

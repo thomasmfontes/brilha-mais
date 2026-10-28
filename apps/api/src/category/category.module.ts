@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CategoryController } from './category.controller';
 import { CategoryService } from './category.service';
-import { PrismaService } from '../prisma.service';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
@@ -12,7 +11,7 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
   controllers: [CategoryController],
-  providers: [CategoryService, PrismaService],
+  providers: [CategoryService],
   exports: [CategoryService],
 })
 export class CategoryModule {}

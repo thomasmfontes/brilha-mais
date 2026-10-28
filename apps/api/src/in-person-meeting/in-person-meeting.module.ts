@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { InPersonMeetingService } from './in-person-meeting.service';
 import { InPersonMeetingController } from './in-person-meeting.controller';
-import { PrismaService } from '../prisma.service';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
@@ -12,6 +11,6 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
   controllers: [InPersonMeetingController],
-  providers: [InPersonMeetingService, PrismaService],
+  providers: [InPersonMeetingService],
 })
 export class InPersonMeetingModule {}

@@ -10,6 +10,8 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { PortalModal } from "../components/PortalModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import UserMaterialsModal from "../components/UserMaterialsModal";
+import TalentDetailsModal from "../components/TalentDetailsModal";
+import { LucideBriefcase, LucideDownload, LucidePhone, LucideEye } from "lucide-react";
 import CountUp from "../components/CountUp";
 import Skeleton from "../components/Skeleton";
 
@@ -170,7 +172,7 @@ const AuditSkeleton = () => (
 
 export default function AdminDashboard() {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    const [activeTab, setActiveTab] = useState<'overview' | 'areas' | 'turmas' | 'users' | 'locations'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'areas' | 'turmas' | 'users' | 'locations' | 'talents'>('overview');
     const [users, setUsers] = useState<User[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [turmas, setTurmas] = useState<Turma[]>([]);
@@ -198,6 +200,17 @@ export default function AdminDashboard() {
     const [editingNameFor, setEditingNameFor] = useState<string | null>(null);
     const [editingNameValue, setEditingNameValue] = useState('');
     const [isMaterialsModalOpen, setIsMaterialsModalOpen] = useState(false);
+    // Talent Bank States
+    const [talents, setTalents] = useState<any[]>([]);
+    const [talentsStats, setTalentsStats] = useState<any>(null);
+    const [isLoadingTalents, setIsLoadingTalents] = useState(false);
+    const [talentSearchQuery, setTalentSearchQuery] = useState("");
+    const [talentTurmaFilter, setTalentTurmaFilter] = useState("ALL");
+    const [talentHasResumeOnly, setTalentHasResumeOnly] = useState(false);
+    const [talentAvailableOnly, setTalentAvailableOnly] = useState(false);
+    const [selectedTalent, setSelectedTalent] = useState<any>(null);
+    const [isTalentModalOpen, setIsTalentModalOpen] = useState(false);
+
     const [previewAvatar, setPreviewAvatar] = useState<{ id: string; url: string; name: string } | null>(null);
     const [isUpdatingAvatarFor, setIsUpdatingAvatarFor] = useState<string | null>(null);
     const [targetUserIdForAvatar, setTargetUserIdForAvatar] = useState<string | null>(null);
@@ -347,6 +360,10 @@ export default function AdminDashboard() {
             fetchTurmas(true);
         }
         if (activeTab === 'areas') fetchCategories();
+        if (activeTab === 'talents') {
+            fetchTalents();
+            fetchTurmas(true);
+        }
         if (activeTab === 'turmas') {
             fetchTurmas();
             fetchCategories(true);
@@ -425,6 +442,31 @@ export default function AdminDashboard() {
             if (!silent) {
                 setIsLoading(false);
             }
+        }
+    };
+
+    
+    const fetchTalents = async () => {
+        setIsLoadingTalents(true);
+        try {
+            const params: any = {};
+            if (talentSearchQuery) params.search = talentSearchQuery;
+            if (talentTurmaFilter !== 'ALL') params.turmaId = talentTurmaFilter;
+            if (talentHasResumeOnly) params.hasResumeOnly = 'true';
+            if (talentAvailableOnly) params.availableOnly = 'true';
+
+            const [talentsRes, statsRes] = await Promise.all([
+                api.get('/talents', { params }),
+                api.get('/talents/stats')
+            ]);
+            setTalents(talentsRes.data || []);
+            setTalentsStats(statsRes.data || null);
+        } catch (error) {
+            console.error("Error fetching talents:", error);
+            toast.error("Erro ao carregar banco de talentos.");
+        } finally {
+            setIsLoadingTalents(false);
+            setIsLoading(false);
         }
     };
 
@@ -831,6 +873,13 @@ export default function AdminDashboard() {
                         className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap ${activeTab === 'users' ? 'bg-white text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'}`}
                     >
                         Usuários
+                    </button>
+                    
+                    <button
+                        onClick={() => handleTabChange('talents')}
+                        className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap ${activeTab === 'talents' ? 'bg-white text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'}`}
+                    >
+                        Banco de Talentos
                     </button>
                     {isSuperAdminOrGlobal && (
                         <button
@@ -1764,6 +1813,286 @@ export default function AdminDashboard() {
                 </motion.div>
             )}
 
+            {activeTab === 'talents' && (
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-6"
+                >
+                    {/* Stat Cards */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs">
+                            <span className="text-xs font-medium text-slate-500">Total no Banco</span>
+                            {isLoadingTalents ? (
+                                <Skeleton className="h-8 w-16 mt-1" variant="rectangle" />
+                            ) : (
+                                <p className="text-2xl font-bold text-slate-900 mt-1">
+                                    {talentsStats?.totalProfiles || 0}
+                                </p>
+                            )}
+                            <span className="text-[11px] text-slate-400 mt-0.5 block">Jovens cadastrados</span>
+                        </div>
+
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs">
+                            <span className="text-xs font-medium text-amber-600">Com Currículo</span>
+                            {isLoadingTalents ? (
+                                <Skeleton className="h-8 w-16 mt-1" variant="rectangle" />
+                            ) : (
+                                <p className="text-2xl font-bold text-slate-900 mt-1">
+                                    {talentsStats?.withResume || 0}
+                                </p>
+                            )}
+                            <span className="text-[11px] text-slate-400 mt-0.5 block">Arquivos PDF/Word prontos</span>
+                        </div>
+
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs">
+                            <span className="text-xs font-medium text-emerald-600">Autorizados LGPD</span>
+                            {isLoadingTalents ? (
+                                <Skeleton className="h-8 w-16 mt-1" variant="rectangle" />
+                            ) : (
+                                <p className="text-2xl font-bold text-slate-900 mt-1">
+                                    {talentsStats?.lgpdConsented || 0}
+                                </p>
+                            )}
+                            <span className="text-[11px] text-slate-400 mt-0.5 block">
+                                {talentsStats?.minorsWithParentConsent || 0} menores com pais cientes
+                            </span>
+                        </div>
+
+                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs">
+                            <span className="text-xs font-medium text-blue-600">Prontos p/ Entrevista</span>
+                            {isLoadingTalents ? (
+                                <Skeleton className="h-8 w-16 mt-1" variant="rectangle" />
+                            ) : (
+                                <p className="text-2xl font-bold text-slate-900 mt-1">
+                                    {talentsStats?.available || 0}
+                                </p>
+                            )}
+                            <span className="text-[11px] text-slate-400 mt-0.5 block">Perfil ativo e autorizado</span>
+                        </div>
+                    </div>
+
+                    {/* Filter & Search Bar */}
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs space-y-3">
+                        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+                            <div className="relative flex-1">
+                                <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nome, e-mail, cidade ou objetivo..."
+                                    value={talentSearchQuery}
+                                    onChange={(e) => setTalentSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && fetchTalents()}
+                                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
+                                />
+                            </div>
+
+                            <select
+                                value={talentTurmaFilter}
+                                onChange={(e) => setTalentTurmaFilter(e.target.value)}
+                                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
+                            >
+                                <option value="ALL">Todas as Turmas</option>
+                                {turmas.map(t => (
+                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                ))}
+                            </select>
+
+                            <button
+                                type="button"
+                                onClick={() => setTalentHasResumeOnly(!talentHasResumeOnly)}
+                                className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                                    talentHasResumeOnly
+                                        ? 'bg-amber-50 border-amber-300 text-amber-900'
+                                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                                }`}
+                            >
+                                Com Currículo
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setTalentAvailableOnly(!talentAvailableOnly)}
+                                className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                                    talentAvailableOnly
+                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                                }`}
+                            >
+                                Disponíveis
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={fetchTalents}
+                                disabled={isLoadingTalents}
+                                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white text-xs font-semibold rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5"
+                            >
+                                {isLoadingTalents ? (
+                                    <LucideLoader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                    <LucideSearch className="w-3.5 h-3.5" />
+                                )}
+                                Filtrar
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Talent List / Table */}
+                    <div className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
+                        {isLoadingTalents ? (
+                            <div className="p-6 space-y-4">
+                                {[...Array(4)].map((_, i) => (
+                                    <div key={i} className="flex items-center justify-between gap-4 p-4 rounded-xl bg-slate-50/50 border border-slate-100">
+                                        <div className="flex items-center gap-3">
+                                            <Skeleton className="w-10 h-10" variant="rounded" />
+                                            <div className="space-y-1.5">
+                                                <Skeleton className="h-4 w-44" variant="rectangle" />
+                                                <Skeleton className="h-3 w-60" variant="rectangle" />
+                                            </div>
+                                        </div>
+                                        <Skeleton className="h-8 w-28" variant="rounded" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : talents.length === 0 ? (
+                            <div className="p-12 text-center space-y-2">
+                                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 mx-auto">
+                                    <LucideBriefcase className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-sm font-semibold text-slate-900">Nenhum talento encontrado</h3>
+                                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                                    Nenhum aluno com os filtros selecionados ou ainda não há currículos cadastrados.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr className="border-b border-slate-100 bg-slate-50/75 text-slate-500 font-medium">
+                                            <th className="py-3 px-4">Aluno</th>
+                                            <th className="py-3 px-4">Turma(s)</th>
+                                            <th className="py-3 px-4">Objetivo / Áreas</th>
+                                            <th className="py-3 px-4">Currículo</th>
+                                            <th className="py-3 px-4">LGPD</th>
+                                            <th className="py-3 px-4 text-right">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {talents.map((talent) => {
+                                            const phoneDigits = talent.phone?.replace(/\D/g, '') || '';
+                                            return (
+                                                <tr key={talent.id} className="hover:bg-slate-50/60 transition-colors">
+                                                    <td className="py-3.5 px-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 font-bold flex items-center justify-center shrink-0">
+                                                                {talent.user?.name ? talent.user.name.charAt(0).toUpperCase() : 'A'}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="font-semibold text-slate-900 truncate">
+                                                                    {talent.user?.name || 'Aluno'}
+                                                                </p>
+                                                                <p className="text-[11px] text-slate-400 truncate">
+                                                                    {talent.user?.email}
+                                                                    {talent.city ? ` • ${talent.city}${talent.state ? ` - ${talent.state}` : ''}` : ''}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-3.5 px-4 text-slate-600">
+                                                        {talent.user?.turmas?.map((t: any) => t.name).join(', ') || (
+                                                            <span className="text-slate-400 italic">Sem turma</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-3.5 px-4">
+                                                        <div className="space-y-1 max-w-xs">
+                                                            {talent.headline && (
+                                                                <p className="font-medium text-slate-800 truncate">
+                                                                    {talent.headline}
+                                                                </p>
+                                                            )}
+                                                            {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {talent.areasOfInterest.slice(0, 3).map((a: string, idx: number) => (
+                                                                        <span key={idx} className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 text-[10px] font-medium border border-amber-200/60">
+                                                                            {a}
+                                                                        </span>
+                                                                    ))}
+                                                                    {talent.areasOfInterest.length > 3 && (
+                                                                        <span className="text-[10px] text-slate-400">
+                                                                            +{talent.areasOfInterest.length - 3}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-3.5 px-4">
+                                                        {talent.resumeUrl ? (
+                                                            <a
+                                                                href={talent.resumeUrl}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold border border-amber-200 transition-colors"
+                                                            >
+                                                                <LucideDownload className="w-3.5 h-3.5" />
+                                                                Baixar PDF
+                                                            </a>
+                                                        ) : (
+                                                            <span className="text-slate-400 text-[11px] italic">
+                                                                Não enviado
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-3.5 px-4">
+                                                        {talent.lgpdConsent ? (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                                                                ✓ Autorizado {talent.isMinor ? '(Menor)' : ''}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/70">
+                                                                Pendente
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-3.5 px-4 text-right">
+                                                        <div className="flex items-center justify-end gap-1.5">
+                                                            {phoneDigits && (
+                                                                <a
+                                                                    href={`https://wa.me/55${phoneDigits}?text=${encodeURIComponent(`Olá ${talent.user?.name || ''}, tudo bem? Aqui é da coordenação do Projeto Brilha Mais sobre uma oportunidade.`)}`}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors"
+                                                                    title="Conversar no WhatsApp"
+                                                                >
+                                                                    <LucidePhone className="w-4 h-4" />
+                                                                </a>
+                                                            )}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSelectedTalent(talent);
+                                                                    setIsTalentModalOpen(true);
+                                                                }}
+                                                                className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold transition-colors shadow-2xs"
+                                                            >
+                                                                Ver Perfil
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+            )}
+
+
             {/* Area Assignment Modal */}
             <PortalModal isOpen={isAreaModalOpen} onClose={() => setIsAreaModalOpen(false)} preventCloseOnOverlayClick={isSavingPermissions}>
                 <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
@@ -2299,6 +2628,13 @@ export default function AdminDashboard() {
                 title={confirmModal?.message || ""}
                 description={confirmModal?.subtext || "Esta ação não pode ser desfeita."}
                 confirmText="Sim, Excluir"
+            />
+
+            {/* Talent Details Modal */}
+            <TalentDetailsModal
+                isOpen={isTalentModalOpen}
+                onClose={() => setIsTalentModalOpen(false)}
+                talent={selectedTalent}
             />
 
             {/* Student Materials Modal */}

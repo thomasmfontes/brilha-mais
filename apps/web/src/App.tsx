@@ -8,6 +8,7 @@ import InstructorDashboard from "./pages/InstructorDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ExplorePage from "./pages/ExplorePage";
 import CertificatesPage from "./pages/CertificatesPage";
+import StudentResumePage from "./pages/StudentResumePage";
 import InstructorSyllabus from "./pages/InstructorSyllabus";
 import InstructorCourseProgress from "./pages/InstructorCourseProgress";
 import InstructorSubmissions from "./pages/InstructorSubmissions";
@@ -82,6 +83,7 @@ function App() {
                     <Route path="/explore" element={<ExplorePage />} />
                     <Route path="/certificates" element={<CertificatesPage />} />
                     <Route path="/resources" element={<ResourcesPage />} />
+                    <Route path="/curriculo" element={<StudentResumePage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

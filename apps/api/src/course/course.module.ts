@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { CourseController } from './course.controller';
 import { CourseService } from './course.service';
-import { PrismaService } from '../prisma.service';
 
 @Module({
   imports: [
@@ -14,7 +13,7 @@ import { PrismaService } from '../prisma.service';
     }),
   ],
   controllers: [CourseController],
-  providers: [CourseService, PrismaService],
+  providers: [CourseService],
   exports: [CourseService],
 })
 export class CourseModule {}

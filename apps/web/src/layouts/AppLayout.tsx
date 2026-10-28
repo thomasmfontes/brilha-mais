@@ -11,6 +11,7 @@ import {
     LucideSettings2,
     LucideMonitorPlay,
     LucideBookOpen,
+    LucideBriefcase,
     LucideArrowRight,
     LucideCheckCircle,
     LucideCamera,
@@ -36,6 +37,7 @@ const menuItems = [
     { icon: <LucideSearch className="h-5 w-5" />, label: "Explorar", path: "/explore" },
     { icon: <LucideGraduationCap className="h-5 w-5" />, label: "Certificados", path: "/certificates" },
     { icon: <LucideBookOpen className="h-5 w-5" />, label: "Recursos", path: "/resources" },
+    { icon: <LucideBriefcase className="h-5 w-5" />, label: "Meu Currículo", path: "/curriculo" },
 ];
 
 const adminItems = [
@@ -184,6 +186,7 @@ export function AppLayout() {
         if (path.startsWith('/explore')) return 'Explorar';
         if (path.startsWith('/certificates')) return 'Certificados';
         if (path.startsWith('/resources')) return 'Recursos';
+        if (path.startsWith('/curriculo')) return 'Meu Currículo';
         if (path.startsWith('/instructor/submissions')) return 'Correções';
         if (path.startsWith('/instructor/turma')) return 'Encontros';
         if (path.startsWith('/instructor')) return 'Instrutor';

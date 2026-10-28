@@ -35,6 +35,7 @@ model User {
   turmas              Turma[]            @relation("UserTurmas")
   meetingAttendances  MeetingAttendance[]
   webAuthnCredentials WebAuthnCredential[]
+  talentProfile       TalentProfile?
 }
 
 model StudentMaterial {
@@ -370,4 +371,48 @@ model WebAuthnChallenge {
   challenge String
   userId    String?
   createdAt DateTime @default(now())
+}
+
+
+model TalentProfile {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Contato e Localizacao
+  phone           String?
+  birthDate       DateTime?
+  city            String?
+  state           String?
+
+  // Perfil Profissional
+  headline        String?
+  bio             String?
+  areasOfInterest String[]  @default([])
+  availability    String?
+  linkedinUrl     String?
+
+  // Arquivo do Curriculo
+  resumeUrl       String?
+  resumeFileName  String?
+  resumeFileSize  String?
+  resumeUpdatedAt DateTime?
+
+  // Disponibilidade e Visibilidade
+  isAvailable     Boolean   @default(true)
+
+  // LGPD e Autorizacoes
+  lgpdConsent     Boolean   @default(false)
+  lgpdConsentAt   DateTime?
+  isMinor         Boolean   @default(false)
+  parentName      String?
+  parentContact   String?
+  parentConsent   Boolean   @default(false)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([isAvailable])
+  @@index([lgpdConsent])
 }

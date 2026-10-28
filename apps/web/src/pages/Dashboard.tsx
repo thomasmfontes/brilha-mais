@@ -22,9 +22,10 @@ export default function Dashboard() {
         const fetchCategories = async () => {
             try {
                 const { data } = await api.get('/categories');
-                setCategories(data);
+                setCategories(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error("Error fetching categories:", error);
+                setCategories([]);
             }
         };
         fetchCategories();
@@ -207,7 +208,7 @@ export default function Dashboard() {
                                 <Skeleton className="h-3 w-16" variant="rectangle" />
                             </div>
                         ))
-                    ) : (
+                    ) : Array.isArray(categories) && categories.length > 0 ? (
                         categories.map((cat, idx) => (
                             <Link
                                 key={idx}
@@ -224,6 +225,10 @@ export default function Dashboard() {
                                 </span>
                             </Link>
                         ))
+                    ) : (
+                        <div className="col-span-full py-6 text-center text-xs text-zinc-400 italic">
+                            Nenhuma categoria cadastrada.
+                        </div>
                     )}
                 </div>
             </section>
