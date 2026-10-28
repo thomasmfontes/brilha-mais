@@ -201,30 +201,36 @@ export function AppLayout() {
 
     return (
         <div className="h-[100dvh] w-full bg-background text-foreground flex overflow-hidden">
-            {/* Sidebar Desktop - V2 Minimalist */}
-            <aside className={`
-                ${isSidebarOpen ? 'w-60' : 'w-[72px]'}
-                hidden md:flex flex-col border-r border-slate-200/80 bg-white transition-[width] duration-200 h-full shrink-0 z-40 select-none
-            `}>
-                {/* Brand Header */}
-                <div className={`h-16 flex items-center border-b border-slate-100 ${isSidebarOpen ? 'px-5' : 'justify-center'}`}>
-                    <Link to="/" className="flex items-center gap-2.5 focus:outline-none overflow-hidden">
-                        <img src={logo} alt="Brilha Mais" className="h-7 w-7 object-contain shrink-0" />
-                        {isSidebarOpen && (
-                            <span className="font-bold text-sm tracking-tight text-slate-900 whitespace-nowrap">
-                                Brilha Mais
-                            </span>
-                        )}
+            {/* Sidebar Desktop - V2 Minimalist with Buttery Smooth Spring Animation */}
+            <motion.aside
+                initial={false}
+                animate={{ width: isSidebarOpen ? 240 : 72 }}
+                transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+                className="hidden md:flex flex-col border-r border-slate-200/80 bg-white h-full shrink-0 z-40 select-none overflow-hidden"
+            >
+                {/* Brand Header - Clean centered star icon, no text */}
+                <div className="h-16 flex items-center px-4 border-b border-slate-100 shrink-0">
+                    <Link to="/" className="flex items-center justify-center w-10 h-10 focus:outline-none">
+                        <img src={logo} alt="Brilha Mais" className="h-8 w-8 object-contain" />
                     </Link>
                 </div>
 
                 {/* Nav items */}
                 <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto no-scrollbar">
-                    {isSidebarOpen && (
-                        <p className="px-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                            Menu
-                        </p>
-                    )}
+                    <AnimatePresence initial={false}>
+                        {isSidebarOpen && (
+                            <motion.p
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5 overflow-hidden whitespace-nowrap"
+                            >
+                                Menu
+                            </motion.p>
+                        )}
+                    </AnimatePresence>
+
                     {menuItems.map((item: any) => {
                         const isActive = location.pathname === item.path;
                         return (
@@ -233,30 +239,47 @@ export function AppLayout() {
                                 to={item.path}
                                 title={!isSidebarOpen ? item.label : undefined}
                                 className={`
-                                    flex items-center transition-all duration-150 rounded-lg group
-                                    ${isSidebarOpen ? 'gap-3 px-2.5 py-2' : 'justify-center p-2.5'}
+                                    flex items-center h-10 w-full px-3 rounded-lg group transition-colors duration-150 overflow-hidden
                                     ${isActive
                                         ? 'bg-slate-100 text-slate-900 font-semibold'
                                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-normal'}
                                 `}
                             >
-                                <div className={`shrink-0 transition-colors ${isActive ? 'text-amber-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                                <div className={`w-6 h-6 flex items-center justify-center shrink-0 transition-colors ${isActive ? 'text-amber-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
                                     {item.icon}
                                 </div>
-                                {isSidebarOpen && (
-                                    <span className="text-sm leading-none">{item.label}</span>
-                                )}
+                                <AnimatePresence initial={false}>
+                                    {isSidebarOpen && (
+                                        <motion.span
+                                            initial={{ opacity: 0, x: -6 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -6 }}
+                                            transition={{ duration: 0.15 }}
+                                            className="overflow-hidden whitespace-nowrap text-sm leading-none ml-2.5"
+                                        >
+                                            {item.label}
+                                        </motion.span>
+                                    )}
+                                </AnimatePresence>
                             </Link>
                         );
                     })}
 
                     {visibleAdminItems.length > 0 && (
-                        <div className="pt-5 space-y-1">
-                            {isSidebarOpen && (
-                                <p className="px-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                                    Gestão
-                                </p>
-                            )}
+                        <div className="pt-4 space-y-1">
+                            <AnimatePresence initial={false}>
+                                {isSidebarOpen && (
+                                    <motion.p
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5 overflow-hidden whitespace-nowrap"
+                                    >
+                                        Gestão
+                                    </motion.p>
+                                )}
+                            </AnimatePresence>
                             {visibleAdminItems.map((item: any) => {
                                 const isActive = location.pathname === item.path;
                                 return (
@@ -265,19 +288,28 @@ export function AppLayout() {
                                         to={item.path}
                                         title={!isSidebarOpen ? item.label : undefined}
                                         className={`
-                                            flex items-center transition-all duration-150 rounded-lg group
-                                            ${isSidebarOpen ? 'gap-3 px-2.5 py-2' : 'justify-center p-2.5'}
+                                            flex items-center h-10 w-full px-3 rounded-lg group transition-colors duration-150 overflow-hidden
                                             ${isActive
                                                 ? 'bg-slate-100 text-slate-900 font-semibold'
                                                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-normal'}
                                         `}
                                     >
-                                        <div className={`shrink-0 transition-colors ${isActive ? 'text-amber-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                                        <div className={`w-6 h-6 flex items-center justify-center shrink-0 transition-colors ${isActive ? 'text-amber-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
                                             {item.icon}
                                         </div>
-                                        {isSidebarOpen && (
-                                            <span className="text-sm leading-none">{item.label}</span>
-                                        )}
+                                        <AnimatePresence initial={false}>
+                                            {isSidebarOpen && (
+                                                <motion.span
+                                                    initial={{ opacity: 0, x: -6 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, x: -6 }}
+                                                    transition={{ duration: 0.15 }}
+                                                    className="overflow-hidden whitespace-nowrap text-sm leading-none ml-2.5"
+                                                >
+                                                    {item.label}
+                                                </motion.span>
+                                            )}
+                                        </AnimatePresence>
                                     </Link>
                                 );
                             })}
@@ -286,35 +318,53 @@ export function AppLayout() {
                 </nav>
 
                 {/* Footer Utility Actions */}
-                <div className="p-3 border-t border-slate-100 mt-auto space-y-1">
+                <div className="p-3 border-t border-slate-100 mt-auto space-y-1 shrink-0">
                     <button
                         onClick={() => setIsSettingsOpen(true)}
                         title={!isSidebarOpen ? 'Biometria' : undefined}
-                        className={`
-                            flex items-center transition-colors w-full rounded-lg hover:bg-slate-50 text-slate-600 hover:text-slate-900 group
-                            ${isSidebarOpen ? 'gap-3 px-2.5 py-2' : 'justify-center p-2.5'}
-                        `}
+                        className="flex items-center h-10 w-full px-3 rounded-lg hover:bg-slate-50 text-slate-600 hover:text-slate-900 group transition-colors duration-150 overflow-hidden"
                     >
-                        <div className="shrink-0 text-slate-400 group-hover:text-slate-600">
+                        <div className="w-6 h-6 flex items-center justify-center shrink-0 text-slate-400 group-hover:text-slate-600 transition-colors">
                             <LucideFingerprint className="h-5 w-5" />
                         </div>
-                        {isSidebarOpen && <span className="text-sm font-normal">Biometria</span>}
+                        <AnimatePresence initial={false}>
+                            {isSidebarOpen && (
+                                <motion.span
+                                    initial={{ opacity: 0, x: -6 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -6 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="overflow-hidden whitespace-nowrap text-sm leading-none ml-2.5 font-normal"
+                                >
+                                    Biometria
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
                     </button>
                     <button
                         onClick={handleLogout}
                         title={!isSidebarOpen ? 'Sair' : undefined}
-                        className={`
-                            flex items-center transition-colors w-full rounded-lg hover:bg-red-50/70 text-slate-500 hover:text-red-600 group
-                            ${isSidebarOpen ? 'gap-3 px-2.5 py-2' : 'justify-center p-2.5'}
-                        `}
+                        className="flex items-center h-10 w-full px-3 rounded-lg hover:bg-red-50/70 text-slate-500 hover:text-red-600 group transition-colors duration-150 overflow-hidden"
                     >
-                        <div className="shrink-0 text-slate-400 group-hover:text-red-600 transition-colors">
+                        <div className="w-6 h-6 flex items-center justify-center shrink-0 text-slate-400 group-hover:text-red-600 transition-colors">
                             <LucideLogOut className="h-5 w-5" />
                         </div>
-                        {isSidebarOpen && <span className="text-sm font-normal">Sair</span>}
+                        <AnimatePresence initial={false}>
+                            {isSidebarOpen && (
+                                <motion.span
+                                    initial={{ opacity: 0, x: -6 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -6 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="overflow-hidden whitespace-nowrap text-sm leading-none ml-2.5 font-normal"
+                                >
+                                    Sair
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
                     </button>
                 </div>
-            </aside>
+            </motion.aside>
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden">
@@ -325,7 +375,7 @@ export function AppLayout() {
                         <button 
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
                             aria-label="Alternar menu lateral"
-                            className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
+                            className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition-colors active:scale-95"
                         >
                             <LucideMenu className="h-5 w-5" />
                         </button>
