@@ -16,7 +16,8 @@ import {
     LucideCamera,
     LucideLoader2,
     LucideQrCode,
-    LucideFingerprint
+    LucideFingerprint,
+    LucideChevronDown
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
@@ -46,6 +47,7 @@ const adminItems = [
 export function AppLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [userRole, setUserRole] = useState<'student' | 'instructor' | 'admin' | 'super_admin'>(() => {
         try {
             const token = localStorage.getItem('auth_token');
@@ -74,6 +76,7 @@ export function AppLayout() {
     const navigate = useNavigate();
     const scrollRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const profileMenuRef = useRef<HTMLDivElement>(null);
     const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
     const [isLoadingUserData, setIsLoadingUserData] = useState(() => {
         try {
@@ -84,10 +87,21 @@ export function AppLayout() {
     });
 
     useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+                setIsProfileMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    useEffect(() => {
         // Reset internal scroll on route change
         if (scrollRef.current) {
             scrollRef.current.scrollTop = 0;
         }
+        setIsProfileMenuOpen(false);
     }, [location.pathname]);
 
     useEffect(() => {
@@ -154,6 +168,22 @@ export function AppLayout() {
     const visibleAdminItems = useMemo(() => adminItems.filter(item => item.roles.includes(userRole)), [userRole]);
 
     const activeIndex = useMemo(() => menuItems.findIndex(item => item.path === location.pathname), [location.pathname]);
+
+    const currentPageTitle = useMemo(() => {
+        const path = location.pathname;
+        if (path.startsWith('/dashboard')) return 'Dashboard';
+        if (path.startsWith('/my-courses')) return 'Meus Cursos';
+        if (path.startsWith('/explore')) return 'Explorar';
+        if (path.startsWith('/certificates')) return 'Certificados';
+        if (path.startsWith('/resources')) return 'Recursos';
+        if (path.startsWith('/instructor/submissions')) return 'Correções';
+        if (path.startsWith('/instructor/turma')) return 'Encontros';
+        if (path.startsWith('/instructor')) return 'Instrutor';
+        if (path.startsWith('/admin')) return 'Administração';
+        if (path.startsWith('/course')) return 'Curso';
+        if (path.startsWith('/scan')) return 'Presença';
+        return '';
+    }, [location.pathname]);
 
     const handleAvatarClick = () => {
         fileInputRef.current?.click();
@@ -367,17 +397,27 @@ export function AppLayout() {
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden">
-                {/* Header */}
+                {/* Header Desktop & Mobile - V2 Minimalist */}
                 <header className="h-16 border-b border-slate-200/80 bg-white z-30 px-4 md:px-6 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         {/* Desktop toggle */}
                         <button 
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
                             aria-label="Alternar menu lateral"
-                            className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition-colors active:scale-95"
+                            className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors active:scale-95"
                         >
-                            <LucideMenu className="h-5 w-5" />
+                            <LucideMenu className="h-4.5 w-4.5" />
                         </button>
+
+                        {/* Breadcrumb / Section Context */}
+                        {currentPageTitle && (
+                            <div className="hidden md:flex items-center gap-2 text-sm">
+                                <span className="text-slate-300">/</span>
+                                <span className="font-semibold text-slate-800">
+                                    {currentPageTitle}
+                                </span>
+                            </div>
+                        )}
 
                         {/* Mobile logo */}
                         <Link to="/" className="md:hidden">
@@ -386,67 +426,109 @@ export function AppLayout() {
                     </div>
 
                     <div className="flex items-center gap-3 md:gap-5">
-                        <div className="flex items-center gap-3">
-                            <div className="text-right hidden sm:block">
-                                {isLoadingUserData ? (
-                                    <div className="space-y-1">
-                                        <div className="h-3.5 w-24 bg-slate-100 animate-pulse rounded-full ml-auto" />
-                                        <div className="h-2.5 w-16 bg-slate-50 animate-pulse rounded-full ml-auto" />
-                                    </div>
-                                ) : (
-                                    <>
-                                        <p className="text-sm font-semibold text-slate-900 leading-tight">
-                                            {userName || 'Usuário'}
-                                        </p>
-                                        <p className="text-xs text-amber-600 font-medium leading-tight">
+                        {/* Hidden File Input */}
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            onChange={handleFileChange} 
+                            className="hidden" 
+                            accept="image/*;capture=camera" 
+                        />
+
+                        {/* Desktop Profile Pill with Interactive Popover */}
+                        <div className="relative hidden md:block" ref={profileMenuRef}>
+                            <button 
+                                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                                className="flex items-center gap-3 pl-3 pr-2 py-1.5 rounded-full hover:bg-slate-50 border border-slate-200/70 hover:border-slate-300 transition-all group bg-white shadow-xs"
+                            >
+                                <div className="text-right leading-none">
+                                    <p className="text-sm font-semibold text-slate-800 group-hover:text-slate-950 transition-colors">
+                                        {userName || 'Usuário'}
+                                    </p>
+                                    <div className="flex items-center justify-end gap-1.5 mt-1">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                        <p className="text-[11px] text-amber-700 font-medium">
                                             {userRole === 'super_admin' ? 'Super Admin' : userRole === 'admin' ? 'Administrador' : userRole === 'instructor' ? 'Instrutor' : 'Aluno'}
                                         </p>
-                                    </>
-                                )}
-                            </div>
-                            
-                            {/* Hidden File Input */}
-                            <input 
-                                type="file" 
-                                ref={fileInputRef} 
-                                onChange={handleFileChange} 
-                                className="hidden" 
-                                accept="image/*;capture=camera" 
-                            />
+                                    </div>
+                                </div>
 
-                            <button 
-                                onClick={handleAvatarClick}
-                                disabled={isUpdatingAvatar || isLoadingUserData}
-                                className={`relative h-9 w-9 bg-slate-100 rounded-full border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm font-medium text-slate-500 text-xs shrink-0 group/avatar transition-all hover:border-slate-300 active:scale-95 ${isLoadingUserData ? 'animate-pulse' : ''}`}
-                                title="Alterar foto de perfil"
-                            >
-                                {isLoadingUserData ? (
-                                    <div className="h-full w-full bg-slate-200" />
-                                ) : userAvatar ? (
-                                    <img 
-                                        src={userAvatar.startsWith('http') ? userAvatar : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${userAvatar}`} 
-                                        alt={userName} 
-                                        className={`h-full w-full object-cover transition-all ${isUpdatingAvatar ? 'opacity-30 blur-[2px]' : 'group-hover/avatar:opacity-75'}`} 
-                                        onError={(e) => {
-                                            (e.target as HTMLImageElement).style.display = 'none';
-                                            (e.target as HTMLImageElement).parentElement!.innerHTML = userName ? userName.charAt(0) : '';
-                                        }}
-                                    />
-                                ) : (
-                                    <span className={isUpdatingAvatar ? 'opacity-0' : ''}>
-                                        {userName ? userName.charAt(0) : <LucideSettings2 className="h-4 w-4" />}
-                                    </span>
-                                )}
-
-                                {/* Hover Overlay */}
-                                <div className={`absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover/avatar:opacity-100 transition-opacity ${isUpdatingAvatar ? 'opacity-100 bg-white/70' : ''}`}>
-                                    {isUpdatingAvatar ? (
-                                        <LucideLoader2 className="h-4 w-4 text-amber-600 animate-spin" />
+                                <div className="relative h-8 w-8 rounded-full border border-slate-200 bg-slate-100 flex items-center justify-center overflow-hidden shadow-xs shrink-0 font-medium text-slate-500 text-xs">
+                                    {isLoadingUserData ? (
+                                        <div className="h-full w-full bg-slate-200 animate-pulse" />
+                                    ) : userAvatar ? (
+                                        <img 
+                                            src={userAvatar.startsWith('http') ? userAvatar : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${userAvatar}`} 
+                                            alt={userName} 
+                                            className={`h-full w-full object-cover transition-all ${isUpdatingAvatar ? 'opacity-30 blur-[2px]' : ''}`} 
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                (e.target as HTMLImageElement).parentElement!.innerText = userName ? userName.charAt(0) : '';
+                                            }}
+                                        />
                                     ) : (
-                                        <LucideCamera className="h-3.5 w-3.5 text-white" />
+                                        <span>{userName ? userName.charAt(0) : 'U'}</span>
+                                    )}
+
+                                    {isUpdatingAvatar && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+                                            <LucideLoader2 className="h-3.5 w-3.5 text-amber-600 animate-spin" />
+                                        </div>
                                     )}
                                 </div>
+
+                                <LucideChevronDown className={`h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600 transition-transform duration-150 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
                             </button>
+
+                            {/* Dropdown Menu */}
+                            <AnimatePresence>
+                                {isProfileMenuOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                                        transition={{ duration: 0.12 }}
+                                        className="absolute right-0 mt-2 w-52 bg-white rounded-xl border border-slate-200/80 shadow-lg py-1.5 z-50 overflow-hidden"
+                                    >
+                                        <div className="px-3.5 py-2 border-b border-slate-100">
+                                            <p className="text-xs font-semibold text-slate-900 truncate">{userName || 'Usuário'}</p>
+                                            <p className="text-[11px] text-slate-500 capitalize">{userRole?.replace('_', ' ')}</p>
+                                        </div>
+
+                                        <button
+                                            onClick={() => {
+                                                setIsProfileMenuOpen(false);
+                                                handleAvatarClick();
+                                            }}
+                                            className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors text-left"
+                                        >
+                                            <LucideCamera className="h-4 w-4 text-slate-400" />
+                                            <span>Alterar foto</span>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setIsProfileMenuOpen(false);
+                                                setIsSettingsOpen(true);
+                                            }}
+                                            className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors text-left"
+                                        >
+                                            <LucideFingerprint className="h-4 w-4 text-slate-400" />
+                                            <span>Configurar Biometria</span>
+                                        </button>
+
+                                        <div className="my-1 border-t border-slate-100" />
+
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-red-600 hover:bg-red-50/70 transition-colors text-left"
+                                        >
+                                            <LucideLogOut className="h-4 w-4 text-red-500" />
+                                            <span>Sair da conta</span>
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
 
                         {/* Mobile Menu Toggle Button */}
