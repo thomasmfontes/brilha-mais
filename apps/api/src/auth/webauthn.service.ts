@@ -24,10 +24,23 @@ export class WebAuthnService {
     private authService: AuthService,
   ) {}
 
-  async getRegistrationOptions(user: User) {
-    const rpName = 'Brilha Mais';
-    const expectedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+  private getOriginAndRpId(originHeader?: string) {
+    let expectedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+    if (originHeader) {
+      try {
+        const url = new URL(originHeader);
+        expectedOrigin = `${url.protocol}//${url.host}`;
+      } catch (e) {
+        // fallback
+      }
+    }
     const rpID = new URL(expectedOrigin).hostname;
+    return { expectedOrigin, rpID };
+  }
+
+  async getRegistrationOptions(user: User, originHeader?: string) {
+    const rpName = 'Brilha Mais';
+    const { expectedOrigin, rpID } = this.getOriginAndRpId(originHeader);
 
     const credentials = await this.prisma.webAuthnCredential.findMany({
       where: { userId: user.id },
@@ -67,6 +80,7 @@ export class WebAuthnService {
   async verifyRegistration(
     user: User,
     body: RegistrationResponseJSON & { deviceName?: string; name?: string },
+    originHeader?: string,
   ) {
     const storedChallenge = await this.prisma.webAuthnChallenge.findFirst({
       where: { userId: user.id },
@@ -82,8 +96,7 @@ export class WebAuthnService {
       where: { id: storedChallenge.id },
     });
 
-    const expectedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const rpID = new URL(expectedOrigin).hostname;
+    const { expectedOrigin, rpID } = this.getOriginAndRpId(originHeader);
 
     let verification;
     try {
@@ -119,16 +132,17 @@ export class WebAuthnService {
         ? body.response.transports.join(',')
         : null;
 
+      // Save credential
       await this.prisma.webAuthnCredential.create({
         data: {
+          userId: user.id,
           credentialId: credentialIdBase64url,
           publicKey: publicKeyBase64,
           counter: BigInt(counter),
           deviceType: credentialDeviceType,
           backedUp: credentialBackedUp,
           transports: transportsList,
-          deviceName: body.deviceName || body.name || null,
-          userId: user.id,
+          deviceName: body.deviceName || body.name || 'Dispositivo Desconhecido',
         },
       });
 
@@ -138,9 +152,8 @@ export class WebAuthnService {
     return { verified: false };
   }
 
-  async getAuthenticationOptions(body: { email?: string }) {
-    const expectedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const rpID = new URL(expectedOrigin).hostname;
+  async getAuthenticationOptions(body: { email?: string }, originHeader?: string) {
+    const { expectedOrigin, rpID } = this.getOriginAndRpId(originHeader);
 
     let allowCredentials: PublicKeyCredentialDescriptorJSON[] | undefined =
       undefined;
@@ -183,6 +196,7 @@ export class WebAuthnService {
 
   async verifyAuthentication(
     body: AuthenticationResponseJSON & { challenge?: string },
+    originHeader?: string,
   ) {
     const credentialId = body.id;
     const credential = await this.prisma.webAuthnCredential.findUnique({
@@ -224,8 +238,7 @@ export class WebAuthnService {
       where: { id: challengeRecord.id },
     });
 
-    const expectedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const rpID = new URL(expectedOrigin).hostname;
+    const { expectedOrigin, rpID } = this.getOriginAndRpId(originHeader);
 
     let verification;
     try {

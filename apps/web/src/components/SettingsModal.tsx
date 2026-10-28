@@ -94,6 +94,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             });
             const options = optionsResponse.data;
 
+            // Garantir compatibilidade com o hostname atual da aplicação
+            if (options.rp && window.location.hostname) {
+                options.rp.id = window.location.hostname;
+            }
+
             // 2. Chamar o navegador para criar a credencial
             const registrationResult = await startRegistration({ optionsJSON: options });
 
@@ -108,9 +113,9 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             toast.success("Biometria cadastrada com sucesso!");
             fetchCredentials();
         } catch (error: any) {
-            console.error("Erro no registro WebAuthn:", error);
+            console.warn("Registro WebAuthn:", error);
             if (error.name === "NotAllowedError") {
-                toast.error("Registro cancelado pelo usuário.");
+                toast.error("Registro cancelado ou não permitido pelo Windows Hello / PIN.");
             } else {
                 toast.error(
                     error.response?.data?.message || 

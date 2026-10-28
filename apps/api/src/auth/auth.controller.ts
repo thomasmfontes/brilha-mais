@@ -126,7 +126,8 @@ export class AuthController {
   @Post('webauthn/register/options')
   @UseGuards(JwtAuthGuard)
   async registerOptions(@Req() req: RequestWithUser) {
-    return this.webAuthnService.getRegistrationOptions(req.user);
+    const origin = (req.headers?.origin as string) || (req.headers?.referer as string);
+    return this.webAuthnService.getRegistrationOptions(req.user, origin);
   }
 
   @Post('webauthn/register/verify')
@@ -135,19 +136,26 @@ export class AuthController {
     @Req() req: RequestWithUser,
     @Body() body: RegistrationResponseJSON & { deviceName?: string; name?: string },
   ) {
-    return this.webAuthnService.verifyRegistration(req.user, body);
+    const origin = (req.headers?.origin as string) || (req.headers?.referer as string);
+    return this.webAuthnService.verifyRegistration(req.user, body, origin);
   }
 
   @Post('webauthn/authenticate/options')
-  async authenticateOptions(@Body() body: { email?: string }) {
-    return this.webAuthnService.getAuthenticationOptions(body);
+  async authenticateOptions(
+    @Req() req: any,
+    @Body() body: { email?: string },
+  ) {
+    const origin = (req.headers?.origin as string) || (req.headers?.referer as string);
+    return this.webAuthnService.getAuthenticationOptions(body, origin);
   }
 
   @Post('webauthn/authenticate/verify')
   async authenticateVerify(
+    @Req() req: any,
     @Body() body: AuthenticationResponseJSON & { challenge?: string },
   ) {
-    return this.webAuthnService.verifyAuthentication(body);
+    const origin = (req.headers?.origin as string) || (req.headers?.referer as string);
+    return this.webAuthnService.verifyAuthentication(body, origin);
   }
 
   @Get('webauthn/credentials')
