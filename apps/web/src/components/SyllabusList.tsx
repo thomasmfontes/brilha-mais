@@ -44,11 +44,11 @@ const SyllabusList = ({
             const isExpanded = !!expandedModules[mIdx];
             const dur = totalModuleDuration(module);
             return (
-                <div key={`module-${mIdx}-${module.id || mIdx}`} className="relative">
+                <div key={`module-${mIdx}-${module.id || mIdx}`}>
                     <button
                         onClick={() => setExpandedModules(prev => ({ ...prev, [mIdx]: !prev[mIdx] }))}
-                        className={`w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors sticky top-0 z-20 border-b ${
-                            isExpanded ? 'border-slate-200/80 bg-slate-50 hover:bg-slate-100/70 shadow-2xs' : 'border-slate-100 bg-white hover:bg-slate-50'
+                        className={`w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors border-b ${
+                            isExpanded ? 'border-slate-200/80 bg-slate-50 hover:bg-slate-100/70' : 'border-slate-100 bg-white hover:bg-slate-50'
                         }`}
                     >
                         <div className="flex items-center gap-3 flex-1 min-w-0">

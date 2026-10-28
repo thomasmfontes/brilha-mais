@@ -896,7 +896,7 @@ export default function CoursePage() {
                             transition={{ type: "spring", damping: 30, stiffness: 300 }}
                             className="fixed top-0 right-0 h-full w-[320px] bg-white z-[160] lg:hidden shadow-lg flex flex-col"
                         >
-                            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+                            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                                 <div className="flex items-center gap-2">
                                     <LucideBookOpen className="h-4 w-4 text-amber-600" />
                                     <span className="text-sm font-semibold text-slate-900">Trilha do Curso</span>
