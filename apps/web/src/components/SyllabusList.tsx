@@ -98,10 +98,10 @@ const SyllabusList = ({
                                                 />
                                             )}
                                             
-                                            <div className={`shrink-0 h-6 w-6 rounded-full flex items-center justify-center text-xs transition-colors ${
+                                            <div className={`shrink-0 h-6 w-6 rounded-md flex items-center justify-center text-xs transition-colors ${
                                                 lesson.completed ? 'bg-emerald-500 text-white' 
-                                                : isActive ? 'border border-amber-500 bg-white text-amber-600 font-semibold' 
-                                                : 'bg-white border border-slate-200 text-slate-400 font-medium'
+                                                : isActive ? 'bg-amber-500 text-white shadow-2xs font-semibold' 
+                                                : 'bg-slate-100 text-slate-500 font-medium'
                                             }`}>
                                                 {isLocked ? <LucideLock className="h-3 w-3 text-slate-300" />
                                                     : lesson.completed ? <LucideCheck className="h-3.5 w-3.5" />

@@ -390,16 +390,48 @@ export default function CoursePage() {
 
     return (
         <div className="bg-background text-foreground h-screen overflow-hidden">
-            <div className="lg:max-w-[1200px] lg:mx-auto lg:flex lg:gap-0 w-full h-full">
-                <div className="flex-1 min-w-0 lg:border-r lg:border-border flex flex-col h-full overflow-y-auto custom-scrollbar">
-                    {/* Desktop Breadcrumbs */}
-                    <div className="hidden lg:flex items-center gap-2 px-6 py-4 border-b border-slate-100 bg-white">
-                        <Link to="/dashboard" className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors">
-                            <LucideChevronLeft className="h-3.5 w-3.5" />
-                            <span>Painel do Aluno</span>
-                        </Link>
-                        <span className="text-slate-300">/</span>
-                        <span className="text-xs font-medium text-slate-700 truncate">{currentLesson?.title || course.title}</span>
+            <div className="w-full h-full lg:flex">
+                <div className="flex-1 min-w-0 lg:border-r border-slate-200/80 flex flex-col h-full overflow-y-auto custom-scrollbar">
+                    {/* Desktop Breadcrumbs & Quick Nav */}
+                    <div className="hidden lg:flex items-center justify-between px-6 py-3 border-b border-slate-200/80 bg-white shrink-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <Link to="/dashboard" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-slate-200 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-2xs">
+                                <LucideChevronLeft className="h-3.5 w-3.5" />
+                                <span>Painel</span>
+                            </Link>
+                            <span className="text-slate-300">/</span>
+                            <span className="text-xs text-slate-500 truncate max-w-xs">{course.title}</span>
+                            <span className="text-slate-300">/</span>
+                            <span className="text-xs font-semibold text-slate-800 truncate max-w-md">{currentLesson?.title}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            <button 
+                                onClick={() => {
+                                    if (currentLessonIdx > 0) goToLesson(currentModuleIdx, currentLessonIdx - 1);
+                                    else if (currentModuleIdx > 0) {
+                                        const prevModule = modules[currentModuleIdx - 1];
+                                        goToLesson(currentModuleIdx - 1, (prevModule?.lessons?.length || 1) - 1);
+                                    }
+                                }} 
+                                disabled={!hasPrev} 
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-slate-200 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 disabled:opacity-30 transition-colors shadow-2xs" 
+                                title="Aula anterior"
+                            >
+                                <LucideChevronLeft className="h-3.5 w-3.5" />
+                                <span className="hidden xl:inline">Anterior</span>
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    if (nextIndices) goToLesson(nextIndices.mIdx, nextIndices.lIdx);
+                                }} 
+                                disabled={!hasNext || isNextLocked} 
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-slate-200 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 disabled:opacity-30 transition-colors shadow-2xs" 
+                                title="Próxima aula"
+                            >
+                                <span className="hidden xl:inline">Próxima</span>
+                                <LucideChevronRight className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Mobile Navigation Sub-header */}
@@ -792,24 +824,21 @@ export default function CoursePage() {
 
                 <div className="hidden lg:flex flex-col w-80 xl:w-96 flex-shrink-0 bg-white border-l border-slate-200/80 h-full overflow-hidden">
                     <div className="px-5 py-4 border-b border-slate-200/80 bg-white">
-                        <div className="flex items-center justify-between gap-4 mb-3">
-                            <div className="flex-1 min-w-0">
-                                <h2 className="text-sm font-bold text-slate-900 truncate tracking-tight">{course.title}</h2>
-                                <p className="text-xs text-slate-500 mt-0.5">{completedLessons} de {totalLessons} aulas concluídas</p>
-                            </div>
-                            <CircularProgress pct={progressPct} size={40} />
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                            <h2 className="text-sm font-bold text-slate-900 truncate tracking-tight" title={course.title}>
+                                {course.title}
+                            </h2>
+                            <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60 shrink-0">
+                                {progressPct}%
+                            </span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <button onClick={() => {
-                                if (currentLessonIdx > 0) goToLesson(currentModuleIdx, currentLessonIdx - 1);
-                                else if (currentModuleIdx > 0) {
-                                    const prevModule = modules[currentModuleIdx - 1];
-                                    goToLesson(currentModuleIdx - 1, (prevModule?.lessons?.length || 1) - 1);
-                                }
-                            }} disabled={!hasPrev} className="h-7 w-7 rounded-md border border-slate-200 bg-white flex items-center justify-center hover:bg-slate-50 text-slate-600 disabled:opacity-30 transition-colors" title="Aula anterior"><LucideChevronLeft className="h-3.5 w-3.5" /></button>
-                            <button onClick={() => {
-                                if (nextIndices) goToLesson(nextIndices.mIdx, nextIndices.lIdx);
-                            }} disabled={!hasNext || isNextLocked} className="h-7 w-7 rounded-md border border-slate-200 bg-white flex items-center justify-center hover:bg-slate-50 text-slate-600 disabled:opacity-30 transition-colors" title="Próxima aula"><LucideChevronRight className="h-3.5 w-3.5" /></button>
+                        <div className="space-y-1.5">
+                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                <div style={{ width: `${progressPct}%` }} className="h-full bg-amber-500 transition-all duration-300" />
+                            </div>
+                            <p className="text-[11px] text-slate-500 font-medium">
+                                {completedLessons} de {totalLessons} aulas concluídas
+                            </p>
                         </div>
                     </div>
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
