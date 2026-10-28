@@ -26,44 +26,48 @@ export function ConfirmModal({
     variant = "danger"
 }: ConfirmModalProps) {
     const variantStyles = {
-        danger: "bg-red-50 text-red-500 border-red-100",
-        primary: "bg-primary/5 text-primary border-primary/10",
-        warning: "bg-amber-50 text-amber-500 border-amber-100"
+        danger: "bg-red-50 text-red-600 border-red-200/60",
+        primary: "bg-amber-50 text-amber-600 border-amber-200/60",
+        warning: "bg-amber-50 text-amber-600 border-amber-200/60"
     };
 
     const buttonStyles = {
-        danger: "bg-primary shadow-primary/20 hover:bg-primary/90",
-        primary: "bg-primary shadow-primary/20 hover:bg-primary/90",
-        warning: "bg-amber-500 shadow-amber-500/20 hover:bg-amber-600"
+        danger: "bg-red-600 hover:bg-red-700 shadow-red-500/10",
+        primary: "bg-amber-500 hover:bg-amber-600 shadow-amber-500/10",
+        warning: "bg-amber-500 hover:bg-amber-600 shadow-amber-500/10"
     };
 
     return (
         <PortalModal isOpen={isOpen} onClose={onClose}>
-            <div className="bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl border border-slate-100 text-center space-y-6 relative overflow-hidden">
-                <div className="flex flex-col items-center space-y-4">
-                    <div className={`h-16 w-16 rounded-2xl flex items-center justify-center border shadow-sm ${variantStyles[variant]}`}>
-                        <LucideAlertCircle className="h-8 w-8" />
+            <div className="bg-white rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-200/80 text-left space-y-5 relative">
+                <div className="flex items-start gap-3.5">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${variantStyles[variant]}`}>
+                        <LucideAlertCircle className="h-5 w-5" />
                     </div>
-                    <div className="space-y-1">
-                        <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 leading-tight">{title}</h2>
-                        <p className="text-sm font-bold text-slate-400 max-w-[280px] mx-auto leading-relaxed">
+                    <div className="space-y-1 min-w-0 flex-1">
+                        <h2 className="text-base sm:text-lg font-semibold text-slate-900 leading-snug">
+                            {title}
+                        </h2>
+                        <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
                             {description}
                         </p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                     <button
+                        type="button"
                         onClick={onClose}
                         disabled={isLoading}
-                        className="py-4 bg-slate-50 text-slate-400 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-100 transition-all active:scale-95 border border-slate-100 disabled:opacity-50"
+                        className="h-10 px-4 rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-colors disabled:opacity-50"
                     >
                         {cancelText}
                     </button>
                     <button
+                        type="button"
                         disabled={isLoading}
                         onClick={onConfirm}
-                        className={`py-4 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all active:scale-95 shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 ${buttonStyles[variant]}`}
+                        className={`h-10 px-4 rounded-xl text-xs font-medium text-white shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 ${buttonStyles[variant]}`}
                     >
                         {isLoading ? (
                             <>
