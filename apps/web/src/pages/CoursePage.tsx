@@ -446,7 +446,7 @@ export default function CoursePage() {
                     </div>
 
                     {/* Mobile Navigation Sub-header */}
-                    <div className="lg:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200/80 px-4 py-2.5 flex items-center justify-between shadow-2xs">
+                    <div className="lg:hidden sticky top-0 z-40 bg-white border-b border-slate-200/80 px-4 py-2.5 flex items-center justify-between shadow-2xs">
                         <div className="flex items-center gap-2">
                             <Link 
                                 to="/dashboard"
