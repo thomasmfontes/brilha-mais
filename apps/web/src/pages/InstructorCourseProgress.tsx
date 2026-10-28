@@ -567,24 +567,29 @@ export default function InstructorCourseProgress() {
                             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm cursor-pointer"
                         />
                         <motion.div
-                            initial={{ scale: 0.96, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.96, opacity: 0 }}
-                            className="relative z-[20001] w-full max-w-sm aspect-square bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200"
+                            initial={{ scale: 0.95, opacity: 0, y: 16 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 16 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            className="relative z-[20001] w-full max-w-sm aspect-square bg-white rounded-2xl overflow-hidden shadow-2xl border border-zinc-200/80 group"
                         >
                             {previewAvatar.url ? (
-                                <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover" />
+                                <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-300 font-bold text-5xl uppercase">
+                                <div className="w-full h-full flex items-center justify-center bg-zinc-100 text-zinc-400 font-semibold text-5xl">
                                     {previewAvatar.name.charAt(0)}
                                 </div>
                             )}
-                            <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-slate-950/80 to-transparent p-4">
-                                <p className="text-sm font-semibold text-white">{previewAvatar.name}</p>
+                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/85 via-zinc-950/20 to-transparent pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-full p-5">
+                                <p className="text-base font-bold text-white tracking-tight">{previewAvatar.name}</p>
+                                <p className="text-xs text-white/70 font-medium mt-0.5">Foto de perfil</p>
                             </div>
                             <button
+                                type="button"
                                 onClick={() => setPreviewAvatar(null)}
-                                className="absolute top-3 right-3 h-8 w-8 bg-black/40 hover:bg-black/60 text-white rounded-lg flex items-center justify-center backdrop-blur-xs transition-colors"
+                                className="absolute top-3.5 right-3.5 h-8 w-8 bg-black/40 hover:bg-black/60 text-white rounded-xl flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer border border-white/10"
+                                title="Fechar"
                             >
                                 <LucideX className="h-4 w-4" />
                             </button>

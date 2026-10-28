@@ -1,4 +1,4 @@
-import { LucideShield, LucideUsers, LucideBookOpen, LucideAlertTriangle, LucideShieldCheck, LucidePlus, LucideLayoutGrid, LucideSearch, LucideUserCog, LucideCheck, LucideTrash2, LucideEdit2, LucidePencil, LucideFolder, LucideChevronDown, LucideXCircle, LucideUserCircle, LucideMaximize2, LucideLoader2, LucideCamera, LucideMapPin, LucideLayoutDashboard, LucideGraduationCap } from "lucide-react";
+import { LucideShield, LucideUsers, LucideBookOpen, LucideAlertTriangle, LucideShieldCheck, LucidePlus, LucideLayoutGrid, LucideSearch, LucideUserCog, LucideCheck, LucideTrash2, LucideEdit2, LucidePencil, LucideFolder, LucideChevronDown, LucideXCircle, LucideUserCircle, LucideMaximize2, LucideLoader2, LucideCamera, LucideMapPin, LucideLayoutDashboard, LucideGraduationCap, LucideX } from "lucide-react";
 import { getIconComponent } from "../utils/icons";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
@@ -2321,52 +2321,66 @@ export default function AdminDashboard() {
             />
 
             {/* Lightbox for Avatars */}
+            {/* Modal de Pré-visualização da Foto de Perfil */}
             <AnimatePresence>
                 {previewAvatar && (
                     <PortalModal isOpen={true} onClose={() => setPreviewAvatar(null)}>
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            initial={{ scale: 0.95, opacity: 0, y: 16 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 16 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="relative w-full max-w-lg aspect-square bg-white rounded-[3rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border-[12px] border-white group"
+                            className="relative w-full max-w-md aspect-square bg-white rounded-2xl overflow-hidden shadow-2xl border border-zinc-200/80 group"
                         >
                             {previewAvatar.url ? (
-                                <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                                <img
+                                    src={previewAvatar.url}
+                                    alt={previewAvatar.name}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-300 font-black text-6xl uppercase">
+                                <div className="w-full h-full flex items-center justify-center bg-zinc-100 text-zinc-400 font-semibold text-6xl">
                                     {previewAvatar.name.charAt(0)}
                                 </div>
                             )}
 
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-80" />
+                            {/* Clean Scrim Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/85 via-zinc-950/20 to-transparent pointer-events-none" />
 
-                            <div className="absolute bottom-0 left-0 w-full p-8 md:p-10 flex items-end justify-between gap-4 md:gap-6">
+                            {/* Close Button Top Right */}
+                            <button
+                                type="button"
+                                onClick={() => setPreviewAvatar(null)}
+                                className="absolute top-4 right-4 h-9 w-9 rounded-xl bg-black/40 hover:bg-black/60 text-white flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer border border-white/10"
+                                title="Fechar"
+                            >
+                                <LucideX className="h-4 w-4" />
+                            </button>
+
+                            {/* Bottom Identity & Action Bar */}
+                            <div className="absolute bottom-0 left-0 w-full p-5 sm:p-6 flex items-end justify-between gap-4">
                                 <div className="min-w-0">
-                                    <p className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter shadow-sm truncate mb-1">{previewAvatar.name}</p>
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                                        <p className="text-[9px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white/50">Foto de Perfil</p>
+                                    <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight truncate leading-tight">
+                                        {previewAvatar.name}
+                                    </h3>
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[#F19B0A]" />
+                                        <p className="text-xs text-white/70 font-medium">Foto de perfil</p>
                                     </div>
                                 </div>
+
                                 <button
+                                    type="button"
                                     onClick={() => {
                                         handleListAvatarEditClick(previewAvatar.id);
                                         setPreviewAvatar(null);
                                     }}
-                                    className="flex items-center gap-2 md:gap-2.5 px-4 md:px-6 py-3 md:py-4 bg-primary text-white rounded-xl md:rounded-[1.25rem] text-[10px] md:text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 shrink-0 border border-white/20"
+                                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#F19B0A] hover:bg-[#D98B08] active:scale-[0.98] text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs shrink-0 cursor-pointer"
                                 >
-                                    <LucideCamera className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                                    Trocar Foto
+                                    <LucideCamera className="h-4 w-4" />
+                                    <span>Trocar foto</span>
                                 </button>
                             </div>
-                            
-                            <button
-                                onClick={() => setPreviewAvatar(null)}
-                                className="absolute top-6 md:top-8 right-6 md:right-8 h-10 w-10 md:h-12 md:w-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all hover:scale-110 active:scale-95 border border-white/20"
-                            >
-                                <LucideXCircle className="h-5 w-5 md:h-6 md:w-6" />
-                            </button>
                         </motion.div>
                     </PortalModal>
                 )}
