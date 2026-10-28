@@ -454,13 +454,15 @@ export function AppLayout() {
                                 aria-expanded={isProfileMenuOpen}
                                 aria-haspopup="true"
                                 className={`
-                                    flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full border transition-all duration-150 focus:outline-none select-none
+                                    flex items-center gap-2 pl-1.5 pr-2.5 h-9 rounded-full border transition-colors duration-150 select-none
+                                    outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 active:outline-none ring-0
                                     ${isProfileMenuOpen 
                                         ? 'bg-slate-100 border-slate-300 shadow-sm' 
                                         : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/80 shadow-xs'}
                                 `}
+                                style={{ outline: 'none' }}
                             >
-                                <div className="h-7 w-7 rounded-full border border-slate-200 bg-slate-100 flex items-center justify-center overflow-hidden shrink-0 font-medium text-slate-600 text-xs">
+                                <div className="h-6 w-6 rounded-full border border-slate-200 bg-slate-100 flex items-center justify-center overflow-hidden shrink-0 font-medium text-slate-600 text-xs">
                                     {isLoadingUserData ? (
                                         <div className="h-full w-full bg-slate-200 animate-pulse" />
                                     ) : userAvatar ? (
@@ -478,11 +480,12 @@ export function AppLayout() {
                                     )}
                                 </div>
 
-                                <span className="text-sm font-medium text-slate-800">
-                                    {userName ? userName.split(' ')[0] : 'Conta'}
-                                </span>
-
-                                <LucideChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180 text-slate-700' : ''}`} />
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className="text-sm font-medium text-slate-800 leading-none">
+                                        {userName ? userName.split(' ')[0] : 'Conta'}
+                                    </span>
+                                    <LucideChevronDown className={`h-3.5 w-3.5 text-slate-400 shrink-0 -translate-y-[0.5px] transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180 text-slate-700' : ''}`} />
+                                </div>
                             </button>
 
                             {/* Dropdown Menu - V2 Premium Account Popover */}
