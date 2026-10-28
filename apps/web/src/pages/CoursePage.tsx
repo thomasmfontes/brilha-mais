@@ -317,93 +317,72 @@ export default function CoursePage() {
     const hasPrev = currentLessonIdx > 0 || currentModuleIdx > 0;
 
     if (!isEnrolled) return (
-        <div className="relative min-h-screen w-full bg-[#FAFAFA] flex flex-col lg:items-center lg:justify-center p-6 pt-16 md:p-12 overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(255,165,0,0.05),transparent)] pointer-events-none" />
+        <div className="min-h-screen w-full bg-[#FAFAF9] flex flex-col justify-center items-center p-6 md:p-12 relative">
+            <Link
+                to="/explore"
+                className="absolute top-6 left-6 p-2 rounded-lg border border-slate-200/80 bg-white text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-2xs z-20 flex items-center gap-1.5 text-xs font-medium"
+                title="Voltar ao catálogo"
+            >
+                <LucideChevronLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Voltar</span>
+            </Link>
 
             <motion.div 
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="relative z-10 w-full max-w-6xl flex flex-col lg:flex-row items-center gap-10 lg:gap-16"
+                transition={{ duration: 0.4 }}
+                className="relative z-10 w-full max-w-4xl flex flex-col lg:flex-row items-center gap-8 lg:gap-12"
             >
                 {/* Visual Side */}
-                <div className="relative w-full lg:w-[42%] group">
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.1, duration: 0.8 }}
-                        className="relative z-10 aspect-video lg:aspect-[4/5] rounded-3xl overflow-hidden shadow-xl shadow-black/5 border-4 border-white group-hover:shadow-2xl transition-all duration-500"
-                    >
+                <div className="w-full sm:w-80 lg:w-[340px] shrink-0">
+                    <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xs border border-slate-200/80 bg-slate-100">
                         <img 
                             src={resolveThumbnail(course.thumbnail)} 
                             alt={course.title} 
-                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+                            className="w-full h-full object-cover" 
                         />
-                    </motion.div>
-                    
-                    {/* Subtle Glow */}
-                    <div className="absolute inset-x-8 -bottom-4 h-32 bg-primary/20 blur-3xl -z-10 group-hover:bg-primary/30 transition-colors" />
+                    </div>
                 </div>
 
                 {/* Content Side */}
-                <div className="flex-1 flex flex-col space-y-8 text-center lg:text-left">
-                    <div className="space-y-4">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                            className="flex items-center justify-center lg:justify-start gap-2"
-                        >
-                            <div className="h-[1px] w-6 bg-primary/30" />
-                            <span className="text-primary text-[10px] font-black uppercase tracking-[0.3em]">Brilha Mais</span>
-                            <div className="h-[1px] w-6 bg-primary/30" />
-                        </motion.div>
+                <div className="flex-1 flex flex-col space-y-5 text-center lg:text-left">
+                    <div className="space-y-3">
+                        <div className="inline-flex items-center gap-2">
+                            <span className="px-2.5 py-0.5 rounded-md bg-amber-50 border border-amber-200/60 text-amber-700 text-xs font-medium uppercase tracking-wider">
+                                {typeof course.category === 'object' ? (course.category as any)?.name : course.category || "Curso"}
+                            </span>
+                        </div>
 
-                        <motion.h1 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                            className="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight uppercase text-slate-900"
-                        >
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 leading-tight">
                             {course.title}
-                        </motion.h1>
+                        </h1>
                         
-                        <motion.p 
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.4 }}
-                            className="text-slate-500 text-sm md:text-base font-medium leading-relaxed max-w-lg mx-auto lg:mx-0"
-                        >
-                            {course.description}
-                        </motion.p>
+                        {course.description && (
+                            <p className="text-slate-600 text-sm leading-relaxed max-w-xl mx-auto lg:mx-0">
+                                {course.description}
+                            </p>
+                        )}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
-                        <motion.button 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.5 }}
+                    <div className="pt-2 flex justify-center lg:justify-start">
+                        <button 
                             onClick={handleEnroll} 
                             disabled={isEnrolling} 
-                            className="group relative overflow-hidden bg-primary text-white py-4 px-10 rounded-2xl font-black uppercase tracking-widest text-sm shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-50"
+                            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm shadow-2xs transition-colors disabled:opacity-50"
                         >
-                            <span className="relative z-10 flex items-center justify-center gap-2">
-                                {isEnrolling ? (
-                                    <>
-                                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        Iniciando...
-                                    </>
-                                ) : (
-                                    <>
-                                        Começar agora
-                                        <LucidePlay className="h-4 w-4 fill-current transition-transform group-hover:scale-110" />
-                                    </>
-                                )}
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
-                        </motion.button>
+                            {isEnrolling ? (
+                                <>
+                                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span>Iniciando...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Começar agora</span>
+                                    <LucidePlay className="h-4 w-4 fill-current" />
+                                </>
+                            )}
+                        </button>
                     </div>
-
                 </div>
             </motion.div>
         </div>
@@ -414,31 +393,31 @@ export default function CoursePage() {
             <div className="lg:max-w-[1200px] lg:mx-auto lg:flex lg:gap-0 w-full h-full">
                 <div className="flex-1 min-w-0 lg:border-r lg:border-border flex flex-col h-full overflow-y-auto custom-scrollbar">
                     {/* Desktop Breadcrumbs */}
-                    <div className="hidden lg:flex items-center gap-3 px-8 py-6">
-                        <Link to="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                            <LucideChevronLeft className="h-4 w-4" />
-                            <span className="text-xs font-black uppercase tracking-widest text-slate-800">Painel do Aluno</span>
+                    <div className="hidden lg:flex items-center gap-2 px-6 py-4 border-b border-slate-100 bg-white">
+                        <Link to="/dashboard" className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors">
+                            <LucideChevronLeft className="h-3.5 w-3.5" />
+                            <span>Painel do Aluno</span>
                         </Link>
-                        <span className="text-border mx-2">/</span>
-                        <span className="text-xs font-bold text-foreground/70">{currentLesson?.title || course.title}</span>
+                        <span className="text-slate-300">/</span>
+                        <span className="text-xs font-medium text-slate-700 truncate">{currentLesson?.title || course.title}</span>
                     </div>
 
                     {/* Mobile Navigation Sub-header */}
-                    <div className="lg:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-lg border-b border-slate-100 px-4 py-3 flex items-center justify-between shadow-sm">
+                    <div className="lg:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-slate-200/80 px-4 py-2.5 flex items-center justify-between shadow-2xs">
                         <button 
                             onClick={() => setIsSyllabusOpen(true)}
-                            className="flex items-center gap-2 bg-slate-50 border border-slate-100 hover:border-primary/20 px-3 py-2 rounded-xl transition-all active:scale-95 group"
+                            className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/80 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100"
                         >
-                            <LucideBookOpen className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">Trilha</span>
+                            <LucideBookOpen className="h-3.5 w-3.5 text-amber-600" />
+                            <span>Trilha</span>
                         </button>
 
-                        <div className="flex-1 px-4 text-center truncate">
-                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Aula Atual</p>
-                            <p className="text-xs font-black uppercase italic tracking-tight text-slate-900 truncate leading-tight">{currentLesson?.title}</p>
+                        <div className="flex-1 px-3 text-center truncate">
+                            <p className="text-[10px] text-slate-400 font-medium leading-none mb-0.5">Aula atual</p>
+                            <p className="text-xs font-semibold text-slate-900 truncate">{currentLesson?.title}</p>
                         </div>
 
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-1 shrink-0">
                             <button 
                                 onClick={() => {
                                     if (currentLessonIdx > 0) goToLesson(currentModuleIdx, currentLessonIdx - 1);
@@ -448,7 +427,7 @@ export default function CoursePage() {
                                     }
                                 }} 
                                 disabled={!hasPrev}
-                                className="h-9 w-9 rounded-xl border border-slate-100 bg-white flex items-center justify-center text-slate-400 active:scale-95 disabled:opacity-30 disabled:active:scale-100 transition-all shadow-sm"
+                                className="h-8 w-8 rounded-lg border border-slate-200/80 bg-white flex items-center justify-center text-slate-500 hover:text-slate-900 disabled:opacity-30 transition-colors"
                             >
                                 <LucideChevronLeft className="h-4 w-4" />
                             </button>
@@ -457,7 +436,7 @@ export default function CoursePage() {
                                     if (nextIndices) goToLesson(nextIndices.mIdx, nextIndices.lIdx);
                                 }} 
                                 disabled={!hasNext || isNextLocked}
-                                className="h-9 w-9 rounded-xl border border-slate-100 bg-white flex items-center justify-center text-slate-400 active:scale-95 disabled:opacity-30 disabled:active:scale-100 transition-all shadow-sm"
+                                className="h-8 w-8 rounded-lg border border-slate-200/80 bg-white flex items-center justify-center text-slate-500 hover:text-slate-900 disabled:opacity-30 transition-colors"
                             >
                                 <LucideChevronRight className="h-4 w-4" />
                             </button>
@@ -467,8 +446,8 @@ export default function CoursePage() {
                     <div className="w-full">
                         {!currentLesson ? (
                             <div className="w-full aspect-video bg-card flex flex-col items-center justify-center p-8">
-                                <LucideFileText className="h-12 w-12 text-muted-foreground mb-4" />
-                                <h2 className="text-xl font-black italic uppercase">Nenhum conteúdo ainda</h2>
+                                <LucideFileText className="h-10 w-10 text-slate-300 mb-3" />
+                                <h2 className="text-sm font-semibold text-slate-600">Nenhum conteúdo disponível</h2>
                             </div>
                         ) : (
                             <>
@@ -490,8 +469,6 @@ export default function CoursePage() {
                                             <div className="w-full h-full flex flex-col relative bg-slate-100">
                                                 <CustomPDFViewer url={currentLesson.pdfUrl} />
                                                 
-                                                {/* If download is completely forbidden we show a toast or a different overlay, 
-                                                    but CustomPDFViewer naturally doesn't have a download button in its UI natively. */}
                                                 {currentLesson.allowPdfDownload !== false && (
                                                     <div className="absolute top-4 right-4 z-50">
                                                         <button 
@@ -500,7 +477,7 @@ export default function CoursePage() {
                                                                 downloadMaterial(currentLesson.pdfUrl, `${currentLesson.title}.pdf`, currentLesson.id, currentLesson.pdfUrl);
                                                             }}
                                                             title="Baixar material"
-                                                            className="h-9 w-9 flex items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/20 hover:scale-110 active:scale-90 transition-all"
+                                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-amber-500 hover:bg-amber-600 text-white shadow-2xs transition-colors"
                                                         >
                                                             <LucideDownload className="h-4 w-4" />
                                                         </button>
@@ -509,23 +486,23 @@ export default function CoursePage() {
                                             </div>
                                         ) : (
                                             <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-slate-50">
-                                                <LucideFileText className="h-16 w-16 text-slate-200 mb-4" />
-                                                <h2 className="text-xl font-black uppercase italic tracking-tighter text-slate-400">Nenhum PDF disponível</h2>
-                                                <p className="text-slate-400 text-xs mt-2 uppercase font-bold tracking-widest leading-relaxed">O instrutor ainda não enviou o conteúdo principal desta aula.</p>
+                                                <LucideFileText className="h-12 w-12 text-slate-300 mb-3" />
+                                                <h2 className="text-sm font-semibold text-slate-700">Nenhum PDF disponível</h2>
+                                                <p className="text-slate-400 text-xs mt-1">O instrutor ainda não enviou o conteúdo principal desta aula.</p>
                                             </div>
                                         )}
                                     </div>
                                 )}
                                 {currentLesson.contentType === 'QUIZ' && (
-                                    <div className="w-full bg-card p-6 md:p-10 min-h-[400px] flex flex-col">
-                                        <div className="flex items-center justify-between mb-8">
-                                            <h2 className="text-2xl font-black uppercase italic tracking-tighter">Mini Teste</h2>
+                                    <div className="w-full bg-card p-6 md:p-8 min-h-[400px] flex flex-col">
+                                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                                            <div>
+                                                <h2 className="text-lg font-bold text-slate-900 tracking-tight">Mini Teste</h2>
+                                                <p className="text-xs text-slate-500">Valide seu conhecimento sobre a aula</p>
+                                            </div>
                                             {currentLesson.quiz?.questions && !quizSubmitted && (!currentLesson.completed || Object.keys(quizAnswers).length > 0) && (
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Progresso</span>
-                                                    <div className="bg-muted px-3 h-6 rounded-full flex items-center justify-center min-w-[54px]">
-                                                        <span className="text-[10px] font-black text-primary leading-none">{currentQuestionIdx + 1} / {currentLesson.quiz.questions.length}</span>
-                                                    </div>
+                                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-xs font-medium text-slate-600">
+                                                    <span>Questão {currentQuestionIdx + 1} de {currentLesson.quiz.questions.length}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -541,47 +518,47 @@ export default function CoursePage() {
                                                             return (
                                                                 <motion.div 
                                                                     key={currentQuestionIdx}
-                                                                    initial={{ opacity: 0, x: 20 }}
+                                                                    initial={{ opacity: 0, x: 10 }}
                                                                     animate={{ opacity: 1, x: 0 }}
-                                                                    className="space-y-6"
+                                                                    className="space-y-4"
                                                                 >
-                                                                    <p className="font-bold text-lg leading-snug">{q.text}</p>
-                                                                    <div className="grid gap-3">
+                                                                    <p className="font-semibold text-base text-slate-900 leading-snug">{q.text}</p>
+                                                                    <div className="grid gap-2.5">
                                                                         {q.options.map((opt: any, oIdx: number) => {
                                                                             const isSelected = quizAnswers[currentQuestionIdx] === oIdx;
                                                                             const isCorrect = opt.isCorrect;
                                                                             
-                                                                            let borderColor = 'border-slate-100';
+                                                                            let borderColor = 'border-slate-200';
                                                                             let bgColor = 'bg-white';
-                                                                            let textColor = 'text-slate-600';
-                                                                            let iconBg = 'border-slate-200';
+                                                                            let textColor = 'text-slate-700';
+                                                                            let iconBg = 'border-slate-200 text-transparent';
                                                                             let iconInner = null;
 
                                                                             if (showFeedback) {
                                                                                 if (isCorrect) {
-                                                                                    borderColor = 'border-emerald-500';
-                                                                                    bgColor = 'bg-emerald-50';
-                                                                                    textColor = 'text-emerald-700';
-                                                                                    iconBg = 'border-emerald-500 bg-emerald-500';
-                                                                                    iconInner = <LucideCheck className="h-4 w-4 text-white" />;
+                                                                                    borderColor = 'border-emerald-300';
+                                                                                    bgColor = 'bg-emerald-50/70';
+                                                                                    textColor = 'text-emerald-950 font-medium';
+                                                                                    iconBg = 'border-emerald-500 bg-emerald-500 text-white';
+                                                                                    iconInner = <LucideCheck className="h-3 w-3" />;
                                                                                 } else if (isSelected && !isCorrect) {
-                                                                                    borderColor = 'border-rose-500';
-                                                                                    bgColor = 'bg-rose-50';
-                                                                                    textColor = 'text-rose-700';
-                                                                                    iconBg = 'border-rose-500 bg-rose-500';
-                                                                                    iconInner = <LucideX className="h-4 w-4 text-white" />;
+                                                                                    borderColor = 'border-rose-300';
+                                                                                    bgColor = 'bg-rose-50/70';
+                                                                                    textColor = 'text-rose-950 font-medium';
+                                                                                    iconBg = 'border-rose-500 bg-rose-500 text-white';
+                                                                                    iconInner = <LucideX className="h-3 w-3" />;
                                                                                 } else {
-                                                                                    borderColor = 'border-slate-50';
+                                                                                    borderColor = 'border-slate-100';
                                                                                     bgColor = 'bg-slate-50/50';
-                                                                                    textColor = 'text-slate-300';
-                                                                                    iconBg = 'border-slate-100';
+                                                                                    textColor = 'text-slate-400';
+                                                                                    iconBg = 'border-slate-200';
                                                                                 }
                                                                             } else if (isSelected) {
-                                                                                borderColor = 'border-primary';
-                                                                                bgColor = 'bg-primary/10';
-                                                                                textColor = 'text-primary';
-                                                                                iconBg = 'border-primary bg-primary';
-                                                                                iconInner = <LucideCheck className="h-4 w-4 text-white" />;
+                                                                                borderColor = 'border-amber-400';
+                                                                                bgColor = 'bg-amber-50/50';
+                                                                                textColor = 'text-slate-900 font-medium';
+                                                                                iconBg = 'border-amber-500 bg-amber-500 text-white';
+                                                                                iconInner = <LucideCheck className="h-3 w-3" />;
                                                                             }
 
                                                                             const showExplanation = showFeedback && isCorrect && q.explanation;
@@ -591,23 +568,23 @@ export default function CoursePage() {
                                                                                     onClick={() => {
                                                                                         if (!showFeedback) setQuizAnswers({ ...quizAnswers, [currentQuestionIdx]: oIdx });
                                                                                     }}
-                                                                                    className={`rounded-2xl border-2 text-left font-bold text-sm tracking-tight transition-all ${borderColor} ${bgColor} ${textColor} ${
-                                                                                        (!showFeedback && !isSelected) ? 'hover:border-slate-200 hover:bg-slate-50 cursor-pointer' : ''
-                                                                                    } ${isSelected && !showFeedback ? 'shadow-lg shadow-primary/20 scale-[1.02] border-primary' : ''} ${!showFeedback ? 'active:scale-[0.98]' : ''}`}
+                                                                                    className={`rounded-xl border text-left text-sm transition-all ${borderColor} ${bgColor} ${textColor} ${
+                                                                                        (!showFeedback && !isSelected) ? 'hover:border-slate-300 hover:bg-slate-50 cursor-pointer' : ''
+                                                                                    } ${isSelected && !showFeedback ? 'ring-1 ring-amber-300/40' : ''}`}
                                                                                 >
-                                                                                    <div className="p-5 flex items-center justify-between">
-                                                                                        <span className="flex-1 pr-4">{opt.text}</span>
-                                                                                        <div className={`h-6 w-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-all ${iconBg}`}>
+                                                                                    <div className="p-3.5 flex items-center justify-between gap-3">
+                                                                                        <span className="flex-1">{opt.text}</span>
+                                                                                        <div className={`h-5 w-5 shrink-0 rounded-full border flex items-center justify-center transition-all ${iconBg}`}>
                                                                                             {iconInner}
                                                                                         </div>
                                                                                     </div>
                                                                                     {showExplanation && (
-                                                                                        <div className="px-5 pb-4 border-t border-emerald-200/60">
-                                                                                            <div className="flex items-start gap-2.5 pt-3">
-                                                                                                <LucideBookOpen className="h-3.5 w-3.5 shrink-0 text-emerald-500 mt-0.5" />
+                                                                                        <div className="px-3.5 pb-3 border-t border-emerald-200/50">
+                                                                                            <div className="flex items-start gap-2 pt-2">
+                                                                                                <LucideBookOpen className="h-3.5 w-3.5 shrink-0 text-emerald-600 mt-0.5" />
                                                                                                 <div>
-                                                                                                    <p className="text-[8px] font-black uppercase tracking-[0.25em] text-emerald-500 mb-1">Explicação</p>
-                                                                                                    <p className="text-xs font-semibold text-emerald-800 leading-relaxed">{q.explanation}</p>
+                                                                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 mb-0.5">Explicação</p>
+                                                                                                    <p className="text-xs text-emerald-900 leading-relaxed">{q.explanation}</p>
                                                                                                 </div>
                                                                                             </div>
                                                                                         </div>
@@ -621,26 +598,26 @@ export default function CoursePage() {
                                                         })()}
                                                     </div>
 
-                                                    <div key="quiz-actions" className="flex items-center gap-4 mt-12 pt-8 border-t border-slate-50">
+                                                    <div key="quiz-actions" className="flex items-center gap-3 mt-8 pt-6 border-t border-slate-100">
                                                         {!showFeedback ? (
                                                                 <button 
                                                                     key="btn-confirm-answer"
                                                                     onClick={() => setShowFeedback(true)}
                                                                     disabled={quizAnswers[currentQuestionIdx] === undefined}
-                                                                    className="w-full py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-3 group"
+                                                                    className="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-semibold text-xs shadow-2xs disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                                                                 >
-                                                                    <span>Confirmar Resposta</span>
-                                                                    <LucideCheck className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                                                    <span>Confirmar resposta</span>
+                                                                    <LucideCheck className="h-4 w-4" />
                                                                 </button>
                                                         ) : (
-                                                            <div key="quiz-nav-feedback" className="flex items-center gap-4 w-full">
+                                                            <div key="quiz-nav-feedback" className="flex items-center gap-3 w-full">
                                                                 <button 
                                                                     key="btn-prev-q"
                                                                     onClick={handlePrevQuestion}
                                                                     disabled={currentQuestionIdx === 0}
-                                                                    className="flex-1 py-4 px-6 border border-slate-200 rounded-2xl font-black uppercase tracking-widest text-xs text-slate-400 hover:text-slate-600 hover:bg-slate-50 disabled:opacity-0 transition-all flex items-center justify-center gap-2"
+                                                                    className="flex-1 py-2.5 px-4 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-lg font-medium text-xs disabled:opacity-0 transition-colors flex items-center justify-center gap-1.5"
                                                                 >
-                                                                    <LucideChevronLeft className="h-4 w-4" />
+                                                                    <LucideChevronLeft className="h-3.5 w-3.5" />
                                                                     <span>Anterior</span>
                                                                 </button>
                                                                 
@@ -648,27 +625,27 @@ export default function CoursePage() {
                                                                     <button 
                                                                         key="btn-next-q"
                                                                         onClick={handleNextQuestion}
-                                                                        className="flex-[2] py-4 px-6 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-slate-900/10 hover:brightness-125 active:scale-95 transition-all flex items-center justify-center gap-2 group"
+                                                                        className="flex-[2] py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold text-xs shadow-2xs transition-colors flex items-center justify-center gap-1.5"
                                                                     >
-                                                                        <span>Próxima Pergunta</span>
-                                                                        <LucideChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                                                        <span>Próxima pergunta</span>
+                                                                        <LucideChevronRight className="h-3.5 w-3.5" />
                                                                     </button>
                                                                 ) : (
                                                                     <button 
                                                                         key="btn-finish-quiz"
                                                                         onClick={handleQuizSubmit} 
                                                                         disabled={isSubmittingQuiz || Object.keys(quizAnswers).length < (currentLesson.quiz?.questions?.length || 0)}
-                                                                        className="flex-[2] py-4 px-6 bg-primary text-primary-foreground rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                                                        className="flex-[2] py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-semibold text-xs shadow-2xs disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5"
                                                                     >
                                                                         {isSubmittingQuiz ? (
                                                                             <span className="flex items-center gap-2">
-                                                                                <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                                                                                <div className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                                                 Processando...
                                                                             </span>
                                                                         ) : (
-                                                                            <span className="flex items-center gap-2">
-                                                                                Finalizar Teste
-                                                                                <LucideZap className="h-4 w-4 fill-current" />
+                                                                            <span className="flex items-center gap-1.5">
+                                                                                Finalizar teste
+                                                                                <LucideZap className="h-3.5 w-3.5 fill-current" />
                                                                             </span>
                                                                         )}
                                                                     </button>
@@ -678,65 +655,52 @@ export default function CoursePage() {
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div key="quiz-results-block" className="text-center py-10 flex flex-col items-center justify-center">
-                                                    <motion.div 
-                                                        initial={{ scale: 0 }}
-                                                        animate={{ scale: 1 }}
-                                                        className="h-20 w-20 bg-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-emerald-500/20"
-                                                    >
-                                                        <LucideCheck className="h-10 w-10 text-white" />
-                                                    </motion.div>
-                                                    <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-1">Parabéns!</h3>
-                                                    <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-widest mb-8">Você concluiu este mini teste</p>
+                                                <div key="quiz-results-block" className="text-center py-6 flex flex-col items-center justify-center">
+                                                    <div className="h-12 w-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mb-3">
+                                                        <LucideCheck className="h-6 w-6" />
+                                                    </div>
+                                                    <h3 className="text-xl font-bold text-slate-900 tracking-tight mb-1">Parabéns!</h3>
+                                                    <p className="text-slate-500 text-xs mb-6">Você concluiu este mini teste</p>
                                                     
-                                                    <div className="w-full max-w-xl mx-auto bg-white shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] rounded-[40px] p-8 md:p-10 mb-10 text-left border border-slate-50">
-                                                        <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-50 px-2">
-                                                            <div className="space-y-1">
-                                                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Desempenho Geral</h4>
-                                                                <p className="text-sm font-bold text-slate-900 italic">Resumo do Teste</p>
+                                                    <div className="w-full max-w-xl mx-auto bg-white rounded-2xl p-6 md:p-8 mb-6 text-left border border-slate-200/80 shadow-2xs">
+                                                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                                                            <div>
+                                                                <h4 className="text-xs font-semibold text-slate-900">Desempenho Geral</h4>
+                                                                <p className="text-xs text-slate-500">Resumo do teste</p>
                                                             </div>
-                                                            <div className="bg-primary/10 text-primary px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest leading-none border border-primary/5">
+                                                            <div className="bg-amber-50 text-amber-800 border border-amber-200/60 px-2.5 py-1 rounded-md text-xs font-semibold">
                                                                 {(currentLesson.quiz?.questions || []).filter((q: any, idx: number) => quizAnswers[idx] === q.options.findIndex((o: any) => o.isCorrect)).length} / {currentLesson.quiz?.questions?.length} Acertos
                                                             </div>
                                                         </div>
                                                         
-                                                        <div className="divide-y divide-slate-50 max-h-[360px] overflow-y-auto pr-4 custom-scrollbar -mr-4">
+                                                        <div className="divide-y divide-slate-100 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
                                                             {(currentLesson.quiz?.questions || []).map((q: any, idx: number) => {
                                                                 const selectedIdx = quizAnswers[idx];
                                                                 const correctIdx = q.options.findIndex((o: any) => o.isCorrect);
                                                                 const isCorrect = selectedIdx === correctIdx;
                                                                 
                                                                 return (
-                                                                    <motion.div 
-                                                                        key={idx}
-                                                                        initial={{ opacity: 0, x: -10 }}
-                                                                        animate={{ opacity: 1, x: 0 }}
-                                                                        transition={{ delay: idx * 0.05 }}
-                                                                        className="py-6 flex items-start gap-5 first:pt-0 last:pb-0"
-                                                                    >
-                                                                        <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center border ${
-                                                                            isCorrect ? 'bg-emerald-50 border-emerald-100 text-emerald-500' : 'bg-rose-50 border-rose-100 text-rose-500'
+                                                                    <div key={idx} className="py-4 flex items-start gap-3 first:pt-0 last:pb-0">
+                                                                        <div className={`h-6 w-6 shrink-0 rounded-full flex items-center justify-center text-xs ${
+                                                                            isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
                                                                         }`}>
                                                                             {isCorrect ? <LucideCheck className="h-3.5 w-3.5" /> : <LucideX className="h-3.5 w-3.5" />}
                                                                         </div>
-                                                                        <div className="flex-1 min-w-0 space-y-3">
-                                                                            <p className="text-sm font-bold text-slate-900 leading-relaxed">{q.text}</p>
-                                                                            <div className="flex flex-col gap-1">
-                                                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
-                                                                                    {isCorrect ? 'Você acertou! A resposta é:' : 'A resposta correta é:'}
+                                                                        <div className="flex-1 min-w-0 space-y-1.5">
+                                                                            <p className="text-xs font-semibold text-slate-900">{q.text}</p>
+                                                                            <div className="text-xs">
+                                                                                <span className="text-slate-400 text-[11px] block">
+                                                                                    {isCorrect ? 'Resposta correta:' : 'A resposta correta é:'}
                                                                                 </span>
-                                                                                <span className={`text-[11px] font-black uppercase tracking-wide ${isCorrect ? 'text-emerald-600/80' : 'text-emerald-600'}`}>
+                                                                                <span className={`font-medium ${isCorrect ? 'text-emerald-700' : 'text-slate-800'}`}>
                                                                                     {q.options[correctIdx]?.text}
                                                                                 </span>
                                                                             </div>
                                                                             {q.explanation && (
-                                                                                <div className="flex items-start gap-2 pt-1 border-t border-slate-100">
-                                                                                    <LucideBookOpen className="h-3 w-3 shrink-0 text-amber-400 mt-0.5" />
-                                                                                    <p className="text-[10px] font-bold text-slate-500 leading-relaxed">{q.explanation}</p>
-                                                                                </div>
+                                                                                <p className="text-xs text-slate-500 border-t border-slate-100 pt-1 mt-1">{q.explanation}</p>
                                                                             )}
                                                                         </div>
-                                                                    </motion.div>
+                                                                    </div>
                                                                 );
                                                             })}
                                                         </div>
@@ -763,27 +727,27 @@ export default function CoursePage() {
                         )}
                     </div>
 
-                    <div className="p-6 lg:p-10">
-                        <div className="flex flex-col gap-6 mb-10 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="p-6 lg:p-8">
+                        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Conteúdo da Aula</p>
-                                <h1 className="text-2xl lg:text-3xl font-black text-slate-900 uppercase italic tracking-tighter leading-none">{currentLesson?.title || 'Aula'}</h1>
+                                <p className="text-xs font-medium text-amber-700">Conteúdo da aula</p>
+                                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">{currentLesson?.title || 'Aula'}</h1>
                             </div>
                             {hasNext && !isNextLocked && (
                                 <button 
                                     onClick={() => {
                                         if (nextIndices) goToLesson(nextIndices.mIdx, nextIndices.lIdx);
                                     }} 
-                                    className="w-full lg:w-auto bg-primary text-primary-foreground px-8 py-5 lg:py-3 rounded-2xl lg:rounded-xl font-black uppercase text-sm lg:text-[10px] shadow-xl shadow-primary/25 border-b-4 border-black/10 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 group"
+                                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold shadow-2xs transition-colors shrink-0"
                                 >
-                                    Próxima Aula
-                                    <LucideChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                    <span>Próxima aula</span>
+                                    <LucideChevronRight className="h-4 w-4" />
                                 </button>
                             )}
                         </div>
                         {(currentLesson?.description || course.description) && (
                             <div className="prose prose-slate max-w-none">
-                                <p className="text-slate-600 text-sm border-l-4 border-primary/20 pl-4 py-1 leading-relaxed italic whitespace-pre-wrap">
+                                <p className="text-slate-600 text-sm border-l-2 border-amber-400/80 pl-3.5 py-0.5 leading-relaxed whitespace-pre-wrap">
                                     {currentLesson?.description || course.description}
                                 </p>
                             </div>
@@ -791,12 +755,12 @@ export default function CoursePage() {
                         
                         {/* Materials Grid */}
                         {currentLesson?.materials?.length > 0 && (
-                            <div className="mt-12 pt-10 border-t border-border">
-                                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
-                                    <LucideFileText className="h-4 w-4" />
+                            <div className="mt-10 pt-8 border-t border-slate-100">
+                                <h3 className="text-xs font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                                    <LucideFileText className="h-4 w-4 text-slate-500" />
                                     Materiais Complementares
                                 </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {currentLesson.materials.map((mat: any, idx: number) => {
                                         // Skip if it is the main PDF and download is restricted
                                         const isMainPdf = currentLesson.pdfUrl && (mat.url === currentLesson.pdfUrl || mat.url.includes(currentLesson.pdfUrl.split('/').pop() || '____'));
@@ -807,45 +771,45 @@ export default function CoursePage() {
                                                 key={idx}
                                                 title={mat.name}
                                                 onClick={() => downloadMaterial(mat.url?.startsWith('http') ? mat.url : `${API_URL}${mat.url}`, mat.name, currentLesson.id, mat.url)}
-                                                className="w-full flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border hover:border-primary/20 transition-all group text-left"
+                                                className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 hover:bg-slate-100/50 transition-colors group text-left"
                                             >
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="h-9 w-9 shrink-0 bg-white border border-border group-hover:border-primary/20 rounded-lg flex items-center justify-center text-primary transition-all">
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                    <div className="h-8 w-8 shrink-0 bg-white border border-slate-200 rounded-md flex items-center justify-center text-slate-600 transition-colors">
                                                         <LucideDownload className="h-4 w-4" />
                                                     </div>
-                                                    <span className="text-xs font-bold truncate">{mat.name}</span>
+                                                    <span className="text-xs font-medium text-slate-800 truncate">{mat.name}</span>
                                                 </div>
-                                                <LucideChevronRight className="h-4 w-4 shrink-0 ml-2 text-muted-foreground/30 group-hover:text-primary transition-all" />
+                                                <LucideChevronRight className="h-4 w-4 shrink-0 ml-2 text-slate-300 group-hover:text-slate-600 transition-colors" />
                                             </button>
                                         );
                                     })}
                                 </div>
                             </div>
                         )}
-                        <div className="h-24" />
+                        <div className="h-16" />
                     </div>
                 </div>
 
-                <div className="hidden lg:flex flex-col w-80 xl:w-96 flex-shrink-0 bg-card border-l border-border h-full overflow-hidden">
-                    <div className="px-6 py-8 border-b border-border bg-card">
-                        <div className="flex items-center justify-between gap-6 mb-6">
-                            <div className="flex-1 truncate">
-                                <h2 className="text-lg font-black truncate uppercase italic tracking-tighter text-slate-900">{course.title}</h2>
-                                <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-1">{completedLessons} de {totalLessons} aulas concluídas</p>
+                <div className="hidden lg:flex flex-col w-80 xl:w-96 flex-shrink-0 bg-white border-l border-slate-200/80 h-full overflow-hidden">
+                    <div className="px-5 py-4 border-b border-slate-200/80 bg-white">
+                        <div className="flex items-center justify-between gap-4 mb-3">
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-sm font-bold text-slate-900 truncate tracking-tight">{course.title}</h2>
+                                <p className="text-xs text-slate-500 mt-0.5">{completedLessons} de {totalLessons} aulas concluídas</p>
                             </div>
-                            <CircularProgress pct={progressPct} size={48} />
+                            <CircularProgress pct={progressPct} size={40} />
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-1.5">
                             <button onClick={() => {
                                 if (currentLessonIdx > 0) goToLesson(currentModuleIdx, currentLessonIdx - 1);
                                 else if (currentModuleIdx > 0) {
                                     const prevModule = modules[currentModuleIdx - 1];
                                     goToLesson(currentModuleIdx - 1, (prevModule?.lessons?.length || 1) - 1);
                                 }
-                            }} disabled={!hasPrev} className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted text-slate-700 disabled:opacity-20 active:scale-95 transition-all"><LucideChevronLeft className="h-4 w-4" /></button>
+                            }} disabled={!hasPrev} className="h-7 w-7 rounded-md border border-slate-200 bg-white flex items-center justify-center hover:bg-slate-50 text-slate-600 disabled:opacity-30 transition-colors" title="Aula anterior"><LucideChevronLeft className="h-3.5 w-3.5" /></button>
                             <button onClick={() => {
                                 if (nextIndices) goToLesson(nextIndices.mIdx, nextIndices.lIdx);
-                            }} disabled={!hasNext || isNextLocked} className="h-8 w-8 rounded-full border border-border flex items-center justify-center hover:bg-muted text-slate-700 disabled:opacity-20 active:scale-95 transition-all"><LucideChevronRight className="h-4 w-4" /></button>
+                            }} disabled={!hasNext || isNextLocked} className="h-7 w-7 rounded-md border border-slate-200 bg-white flex items-center justify-center hover:bg-slate-50 text-slate-600 disabled:opacity-30 transition-colors" title="Próxima aula"><LucideChevronRight className="h-3.5 w-3.5" /></button>
                         </div>
                     </div>
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -869,27 +833,27 @@ export default function CoursePage() {
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                            className="fixed top-0 right-0 h-full w-[320px] bg-white z-[160] lg:hidden shadow-[-10px_0_30px_rgba(0,0,0,0.05)] flex flex-col"
+                            className="fixed top-0 right-0 h-full w-[320px] bg-white z-[160] lg:hidden shadow-lg flex flex-col"
                         >
-                            <div className="px-6 py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-1 bg-primary rounded-full" />
-                                    <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-900 italic">Trilha do Curso</span>
+                            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+                                <div className="flex items-center gap-2">
+                                    <LucideBookOpen className="h-4 w-4 text-amber-600" />
+                                    <span className="text-sm font-semibold text-slate-900">Trilha do Curso</span>
                                 </div>
                                 <button
                                     onClick={() => setIsSyllabusOpen(false)}
-                                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 active:scale-95 transition-all shadow-sm"
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                                 >
                                     <LucideX className="h-4 w-4" />
                                 </button>
                             </div>
-                            <div className="px-6 py-4 border-b border-slate-50">
+                            <div className="px-5 py-3.5 border-b border-slate-100">
                                 <div className="flex items-center justify-between mb-2">
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{completedLessons} de {totalLessons} aulas</p>
-                                    <CircularProgress pct={progressPct} size={32} />
+                                    <p className="text-xs text-slate-500 font-medium">{completedLessons} de {totalLessons} aulas</p>
+                                    <CircularProgress pct={progressPct} size={30} />
                                 </div>
                                 <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                                    <motion.div initial={{ width: 0 }} animate={{ width: `${progressPct}%` }} className="h-full bg-primary" />
+                                    <div style={{ width: `${progressPct}%` }} className="h-full bg-amber-500 transition-all duration-300" />
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto no-scrollbar">
