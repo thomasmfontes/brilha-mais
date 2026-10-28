@@ -571,12 +571,17 @@ export default function InstructorCourseProgress() {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 16 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="relative z-[20001] w-full max-w-sm aspect-square bg-white rounded-2xl overflow-hidden shadow-2xl border border-zinc-200/80 group"
+                            className="relative z-[20001] w-full max-w-sm aspect-square bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl border border-zinc-200/80 group"
                         >
                             {previewAvatar.url ? (
-                                <img src={previewAvatar.url} alt={previewAvatar.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                <img
+                                    src={previewAvatar.url}
+                                    alt={previewAvatar.name}
+                                    className="w-full h-full object-cover select-none"
+                                    decoding="sync"
+                                />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-zinc-100 text-zinc-400 font-semibold text-5xl">
+                                <div className="w-full h-full flex items-center justify-center bg-zinc-900 text-zinc-400 font-semibold text-5xl">
                                     {previewAvatar.name.charAt(0)}
                                 </div>
                             )}
