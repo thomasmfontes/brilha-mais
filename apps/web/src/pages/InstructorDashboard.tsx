@@ -305,14 +305,15 @@ export default function InstructorDashboard() {
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-xl font-bold tracking-tight text-slate-900">Painel do Instrutor</h1>
-                    <p className="text-xs text-slate-500 mt-0.5">Gestão de conteúdos e desempenho.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">Painel do Instrutor</h1>
+                    <p className="text-sm text-zinc-500 mt-1">Gestão de conteúdos e desempenho.</p>
                 </div>
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-2 whitespace-nowrap self-start sm:self-auto"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#F19B0A] hover:bg-[#D98B08] text-white rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-2xs active:scale-[0.98] whitespace-nowrap self-start sm:self-auto cursor-pointer"
                 >
-                    <LucidePlus className="h-4 w-4" /> Novo Curso
+                    <LucidePlus className="h-4 w-4" />
+                    <span>Novo Curso</span>
                 </button>
             </div>
 
