@@ -517,14 +517,15 @@ export default function InstructorSubmissions() {
                                 initial={{ opacity: 0 }} 
                                 animate={{ opacity: 1 }} 
                                 exit={{ opacity: 0 }} 
+                                transition={{ duration: 0.18, ease: "easeOut" }}
                                 onClick={() => setSelectedSubmission(null)} 
-                                className="fixed inset-0 bg-slate-950/75 backdrop-blur-md" 
+                                className="fixed inset-0 bg-slate-950/60 will-change-[opacity]" 
                             />
                             <motion.div 
-                                initial={{ scale: 0.97, opacity: 0, y: 15 }}
+                                initial={{ scale: 0.97, opacity: 0, y: 10 }}
                                 animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 0.97, opacity: 0, y: 15 }}
-                                transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                                exit={{ scale: 0.97, opacity: 0, y: 10 }}
+                                transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                                 className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[85vh] z-[100000] border border-slate-200/90 text-left"
                             >
                                 {/* Modal Close Button */}

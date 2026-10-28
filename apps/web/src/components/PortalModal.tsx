@@ -31,21 +31,22 @@ export function PortalModal({ isOpen, onClose, children, preventCloseOnOverlayCl
         <AnimatePresence>
             {isOpen && (
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 md:p-6 overflow-hidden">
-                    {/* Fundo com efeito de vidro total na tela */}
+                    {/* Fundo suave sem flicker de GPU/blur */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
                         onClick={() => !preventCloseOnOverlayClick && onClose()}
-                        className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
-                        style={{ WebkitBackdropFilter: 'blur(12px)' }}
+                        className="fixed inset-0 bg-slate-950/60 will-change-[opacity]"
                     />
                     
                     {/* Conteúdo do Modal */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                        initial={{ opacity: 0, scale: 0.97, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                        exit={{ opacity: 0, scale: 0.97, y: 10 }}
+                        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                         className={className || "relative z-[100000] w-full max-w-lg"}
                     >
                         {children}
