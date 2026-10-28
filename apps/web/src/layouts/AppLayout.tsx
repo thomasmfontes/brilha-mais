@@ -201,7 +201,7 @@ export function AppLayout() {
 
     return (
         <div className="h-[100dvh] w-full bg-background text-foreground flex overflow-hidden">
-            {/* Sidebar Desktop - V2 Minimalist with Buttery Smooth Spring Animation */}
+            {/* Sidebar Desktop - V2 Minimalist with Buttery Smooth Animation */}
             <motion.aside
                 initial={false}
                 animate={{ width: isSidebarOpen ? 240 : 72 }}
@@ -216,21 +216,7 @@ export function AppLayout() {
                 </div>
 
                 {/* Nav items */}
-                <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto no-scrollbar">
-                    <AnimatePresence initial={false}>
-                        {isSidebarOpen && (
-                            <motion.p
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.15 }}
-                                className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5 overflow-hidden whitespace-nowrap"
-                            >
-                                Menu
-                            </motion.p>
-                        )}
-                    </AnimatePresence>
-
+                <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto no-scrollbar">
                     {menuItems.map((item: any) => {
                         const isActive = location.pathname === item.path;
                         return (
@@ -251,11 +237,11 @@ export function AppLayout() {
                                 <AnimatePresence initial={false}>
                                     {isSidebarOpen && (
                                         <motion.span
-                                            initial={{ opacity: 0, x: -6 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: -6 }}
-                                            transition={{ duration: 0.15 }}
-                                            className="overflow-hidden whitespace-nowrap text-sm leading-none ml-2.5"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.1 }}
+                                            className="overflow-hidden whitespace-nowrap text-sm leading-none ml-2.5 font-medium"
                                         >
                                             {item.label}
                                         </motion.span>
@@ -266,20 +252,33 @@ export function AppLayout() {
                     })}
 
                     {visibleAdminItems.length > 0 && (
-                        <div className="pt-4 space-y-1">
-                            <AnimatePresence initial={false}>
-                                {isSidebarOpen && (
-                                    <motion.p
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        transition={{ duration: 0.15 }}
-                                        className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5 overflow-hidden whitespace-nowrap"
-                                    >
-                                        Gestão
-                                    </motion.p>
-                                )}
-                            </AnimatePresence>
+                        <div className="pt-2 space-y-1">
+                            {/* Constant height divider/header container - Prevents vertical layout shift */}
+                            <div className="h-6 flex items-center px-3 my-1 overflow-hidden">
+                                <AnimatePresence mode="wait" initial={false}>
+                                    {isSidebarOpen ? (
+                                        <motion.span
+                                            key="label-gestao"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.1 }}
+                                            className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap select-none"
+                                        >
+                                            Gestão
+                                        </motion.span>
+                                    ) : (
+                                        <motion.div
+                                            key="divider-gestao"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.1 }}
+                                            className="w-full border-t border-slate-200/70"
+                                        />
+                                    )}
+                                </AnimatePresence>
+                            </div>
                             {visibleAdminItems.map((item: any) => {
                                 const isActive = location.pathname === item.path;
                                 return (
@@ -300,11 +299,11 @@ export function AppLayout() {
                                         <AnimatePresence initial={false}>
                                             {isSidebarOpen && (
                                                 <motion.span
-                                                    initial={{ opacity: 0, x: -6 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    exit={{ opacity: 0, x: -6 }}
-                                                    transition={{ duration: 0.15 }}
-                                                    className="overflow-hidden whitespace-nowrap text-sm leading-none ml-2.5"
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    transition={{ duration: 0.1 }}
+                                                    className="overflow-hidden whitespace-nowrap text-sm leading-none ml-2.5 font-medium"
                                                 >
                                                     {item.label}
                                                 </motion.span>
@@ -330,10 +329,10 @@ export function AppLayout() {
                         <AnimatePresence initial={false}>
                             {isSidebarOpen && (
                                 <motion.span
-                                    initial={{ opacity: 0, x: -6 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -6 }}
-                                    transition={{ duration: 0.15 }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.1 }}
                                     className="overflow-hidden whitespace-nowrap text-sm leading-none ml-2.5 font-normal"
                                 >
                                     Biometria
@@ -352,10 +351,10 @@ export function AppLayout() {
                         <AnimatePresence initial={false}>
                             {isSidebarOpen && (
                                 <motion.span
-                                    initial={{ opacity: 0, x: -6 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -6 }}
-                                    transition={{ duration: 0.15 }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.1 }}
                                     className="overflow-hidden whitespace-nowrap text-sm leading-none ml-2.5 font-normal"
                                 >
                                     Sair
