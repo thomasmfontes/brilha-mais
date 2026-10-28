@@ -25,29 +25,7 @@ import logo from "./assets/logo.png";
 
 // Clean Minimal Home Page
 function Home() {
-    return (
-        <div className="bg-[#FAFAF9] text-zinc-900 min-h-screen flex flex-col justify-between">
-            <LandingPage />
-
-            {/* Minimalist Footer */}
-            <footer className="w-full border-t border-zinc-200/70 bg-white py-8 px-6 sm:px-8 mt-auto">
-                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <Link to="/" aria-label="Brilha Mais" className="flex items-center gap-2 focus:outline-none">
-                        <img src={logo} alt="Brilha Mais" className="h-8 w-auto hover:opacity-85 transition-opacity" />
-                    </Link>
-
-                    <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 text-xs text-zinc-500">
-                        <span>&copy; 2026 Brilha Mais</span>
-                        <div className="flex items-center gap-4">
-                            <Link to="/termos" className="hover:text-zinc-900 transition-colors">Termos de Uso</Link>
-                            <span className="text-zinc-300">·</span>
-                            <Link to="/privacidade" className="hover:text-zinc-900 transition-colors">Privacidade</Link>
-                        </div>
-                    </div>
-                </div>
-            </footer>
-        </div>
-    );
+    return <LandingPage />;
 }
 
 function App() {

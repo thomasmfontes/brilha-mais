@@ -76,13 +76,13 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen bg-[#FAFAF9] text-zinc-900 flex flex-col justify-between selection:bg-amber-100 selection:text-amber-900">
             {/* Top Navigation */}
-            <header className="w-full max-w-5xl mx-auto px-6 py-6 sm:py-8">
+            <header className="w-full max-w-5xl mx-auto px-6 py-6 sm:py-8 flex items-center justify-between">
                 <Link
                     to="/"
-                    className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200/80 bg-white text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-colors shadow-2xs"
                 >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Voltar</span>
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Voltar ao início</span>
                 </Link>
             </header>
 
@@ -158,12 +158,12 @@ export default function LoginPage() {
                                     type="button"
                                     onClick={handleBiometricLogin}
                                     disabled={!!isRedirecting}
-                                    className="w-full h-11 px-4 rounded-xl border border-amber-200/90 bg-amber-50/40 hover:bg-amber-50 text-amber-900 text-sm font-medium flex items-center justify-center gap-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    className="w-full h-11 px-4 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50/80 active:bg-zinc-100 text-zinc-800 text-sm font-medium flex items-center justify-center gap-2.5 transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                 >
                                     {isRedirecting === 'biometric' ? (
                                         <LoadingSpinner size="sm" />
                                     ) : (
-                                        <Fingerprint className="w-4 h-4 text-[#F19B0A]" />
+                                        <Fingerprint className="w-4 h-4 text-amber-500" />
                                     )}
                                     <span>{isRedirecting === 'biometric' ? 'Aguardando biometria...' : 'Acessar com Biometria / Passkey'}</span>
                                 </button>

@@ -1,71 +1,147 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowLeft, Shield, FileText, ExternalLink } from 'lucide-react';
 import logo from "../assets/logo.png";
 
 const TermosPage: React.FC = () => {
-  return (
-    <div className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex justify-center mb-8">
-          <Link to="/">
-            <img src={logo} alt="Brilha Mais" className="h-12 w-auto" />
-          </Link>
+    return (
+        <div className="min-h-screen bg-[#FAFAF9] text-zinc-900 flex flex-col justify-between selection:bg-amber-100 selection:text-amber-900">
+            {/* Top Navigation */}
+            <header className="w-full max-w-4xl mx-auto px-6 py-6 sm:py-8 flex items-center justify-between">
+                <Link
+                    to="/"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200/80 bg-white text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-colors shadow-2xs"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Voltar ao início</span>
+                </Link>
+
+                <Link to="/" className="inline-block">
+                    <img src={logo} alt="Brilha Mais" className="h-8 w-auto object-contain" />
+                </Link>
+
+                <Link
+                    to="/login"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#F19B0A] hover:bg-[#D98B08] transition-colors shadow-2xs"
+                >
+                    <span>Entrar</span>
+                </Link>
+            </header>
+
+            {/* Main Content Reader Card */}
+            <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 pb-16">
+                <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 sm:p-12 shadow-2xs">
+                    
+                    {/* Header Info */}
+                    <div className="border-b border-zinc-100 pb-8 mb-8">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200/60 text-amber-800 text-[11px] font-medium mb-4">
+                            <FileText className="w-3.5 h-3.5 text-amber-600" />
+                            <span>Documento Legal Oficial</span>
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
+                            Termos de Uso
+                        </h1>
+                        <p className="text-xs text-zinc-400 mt-2">
+                            Última atualização: 24 de março de 2026 · Versão 2.1
+                        </p>
+                    </div>
+
+                    {/* Content Sections */}
+                    <div className="space-y-8 text-sm leading-relaxed text-zinc-600">
+                        <section className="space-y-2">
+                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
+                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">1</span>
+                                Aceitação dos Termos
+                            </h2>
+                            <p>
+                                Ao acessar e utilizar a plataforma Brilha Mais, você declara ter lido, compreendido e concordado integralmente com estes Termos de Uso. Caso não concorde com qualquer uma das condições estabelecidas, solicitamos que não utilize os serviços da plataforma.
+                            </p>
+                        </section>
+
+                        <section className="space-y-2">
+                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
+                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">2</span>
+                                Descrição do Serviço
+                            </h2>
+                            <p>
+                                O Brilha Mais é uma plataforma de aprendizado (LMS) focada em desenvolvimento profissional, oferecendo cursos em vídeo, materiais de apoio em PDF, testes práticos (quizzes), desafios dissertativos com correção individual e emissão de certificados com validação de autenticidade.
+                            </p>
+                        </section>
+
+                        <section className="space-y-2">
+                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
+                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">3</span>
+                                Contas de Usuário e Autenticação
+                            </h2>
+                            <p>
+                                Para acessar os cursos e registrar seu progresso, é necessário autenticar-se através dos provedores autorizados (Google, Microsoft ou Biometria/Passkey). O usuário é o único responsável pela guarda e confidencialidade de suas credenciais de acesso, sendo vedado o compartilhamento de contas.
+                            </p>
+                        </section>
+
+                        <section className="space-y-2">
+                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
+                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">4</span>
+                                Propriedade Intelectual
+                            </h2>
+                            <p>
+                                Todos os materiais pedagógicos, textos, identidades visuais, vídeos, códigos, marcas e demais ativos disponíveis na plataforma são protegidos pela legislação de direitos autorais e propriedade industrial, pertencendo exclusivamente ao Brilha Mais ou aos seus parceiros autorizados.
+                            </p>
+                        </section>
+
+                        <section className="space-y-2">
+                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
+                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">5</span>
+                                Limitação de Responsabilidade
+                            </h2>
+                            <p>
+                                Nos empenhamos para manter o serviço disponível de forma contínua e segura. Todavia, a plataforma não se responsabiliza por eventuais interrupções temporárias decorrentes de manutenção técnica, falhas de telecomunicações de terceiros ou eventos de força maior.
+                            </p>
+                        </section>
+
+                        <section className="space-y-2">
+                            <h2 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
+                                <span className="h-5 w-5 rounded-md bg-zinc-100 text-zinc-600 text-xs flex items-center justify-center font-medium">6</span>
+                                Alterações nos Termos
+                            </h2>
+                            <p>
+                                O Brilha Mais reserva-se o direito de atualizar estes termos periodicamente. Avisos sobre modificações relevantes serão divulgados com antecedência na plataforma. A continuidade no uso dos serviços após as atualizações implica na aceitação das novas condições.
+                            </p>
+                        </section>
+                    </div>
+
+                    {/* Bottom Links */}
+                    <div className="mt-12 pt-8 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <Link
+                            to="/privacidade"
+                            className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-900 font-medium transition-colors"
+                        >
+                            <Shield className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Consultar Política de Privacidade</span>
+                            <ExternalLink className="w-3 h-3 text-zinc-400" />
+                        </Link>
+
+                        <Link
+                            to="/"
+                            className="text-xs text-zinc-500 hover:text-zinc-800 transition-colors"
+                        >
+                            Voltar para a página inicial
+                        </Link>
+                    </div>
+
+                </div>
+            </main>
+
+            {/* Clean Footer */}
+            <footer className="w-full max-w-4xl mx-auto px-6 py-6 text-center text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-zinc-200/60">
+                <p>&copy; 2026 Brilha Mais</p>
+                <div className="flex gap-4">
+                    <span className="text-zinc-600 font-medium">Termos de Uso</span>
+                    <span>·</span>
+                    <Link to="/privacidade" className="hover:text-zinc-600 transition-colors">Privacidade</Link>
+                </div>
+            </footer>
         </div>
-        
-        <h1 className="text-3xl font-bold mb-8 text-center">Termos de Uso</h1>
-        
-        <div className="prose prose-slate dark:prose-invert max-w-none space-y-6 text-muted-foreground">
-          <section>
-            <h2 className="text-xl font-semibold text-foreground mb-3">1. Aceitação dos Termos</h2>
-            <p>
-              Ao acessar e usar a plataforma Brilha Mais, você concorda em cumprir e estar vinculado a estes Termos de Uso. Se você não concordar com qualquer parte destes termos, não deverá acessar o serviço.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-foreground mb-3">2. Descrição do Serviço</h2>
-            <p>
-              O Brilha Mais é uma plataforma de aprendizado (LMS) que oferece cursos, materiais e certificados. O acesso pode ser feito via login social (Google e Microsoft) para facilitar a experiência do usuário.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-foreground mb-3">3. Contas de Usuário</h2>
-            <p>
-              Para acessar certas funcionalidades, você deve se registrar. Você é responsável por manter a confidencialidade de sua conta e senha. O uso de IDs do Google ou Microsoft transfere a responsabilidade de autenticação para esses provedores, mas o uso da nossa plataforma continua sujeito a estes termos.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-foreground mb-3">4. Propriedade Intelectual</h2>
-            <p>
-              Todo o conteúdo disponível no Brilha Mais, incluindo textos, gráficos, logotipos, ícones e vídeos, é de propriedade exclusiva do Brilha Mais ou de seus licenciadores e está protegido por leis de direitos autorais.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-foreground mb-3">5. Limitação de Responsabilidade</h2>
-            <p>
-              O Brilha Mais não garante que o serviço será ininterrupto ou livre de erros. Em nenhuma circunstância seremos responsáveis por quaisquer danos diretos, indiretos ou consequentes resultantes do uso ou da incapacidade de usar o serviço.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-foreground mb-3">6. Alterações nos Termos</h2>
-            <p>
-              Reservamo-nos o direito de modificar estes termos a qualquer momento. O uso continuado da plataforma após tais alterações constitui sua aceitação dos novos Termos de Uso.
-            </p>
-          </section>
-        </div>
-        
-        <div className="mt-12 pt-8 border-t border-border text-center">
-          <Link to="/" className="text-primary hover:underline font-medium">
-            Voltar para o Início
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default TermosPage;
