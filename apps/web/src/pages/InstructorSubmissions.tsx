@@ -527,46 +527,46 @@ export default function InstructorSubmissions() {
                                 transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
                                 className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[85vh] z-[100000] border border-slate-200/90 text-left"
                             >
+                                {/* Modal Close Button */}
+                                <button 
+                                    onClick={() => setSelectedSubmission(null)} 
+                                    className="absolute top-4 right-4 z-30 p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors"
+                                    aria-label="Fechar"
+                                >
+                                    <LucideX className="h-5 w-5" />
+                                </button>
+
                                 {/* Student Content Area */}
-                                <div className="flex-[1.3] p-6 lg:p-7 overflow-y-auto border-r border-slate-100 space-y-5 bg-white">
+                                <div className="flex-[1.3] p-6 lg:p-7 overflow-y-auto border-r border-slate-200/80 space-y-5 bg-white">
                                     {/* Header */}
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="space-y-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/50 text-[11px] font-medium">
-                                                    M{selectedSubmission.lesson.module.order + 1} • A{selectedSubmission.lesson.order + 1}
-                                                </span>
-                                                <span className="text-xs text-slate-400 font-medium truncate max-w-[220px]">
-                                                    {selectedSubmission.lesson.module.title}
-                                                </span>
-                                            </div>
-                                            <h2 className="text-xl font-bold tracking-tight text-slate-900 leading-snug">
-                                                {selectedSubmission.lesson.title}
-                                            </h2>
-                                            <div className="flex items-center gap-3 text-xs text-slate-500 pt-0.5">
-                                                <div className="flex items-center gap-1.5">
-                                                    <div className="h-5 w-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-[10px] overflow-hidden">
-                                                        {selectedSubmission.user.avatarUrl ? (
-                                                            <img src={selectedSubmission.user.avatarUrl} alt={selectedSubmission.user.name} className="h-full w-full object-cover" />
-                                                        ) : (
-                                                            <LucideUser className="h-3 w-3" />
-                                                        )}
-                                                    </div>
-                                                    <span className="font-semibold text-slate-800">{selectedSubmission.user.name}</span>
-                                                </div>
-                                                <span className="text-slate-300">•</span>
-                                                <span className="text-slate-400">
-                                                    {format(new Date(selectedSubmission.createdAt), "dd MMM, yyyy 'às' HH:mm", { locale: ptBR })}
-                                                </span>
-                                            </div>
+                                    <div className="space-y-1.5 pr-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/50 text-[11px] font-medium">
+                                                M{selectedSubmission.lesson.module.order + 1} • A{selectedSubmission.lesson.order + 1}
+                                            </span>
+                                            <span className="text-xs text-slate-400 font-medium truncate max-w-[220px]">
+                                                {selectedSubmission.lesson.module.title}
+                                            </span>
                                         </div>
-                                        <button 
-                                            onClick={() => setSelectedSubmission(null)} 
-                                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0"
-                                            aria-label="Fechar"
-                                        >
-                                            <LucideX className="h-5 w-5" />
-                                        </button>
+                                        <h2 className="text-xl font-bold tracking-tight text-slate-900 leading-snug">
+                                            {selectedSubmission.lesson.title}
+                                        </h2>
+                                        <div className="flex items-center gap-3 text-xs text-slate-500 pt-0.5">
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="h-5 w-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-[10px] overflow-hidden">
+                                                    {selectedSubmission.user.avatarUrl ? (
+                                                        <img src={selectedSubmission.user.avatarUrl} alt={selectedSubmission.user.name} className="h-full w-full object-cover" />
+                                                    ) : (
+                                                        <LucideUser className="h-3 w-3" />
+                                                    )}
+                                                </div>
+                                                <span className="font-semibold text-slate-800">{selectedSubmission.user.name}</span>
+                                            </div>
+                                            <span className="text-slate-300">•</span>
+                                            <span className="text-slate-400">
+                                                {format(new Date(selectedSubmission.createdAt), "dd MMM, yyyy 'às' HH:mm", { locale: ptBR })}
+                                            </span>
+                                        </div>
                                     </div>
 
                                     {/* Challenge Instructions Accordion */}
@@ -607,9 +607,15 @@ export default function InstructorSubmissions() {
                                             <LucideMessageSquare className="h-3.5 w-3.5 text-amber-600" />
                                             <span>Resposta do Aluno</span>
                                         </div>
-                                        <p className="text-slate-800 text-sm leading-relaxed whitespace-pre-wrap">
-                                            {selectedSubmission.content || "Nenhum texto enviado."}
-                                        </p>
+                                        {selectedSubmission.content ? (
+                                            <p className="text-slate-800 text-sm leading-relaxed whitespace-pre-wrap font-normal">
+                                                {selectedSubmission.content}
+                                            </p>
+                                        ) : (
+                                            <p className="text-slate-400 text-xs italic">
+                                                Nenhum texto enviado.
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Attached File */}
@@ -648,13 +654,13 @@ export default function InstructorSubmissions() {
                                 <div className="flex-1 bg-slate-50/50 p-6 lg:p-7 flex flex-col justify-between overflow-y-auto">
                                     <div className="space-y-5">
                                         {/* Grade Input */}
-                                        <div className="space-y-2">
+                                        <div className="space-y-2 pr-9">
                                             <div className="flex items-center justify-between">
                                                 <label className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                                                     <LucideStar className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
                                                     Nota Final (0 a 100)
                                                 </label>
-                                                <span className="text-lg font-bold text-amber-600 px-2 py-0.5 rounded-lg bg-white border border-slate-200/80">
+                                                <span className="text-base font-bold text-amber-600 px-2.5 py-0.5 rounded-lg bg-white border border-slate-200/80 shadow-2xs">
                                                     {grade}
                                                 </span>
                                             </div>
@@ -677,7 +683,7 @@ export default function InstructorSubmissions() {
                                                 value={feedback}
                                                 onChange={(e) => setFeedback(e.target.value)}
                                                 placeholder="Oriente o aluno sobre pontos fortes e melhorias..."
-                                                className="w-full bg-white border border-slate-200/80 rounded-xl p-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all min-h-[120px]"
+                                                className="w-full bg-white border border-slate-200/80 rounded-xl p-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all min-h-[120px] resize-none"
                                             />
                                         </div>
 
@@ -725,7 +731,7 @@ export default function InstructorSubmissions() {
                                             disabled={isSaving || isDeleting || selectedSubmission.status === 'REVIEWED'}
                                             className="w-full h-11 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-sm transition-all active:scale-[0.98] shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
                                         >
-                                            {isSaving ? <LoadingSpinner size="sm" variant="white" /> : <><LucideZap className="h-4 w-4" /> Finalizar Avaliação</>}
+                                            {isSaving ? <LoadingSpinner size="sm" variant="white" /> : <><LucideCheck className="h-4 w-4" /> Finalizar Avaliação</>}
                                         </button>
 
                                         <button 
