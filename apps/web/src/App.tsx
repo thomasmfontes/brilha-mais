@@ -23,21 +23,25 @@ import { Toaster } from "react-hot-toast";
 import UpdateNotifier from "./components/UpdateNotifier";
 import logo from "./assets/logo.png";
 
-// Simplified Home Page
+// Clean Minimal Home Page
 function Home() {
     return (
-        <div className="bg-background text-foreground">
+        <div className="bg-[#FAFAF9] text-zinc-900 min-h-screen flex flex-col justify-between">
             <LandingPage />
 
-            {/* Footer */}
-            <footer className="py-16 border-t border-border px-4 bg-card">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
-                    <img src={logo} alt="Brilha Mais" className="h-10 w-auto" />
-                    <div className="flex flex-col gap-2">
-                        <p className="text-sm text-muted-foreground">&copy; 2026 Brilha Mais</p>
-                        <div className="flex gap-4 justify-center md:justify-start text-xs text-muted-foreground">
-                            <Link to="/termos" className="hover:text-primary transition-colors">Termos de Uso</Link>
-                            <Link to="/privacidade" className="hover:text-primary transition-colors">Privacidade</Link>
+            {/* Minimalist Footer */}
+            <footer className="w-full border-t border-zinc-200/70 bg-white py-8 px-6 sm:px-8 mt-auto">
+                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <Link to="/" aria-label="Brilha Mais" className="flex items-center gap-2 focus:outline-none">
+                        <img src={logo} alt="Brilha Mais" className="h-8 w-auto hover:opacity-85 transition-opacity" />
+                    </Link>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 text-xs text-zinc-500">
+                        <span>&copy; 2026 Brilha Mais</span>
+                        <div className="flex items-center gap-4">
+                            <Link to="/termos" className="hover:text-zinc-900 transition-colors">Termos de Uso</Link>
+                            <span className="text-zinc-300">·</span>
+                            <Link to="/privacidade" className="hover:text-zinc-900 transition-colors">Privacidade</Link>
                         </div>
                     </div>
                 </div>
@@ -105,4 +109,4 @@ function App() {
     )
 }
 
-export default App
+export default App;

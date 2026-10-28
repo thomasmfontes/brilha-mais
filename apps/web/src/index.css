@@ -106,4 +106,20 @@
   .dark .custom-scrollbar:hover::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
   }
+
+  /* Ambient lighting for Landing V2 */
+  .bg-radiant-glow {
+    background-color: #FAF8F5;
+    background-image: 
+      radial-gradient(circle at 50% 30%, rgba(254, 240, 138, 0.42) 0%, rgba(253, 230, 138, 0.22) 32%, transparent 70%),
+      radial-gradient(circle at 15% 15%, rgba(245, 158, 11, 0.08) 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(217, 119, 6, 0.06) 0%, transparent 50%);
+  }
+
+  .bg-subtle-grid {
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, rgba(217, 119, 6, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(217, 119, 6, 0.035) 1px, transparent 1px);
+  }
 }
