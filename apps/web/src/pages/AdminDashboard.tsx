@@ -132,10 +132,12 @@ const CategorySkeleton = () => (
 );
 
 const StatSkeleton = () => (
-    <div className="p-6 rounded-3xl bg-card border border-border shadow-sm h-32 flex flex-col justify-center">
-        <Skeleton className="h-10 w-10 mb-4" variant="rounded" />
-        <Skeleton className="h-6 w-16 mb-2" variant="rounded" />
-        <Skeleton className="h-3 w-24" variant="rectangle" />
+    <div className="p-5 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center justify-between">
+        <div className="space-y-2">
+            <Skeleton className="h-3 w-16" variant="rectangle" />
+            <Skeleton className="h-7 w-20" variant="rounded" />
+        </div>
+        <Skeleton className="h-10 w-10" variant="rounded" />
     </div>
 );
 
@@ -159,10 +161,9 @@ const ActivitySkeleton = () => (
 );
 
 const AuditSkeleton = () => (
-    <div className="relative pl-8 border-l-2 border-slate-100 pb-8 last:pb-0">
-        <div className="absolute left-[-9px] top-0 h-4 w-4 rounded-full bg-white border-4 border-slate-200" />
-        <Skeleton className="h-3 w-20 mb-3" variant="rectangle" />
-        <Skeleton className="h-5 w-32 mb-2" variant="rounded" />
+    <div className="relative pl-6 border-l border-slate-200 pb-5 last:pb-0">
+        <div className="absolute -left-1.5 top-1.5 h-3 w-3 rounded-full bg-slate-200 ring-4 ring-white" />
+        <Skeleton className="h-3 w-16 mb-2" variant="rectangle" />
         <Skeleton className="h-4 w-48" variant="rounded" />
     </div>
 );
@@ -795,69 +796,57 @@ export default function AdminDashboard() {
     });
 
     return (
-        <div className="space-y-8 md:space-y-10">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:px-0">
+        <div className="space-y-8 w-full pb-10">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2 uppercase text-slate-900">Administração</h1>
-                    <p className="text-slate-900 text-xs md:text-lg font-bold">Gestão central do ecossistema Brilha Mais.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                        Administração
+                    </h1>
+                    <p className="text-sm text-slate-500 mt-1">
+                        Gestão central do ecossistema Brilha Mais.
+                    </p>
                 </div>
 
-                <div className="bg-slate-100 p-1 rounded-[2rem] border border-slate-200/50 w-full shadow-inner overflow-hidden">
-                    <div className="flex w-full gap-0.5">
+                <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/60 self-start sm:self-auto overflow-x-auto max-w-full">
+                    <button
+                        onClick={() => handleTabChange('overview')}
+                        className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap ${activeTab === 'overview' ? 'bg-white text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'}`}
+                    >
+                        Visão Geral
+                    </button>
+                    <button
+                        onClick={() => handleTabChange('areas')}
+                        className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap ${activeTab === 'areas' ? 'bg-white text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'}`}
+                    >
+                        Áreas
+                    </button>
+                    <button
+                        onClick={() => handleTabChange('turmas')}
+                        className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap ${activeTab === 'turmas' ? 'bg-white text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'}`}
+                    >
+                        Turmas
+                    </button>
+                    <button
+                        onClick={() => handleTabChange('users')}
+                        className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap ${activeTab === 'users' ? 'bg-white text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'}`}
+                    >
+                        Usuários
+                    </button>
+                    {isSuperAdminOrGlobal && (
                         <button
-                            onClick={() => handleTabChange('overview')}
-                            className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'overview' ? 'bg-primary text-white shadow-md' : 'text-slate-900 hover:text-primary hover:bg-white/50'}`}
+                            onClick={() => handleTabChange('locations')}
+                            className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap ${activeTab === 'locations' ? 'bg-white text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'}`}
                         >
-                            <LucideLayoutDashboard className="h-4 w-4 md:hidden" />
-                            <span className="hidden md:inline">Visão Geral</span>
+                            Localidades
                         </button>
-                        <button
-                            onClick={() => handleTabChange('areas')}
-                            className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'areas' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
-                        >
-                            <LucideLayoutGrid className="h-4 w-4 md:hidden" />
-                            <span className="hidden md:inline">Áreas</span>
-                        </button>
-                        <button
-                            onClick={() => handleTabChange('turmas')}
-                            className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'turmas' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
-                        >
-                            <LucideGraduationCap className="h-4 w-4 md:hidden" />
-                            <span className="hidden md:inline">Turmas</span>
-                        </button>
-                        <button
-                            onClick={() => handleTabChange('users')}
-                            className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'users' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
-                        >
-                            <LucideUserCircle className="h-4 w-4 md:hidden" />
-                            <span className="hidden md:inline">Usuários</span>
-                        </button>
-                        {userLocationId === undefined && currentUserRole === null ? (
-                            <div className="flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] bg-slate-200/50 animate-shimmer">
-                                <LucideMapPin className="h-4 w-4 md:hidden opacity-20" />
-                                <span className="hidden md:inline opacity-20 text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em]">Localidades</span>
-                            </div>
-                        ) : isSuperAdminOrGlobal && (
-                            <button
-                                onClick={() => handleTabChange('locations')}
-                                className={`flex-1 flex items-center justify-center px-1 md:px-6 py-3 rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-tight md:tracking-[0.15em] transition-all duration-300 whitespace-nowrap ${activeTab === 'locations' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-primary hover:bg-white/50'}`}
-                            >
-                                <LucideMapPin className="h-4 w-4 md:hidden" />
-                                <span className="hidden md:inline">Localidades</span>
-                            </button>
-                        )}
-                    </div>
+                    )}
                 </div>
             </div>
 
 
             {activeTab === 'overview' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-10"
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {isLoadingStats ? (
                             <>
                                 <StatSkeleton />
@@ -866,83 +855,90 @@ export default function AdminDashboard() {
                             </>
                         ) : (
                             <>
-                                <AdminStat icon={<LucideUsers />} label="Usuários" value={stats.totalUsers} />
-                                <AdminStat icon={<LucideBookOpen />} label="Cursos" value={stats.totalCourses} />
-                                <AdminStat icon={<LucideShieldCheck />} label="Matrículas" value={stats.totalEnrollments} />
+                                <AdminStat icon={<LucideUsers className="h-5 w-5" />} label="Usuários" value={stats.totalUsers} />
+                                <AdminStat icon={<LucideBookOpen className="h-5 w-5" />} label="Cursos" value={stats.totalCourses} />
+                                <AdminStat icon={<LucideShieldCheck className="h-5 w-5" />} label="Matrículas" value={stats.totalEnrollments} />
                             </>
                         )}
                     </div>
 
-                    <div className="grid lg:grid-cols-1 gap-8">
-                        <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 md:p-12 shadow-sm">
-                            <h2 className="text-2xl font-black mb-12 flex items-center gap-4">
-                                <div className="p-3 rounded-2xl bg-amber-50 text-amber-500 border border-amber-100">
-                                    <LucideShield className="h-6 w-6" />
-                                </div>
-                                Auditoria
-                            </h2>
-                            <div className="space-y-0">
-                                {isLoadingStats ? (
-                                    <>
-                                        <AuditSkeleton />
-                                        <AuditSkeleton />
-                                        <AuditSkeleton />
-                                    </>
-                                ) : auditLogs.length > 0 ? (
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className="space-y-0"
-                                    >
-                                        {auditLogs.map((log, idx) => (
-                                            <div key={idx} className="relative pl-10 border-l-2 border-slate-100 pb-10 last:pb-0 group">
-                                                <div className="absolute left-[-9px] top-0 h-4 w-4 rounded-full bg-amber-400 border-4 border-white shadow-[0_0_15px_rgba(251,191,36,0.5)] z-10 group-hover:scale-125 transition-transform" />
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xs">
+                        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                                <LucideShield className="h-4.5 w-4.5" />
+                            </div>
+                            <div>
+                                <h2 className="text-base font-semibold text-slate-900 leading-tight">
+                                    Auditoria
+                                </h2>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                    Histórico de ações e eventos do sistema.
+                                </p>
+                            </div>
+                        </div>
 
-                                                <div className="space-y-2 translate-y-[-4px]">
-                                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">
+                        {isLoadingStats ? (
+                            <div className="space-y-4">
+                                <AuditSkeleton />
+                                <AuditSkeleton />
+                                <AuditSkeleton />
+                            </div>
+                        ) : auditLogs.length > 0 ? (
+                            <div>
+                                <div className="space-y-0">
+                                    {auditLogs.map((log, idx) => (
+                                        <div key={idx} className="relative pl-6 border-l border-slate-200 pb-5 last:pb-0 group">
+                                            <div className="absolute -left-1.5 top-1.5 h-3 w-3 rounded-full bg-amber-500 ring-4 ring-white" />
+
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-slate-400 font-medium">
                                                         {timeAgo(log.time)}
-                                                    </p>
-                                                    <div>
-                                                        <p className="text-lg font-black text-slate-900 group-hover:text-primary transition-colors">
-                                                            {log.user}
-                                                        </p>
-                                                        <p className="text-sm font-medium text-slate-500 leading-relaxed">
-                                                            {log.action}: <span className="text-slate-900 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">{log.entity}</span>
-                                                        </p>
-                                                    </div>
+                                                    </span>
+                                                </div>
+                                                <div className="text-sm">
+                                                    <span className="font-semibold text-slate-900">
+                                                        {log.user}
+                                                    </span>
+                                                    <span className="text-slate-500 font-normal">
+                                                        {' '}— {log.action}:{' '}
+                                                    </span>
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200/60">
+                                                        {log.entity}
+                                                    </span>
                                                 </div>
                                             </div>
-                                        ))}
+                                        </div>
+                                    ))}
+                                </div>
 
-                                        {auditLogs.length >= auditLimit && (
-                                            <div className="flex justify-center pt-8 mt-4 border-t border-slate-50">
-                                                <button
-                                                    onClick={handleLoadMoreAudit}
-                                                    disabled={isLoadingMoreAudit}
-                                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-100 text-amber-600 font-black text-xs uppercase tracking-wider shadow-sm hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 transition-all cursor-pointer"
-                                                >
-                                                    {isLoadingMoreAudit ? (
-                                                        <>
-                                                            <LucideLoader2 className="h-4 w-4 animate-spin text-amber-500" />
-                                                            Carregando...
-                                                        </>
-                                                    ) : (
-                                                        'Ver Mais Histórico'
-                                                    )}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </motion.div>
-                                ) : (
-                                    <div className="text-center py-20 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
-                                        <LucideShield className="h-10 w-10 text-slate-200 mx-auto mb-4" />
-                                        <p className="text-sm font-bold text-slate-400">Nenhum registro de auditoria disponível.</p>
+                                {auditLogs.length >= auditLimit && (
+                                    <div className="flex justify-center pt-6 mt-6 border-t border-slate-100">
+                                        <button
+                                            onClick={handleLoadMoreAudit}
+                                            disabled={isLoadingMoreAudit}
+                                            className="h-9 px-4 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs shadow-2xs transition-colors flex items-center gap-2 disabled:opacity-50"
+                                        >
+                                            {isLoadingMoreAudit ? (
+                                                <>
+                                                    <LucideLoader2 className="h-3.5 w-3.5 animate-spin text-amber-500" />
+                                                    Carregando...
+                                                </>
+                                            ) : (
+                                                'Ver mais histórico'
+                                            )}
+                                        </button>
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        ) : (
+                            <div className="text-center py-12 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                                <LucideShield className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-xs font-medium text-slate-500">Nenhum registro de auditoria disponível.</p>
+                            </div>
+                        )}
                     </div>
-                </motion.div>
+                </div>
             )}
 
             {activeTab === 'locations' && isSuperAdminOrGlobal && (
@@ -2314,14 +2310,18 @@ export default function AdminDashboard() {
     );
 }
 
-function AdminStat({ icon, label, value, color = "text-primary" }: { icon: React.ReactNode, label: string, value: number, color?: string }) {
+function AdminStat({ icon, label, value, color = "text-amber-600" }: { icon: React.ReactNode, label: string, value: number, color?: string }) {
     return (
-        <div className="p-6 rounded-3xl bg-card border border-border group hover:border-primary/20 transition-colors shadow-sm">
-            <div className={`p-3 rounded-xl bg-white/5 ${color} w-fit mb-4 group-hover:scale-110 transition-transform`}>
+        <div className="p-5 rounded-xl bg-white border border-slate-200/80 hover:border-slate-300 transition-colors shadow-2xs flex items-center justify-between">
+            <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
+                <p className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 leading-tight">
+                    <CountUp value={value} />
+                </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
                 {icon}
             </div>
-            <p className="text-3xl font-black mb-1"><CountUp value={value} /></p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{label}</p>
         </div>
     );
 }
@@ -2331,16 +2331,16 @@ function timeAgo(dateString: string) {
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " anos atrás";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " meses atrás";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " dias atrás";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " horas atrás";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " min atrás";
+    const years = Math.floor(seconds / 31536000);
+    if (years >= 1) return `${years} ${years === 1 ? 'ano' : 'anos'} atrás`;
+    const months = Math.floor(seconds / 2592000);
+    if (months >= 1) return `${months} ${months === 1 ? 'mês' : 'meses'} atrás`;
+    const days = Math.floor(seconds / 86400);
+    if (days >= 1) return `${days} ${days === 1 ? 'dia' : 'dias'} atrás`;
+    const hours = Math.floor(seconds / 3600);
+    if (hours >= 1) return `${hours} ${hours === 1 ? 'hora' : 'horas'} atrás`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes >= 1) return `${minutes} ${minutes === 1 ? 'minuto' : 'minutos'} atrás`;
     return "agora mesmo";
 }
 
