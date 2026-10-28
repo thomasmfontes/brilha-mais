@@ -943,68 +943,86 @@ export default function AdminDashboard() {
 
             {activeTab === 'locations' && isSuperAdminOrGlobal && (
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="space-y-8"
+                    transition={{ duration: 0.2 }}
+                    className="space-y-6"
                 >
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:px-0">
-                        <h2 className="text-xl md:text-2xl font-black tracking-tight uppercase">Gestão de Localidades</h2>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">Gestão de Localidades</h2>
+                            <p className="text-xs text-slate-500 mt-0.5">Polos regionais e unidades de atendimento cadastradas.</p>
+                        </div>
                         <button
                             onClick={() => { setEditingLocation(null); setLocationName(""); setIsLocationModalOpen(true); }}
-                            className="w-full md:w-auto bg-primary text-primary-foreground px-6 py-3.5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-all text-xs"
+                            className="w-full sm:w-auto h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-2 shrink-0"
                         >
-                            <LucidePlus className="h-5 w-5" /> Nova Localidade
+                            <LucidePlus className="h-4 w-4" />
+                            <span>Nova Localidade</span>
                         </button>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:px-0">
-                        {locations.map(loc => (
-                            <div key={loc.id} className="p-8 rounded-[2.5rem] bg-card border border-border backdrop-blur-md relative group shadow-sm flex flex-col justify-between">
-                                <div className="space-y-6">
-                                    <div className="flex items-start justify-between">
-                                        <div className="p-3 rounded-2xl bg-amber-50 text-amber-500 border border-amber-100 mb-4">
-                                            <LucideMapPin className="h-6 w-6" />
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                        {locations.length === 0 ? (
+                            <div className="col-span-full py-12 px-4 text-center bg-white border border-slate-200/80 rounded-2xl">
+                                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center text-slate-400 mx-auto mb-3">
+                                    <LucideMapPin className="h-6 w-6" />
+                                </div>
+                                <h3 className="text-sm font-semibold text-slate-900">Nenhuma localidade cadastrada</h3>
+                                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                                    Cadastre a primeira localidade clicando em "Nova Localidade" acima.
+                                </p>
+                            </div>
+                        ) : locations.map(loc => (
+                            <div key={loc.id} className="p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 transition-all shadow-2xs flex flex-col justify-between group">
+                                <div>
+                                    <div className="flex items-start justify-between gap-3 mb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                                            <LucideMapPin className="h-5 w-5" />
                                         </div>
-                                        <div className="flex gap-2">
+                                        <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => {
                                                     setEditingLocation(loc);
                                                     setLocationName(loc.name);
                                                     setIsLocationModalOpen(true);
                                                 }}
-                                                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-muted-foreground hover:text-primary"
+                                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                                                title="Editar Localidade"
                                             >
                                                 <LucideEdit2 className="h-4 w-4" />
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteLocation(loc.id)}
-                                                className="p-2 rounded-xl bg-white/5 transition-colors text-destructive hover:bg-destructive/10"
+                                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                title="Excluir Localidade"
                                             >
                                                 <LucideTrash2 className="h-4 w-4" />
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{loc.name}</h3>
-                                        <div className="grid grid-cols-2 gap-y-4 gap-x-2">
-                                            <div className="flex flex-col">
-                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Alunos</span>
-                                                <span className="text-base font-black text-slate-900">{loc.counts?.students || 0}</span>
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Instrutores</span>
-                                                <span className="text-base font-black text-slate-900">{loc.counts?.instructors || 0}</span>
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Admins</span>
-                                                <span className="text-base font-black text-slate-900">{loc.counts?.admins || 0}</span>
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Turmas</span>
-                                                <span className="text-base font-black text-slate-900">{loc._count?.turmas || 0}</span>
-                                            </div>
-                                        </div>
+                                    <h3 className="text-base font-semibold text-slate-900 group-hover:text-amber-600 transition-colors leading-snug">
+                                        {loc.name}
+                                    </h3>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2.5 mt-4 pt-4 border-t border-slate-100">
+                                    <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/60">
+                                        <span className="text-[11px] font-medium text-slate-400 block">Alunos</span>
+                                        <span className="text-sm font-semibold text-slate-900">{loc.counts?.students || 0}</span>
+                                    </div>
+                                    <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/60">
+                                        <span className="text-[11px] font-medium text-slate-400 block">Instrutores</span>
+                                        <span className="text-sm font-semibold text-slate-900">{loc.counts?.instructors || 0}</span>
+                                    </div>
+                                    <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/60">
+                                        <span className="text-[11px] font-medium text-slate-400 block">Admins</span>
+                                        <span className="text-sm font-semibold text-slate-900">{loc.counts?.admins || 0}</span>
+                                    </div>
+                                    <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/60">
+                                        <span className="text-[11px] font-medium text-slate-400 block">Turmas</span>
+                                        <span className="text-sm font-semibold text-slate-900">{loc._count?.turmas || 0}</span>
                                     </div>
                                 </div>
                             </div>
