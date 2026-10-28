@@ -912,7 +912,7 @@ export default function InstructorSyllabus() {
                                                 <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/80 bg-white">
                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                         <div className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
-                                                            lesson.allowPdfDownload !== false ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
+                                                            lesson.allowPdfDownload !== false ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-400'
                                                         }`}>
                                                             <LucideDownload className="h-4 w-4" />
                                                         </div>
@@ -923,14 +923,20 @@ export default function InstructorSyllabus() {
                                                     </div>
                                                     <button
                                                         type="button"
-                                                        onClick={() => updateLesson(mIdx, lIdx, { allowPdfDownload: lesson.allowPdfDownload === false })}
-                                                        className={`w-9 h-5 rounded-full relative transition-colors ${
-                                                            lesson.allowPdfDownload !== false ? 'bg-emerald-500' : 'bg-slate-300'
+                                                        role="switch"
+                                                        aria-checked={lesson.allowPdfDownload !== false}
+                                                        onClick={() => {
+                                                            const isAllowed = lesson.allowPdfDownload !== false;
+                                                            updateLesson(mIdx, lIdx, { allowPdfDownload: !isAllowed });
+                                                        }}
+                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                            lesson.allowPdfDownload !== false ? 'bg-amber-500' : 'bg-slate-200'
                                                         }`}
                                                     >
                                                         <span
-                                                            className={`block w-3.5 h-3.5 bg-white rounded-full transition-transform ${
-                                                                lesson.allowPdfDownload !== false ? 'translate-x-4.5' : 'translate-x-1'
+                                                            aria-hidden="true"
+                                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                                                                lesson.allowPdfDownload !== false ? 'translate-x-5' : 'translate-x-0'
                                                             }`}
                                                         />
                                                     </button>
@@ -952,14 +958,20 @@ export default function InstructorSyllabus() {
                                                     </div>
                                                     <button
                                                         type="button"
-                                                        onClick={() => updateLesson(mIdx, lIdx, { allowSeeking: lesson.allowSeeking === false })}
-                                                        className={`w-9 h-5 rounded-full relative transition-colors ${
-                                                            lesson.allowSeeking !== false ? 'bg-amber-500' : 'bg-slate-300'
+                                                        role="switch"
+                                                        aria-checked={lesson.allowSeeking !== false}
+                                                        onClick={() => {
+                                                            const isAllowed = lesson.allowSeeking !== false;
+                                                            updateLesson(mIdx, lIdx, { allowSeeking: !isAllowed });
+                                                        }}
+                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                            lesson.allowSeeking !== false ? 'bg-amber-500' : 'bg-slate-200'
                                                         }`}
                                                     >
                                                         <span
-                                                            className={`block w-3.5 h-3.5 bg-white rounded-full transition-transform ${
-                                                                lesson.allowSeeking !== false ? 'translate-x-4.5' : 'translate-x-1'
+                                                            aria-hidden="true"
+                                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                                                                lesson.allowSeeking !== false ? 'translate-x-5' : 'translate-x-0'
                                                             }`}
                                                         />
                                                     </button>
