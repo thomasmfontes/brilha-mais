@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LucideUpload,
@@ -152,6 +152,7 @@ export default function StudentResumePage() {
         isMinor: false,
         parentConsent: false,
     });
+    const [initialProfile, setInitialProfile] = useState<TalentProfileData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -166,13 +167,26 @@ export default function StudentResumePage() {
         try {
             setIsLoading(true);
             const { data } = await api.get('/talents/me');
-            setProfile({
+            const formatted: TalentProfileData = {
                 ...data,
-                phone: formatPhoneMask(data.phone),
-                parentContact: formatPhoneMask(data.parentContact),
+                phone: formatPhoneMask(data.phone || ''),
+                parentContact: formatPhoneMask(data.parentContact || ''),
                 areasOfInterest: Array.isArray(data.areasOfInterest) ? data.areasOfInterest : [],
                 birthDate: data.birthDate ? data.birthDate.split('T')[0] : '',
-            });
+                city: data.city || '',
+                state: data.state || '',
+                headline: data.headline || '',
+                bio: data.bio || '',
+                availability: data.availability || '',
+                linkedinUrl: data.linkedinUrl || '',
+                parentName: data.parentName || '',
+                isAvailable: Boolean(data.isAvailable ?? true),
+                lgpdConsent: Boolean(data.lgpdConsent),
+                isMinor: Boolean(data.isMinor),
+                parentConsent: Boolean(data.parentConsent),
+            };
+            setProfile(formatted);
+            setInitialProfile(formatted);
         } catch (error) {
             console.error('Erro ao buscar perfil de talentos:', error);
             toast.error('Erro ao carregar dados do currículo.');
@@ -180,6 +194,36 @@ export default function StudentResumePage() {
             setIsLoading(false);
         }
     };
+
+    const hasChanges = useMemo(() => {
+        if (!initialProfile) return false;
+
+        const normStr = (val?: string | null) => (val || '').trim();
+        const arraysEqual = (a: string[] = [], b: string[] = []) => {
+            if (a.length !== b.length) return false;
+            const sortedA = [...a].sort();
+            const sortedB = [...b].sort();
+            return sortedA.every((val, index) => val === sortedB[index]);
+        };
+
+        if (normStr(profile.phone) !== normStr(initialProfile.phone)) return true;
+        if (normStr(profile.birthDate) !== normStr(initialProfile.birthDate)) return true;
+        if (normStr(profile.city) !== normStr(initialProfile.city)) return true;
+        if (normStr(profile.state) !== normStr(initialProfile.state)) return true;
+        if (normStr(profile.headline) !== normStr(initialProfile.headline)) return true;
+        if (normStr(profile.bio) !== normStr(initialProfile.bio)) return true;
+        if (normStr(profile.availability) !== normStr(initialProfile.availability)) return true;
+        if (normStr(profile.linkedinUrl) !== normStr(initialProfile.linkedinUrl)) return true;
+        if (Boolean(profile.isAvailable) !== Boolean(initialProfile.isAvailable)) return true;
+        if (Boolean(profile.lgpdConsent) !== Boolean(initialProfile.lgpdConsent)) return true;
+        if (Boolean(profile.isMinor) !== Boolean(initialProfile.isMinor)) return true;
+        if (normStr(profile.parentName) !== normStr(initialProfile.parentName)) return true;
+        if (normStr(profile.parentContact) !== normStr(initialProfile.parentContact)) return true;
+        if (Boolean(profile.parentConsent) !== Boolean(initialProfile.parentConsent)) return true;
+        if (!arraysEqual(profile.areasOfInterest, initialProfile.areasOfInterest)) return true;
+
+        return false;
+    }, [profile, initialProfile]);
 
     const handleBirthDateChange = (dateStr: string) => {
         let isMinor = false;
@@ -325,6 +369,7 @@ export default function StudentResumePage() {
                 parentContact: profile.parentContact,
                 parentConsent: profile.parentConsent,
             });
+            setInitialProfile({ ...profile });
             toast.success('Perfil atualizado com sucesso!');
         } catch (error) {
             console.error('Erro ao salvar dados:', error);
@@ -814,8 +859,12 @@ export default function StudentResumePage() {
                     <div className="flex items-center justify-end gap-3 pt-2">
                         <button
                             type="submit"
-                            disabled={isSaving}
-                            className="h-11 px-6 rounded-xl text-sm font-semibold bg-[#F19B0A] hover:bg-[#D98B08] active:scale-[0.98] text-white shadow-xs transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                            disabled={!hasChanges || isSaving}
+                            className={`h-11 px-6 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
+                                hasChanges && !isSaving
+                                    ? 'bg-[#F19B0A] hover:bg-[#D98B08] active:scale-[0.98] text-white shadow-xs cursor-pointer'
+                                    : 'bg-zinc-100 text-zinc-400 border border-zinc-200/80 cursor-not-allowed shadow-none'
+                            }`}
                         >
                             {isSaving ? (
                                 <>
