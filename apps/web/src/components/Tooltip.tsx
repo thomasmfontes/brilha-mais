@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface TooltipProps {
     content: React.ReactNode;
     children: React.ReactNode;
-    position?: 'top' | 'bottom' | 'left' | 'right';
+    position?: 'top' | 'bottom';
     className?: string;
     delay?: number;
 }
@@ -15,10 +15,11 @@ export function Tooltip({
     children,
     position = 'top',
     className = '',
-    delay = 80,
+    delay = 60,
 }: TooltipProps) {
     const [isVisible, setIsVisible] = useState(false);
     const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
+    const [actualPosition, setActualPosition] = useState<'top' | 'bottom'>(position);
     const triggerRef = useRef<HTMLDivElement>(null);
     const timeoutRef = useRef<any>(null);
 
@@ -26,23 +27,14 @@ export function Tooltip({
         if (!triggerRef.current) return;
         const rect = triggerRef.current.getBoundingClientRect();
 
-        let top = 0;
-        let left = 0;
+        // Check if there is enough space on top (at least 75px)
+        const fitsOnTop = rect.top >= 75;
+        const effPos: 'top' | 'bottom' = position === 'top' ? (fitsOnTop ? 'top' : 'bottom') : 'bottom';
 
-        if (position === 'top') {
-            top = rect.top - 8;
-            left = rect.left + rect.width / 2;
-        } else if (position === 'bottom') {
-            top = rect.bottom + 8;
-            left = rect.left + rect.width / 2;
-        } else if (position === 'left') {
-            top = rect.top + rect.height / 2;
-            left = rect.left - 8;
-        } else if (position === 'right') {
-            top = rect.top + rect.height / 2;
-            left = rect.right + 8;
-        }
+        const top = effPos === 'top' ? rect.top - 8 : rect.bottom + 8;
+        const left = rect.left + rect.width / 2;
 
+        setActualPosition(effPos);
         setCoords({ top, left });
     };
 
@@ -78,15 +70,6 @@ export function Tooltip({
         };
     }, []);
 
-    const transformStyle =
-        position === 'top'
-            ? 'translate(-50%, -100%)'
-            : position === 'bottom'
-            ? 'translate(-50%, 0)'
-            : position === 'left'
-            ? 'translate(-100%, -50%)'
-            : 'translate(0, -50%)';
-
     return (
         <div
             ref={triggerRef}
@@ -101,28 +84,34 @@ export function Tooltip({
                 createPortal(
                     <AnimatePresence>
                         {isVisible && coords && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95, y: position === 'top' ? 2 : -2 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                transition={{ duration: 0.12, ease: 'easeOut' }}
+                            <div
                                 style={{
+                                    position: 'fixed',
                                     top: coords.top,
                                     left: coords.left,
-                                    transform: transformStyle,
+                                    transform: actualPosition === 'top' ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
+                                    zIndex: 999999,
+                                    pointerEvents: 'none',
                                 }}
-                                className="fixed z-[999999] pointer-events-none"
                             >
-                                <div className="relative px-3 py-2 bg-slate-900/95 text-white text-xs rounded-xl shadow-xl border border-slate-700/60 backdrop-blur-md max-w-xs text-left">
-                                    {content}
-                                    {position === 'top' && (
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900/95" />
-                                    )}
-                                    {position === 'bottom' && (
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-900/95" />
-                                    )}
-                                </div>
-                            </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.96, y: actualPosition === 'top' ? 3 : -3 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.96 }}
+                                    transition={{ duration: 0.12, ease: 'easeOut' }}
+                                >
+                                    <div className="relative px-3 py-2 bg-slate-900/95 text-white text-xs rounded-xl shadow-xl border border-slate-700/60 backdrop-blur-md max-w-xs text-left">
+                                        {content}
+                                        {/* Seta apontando exatamente para o ícone */}
+                                        {actualPosition === 'top' && (
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900/95" />
+                                        )}
+                                        {actualPosition === 'bottom' && (
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-900/95" />
+                                        )}
+                                    </div>
+                                </motion.div>
+                            </div>
                         )}
                     </AnimatePresence>,
                     document.body
