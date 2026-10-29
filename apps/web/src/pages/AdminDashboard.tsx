@@ -11,6 +11,7 @@ import { PortalModal } from "../components/PortalModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import UserMaterialsModal from "../components/UserMaterialsModal";
 import TalentDetailsModal from "../components/TalentDetailsModal";
+import Tooltip from "../components/Tooltip";
 import { LucideBriefcase, LucideDownload, LucidePhone, LucideEye, LucideFileText, LucideCheckCircle2, LucideUserCheck } from "lucide-react";
 import CountUp from "../components/CountUp";
 import Skeleton from "../components/Skeleton";
@@ -2089,26 +2090,78 @@ export default function AdminDashboard() {
                                                     <td className="px-5 py-3.5">
                                                         {talent.isMinor ? (
                                                             talent.minorApproved ? (
-                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                                                                    <LucideCheck className="w-3 h-3 text-emerald-600" />
-                                                                    Liberado (Menor)
-                                                                </span>
+                                                                <Tooltip
+                                                                    content={
+                                                                        <div className="space-y-0.5">
+                                                                            <p className="font-semibold text-emerald-400 text-xs flex items-center gap-1.5">
+                                                                                <LucideShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                                                                Liberado (Menor de 18)
+                                                                            </p>
+                                                                            <p className="text-[11px] text-slate-300 leading-snug">
+                                                                                Termo parental assinado e validado pela coordenação. Aluno pronto para encaminhamento.
+                                                                            </p>
+                                                                        </div>
+                                                                    }
+                                                                >
+                                                                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/80 flex items-center justify-center cursor-help transition-all hover:bg-emerald-100 hover:border-emerald-300 shadow-2xs">
+                                                                        <LucideShieldCheck className="w-4 h-4 text-emerald-600" />
+                                                                    </div>
+                                                                </Tooltip>
                                                             ) : (
-                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-300">
-                                                                    <LucideAlertTriangle className="w-3 h-3 text-amber-600" />
-                                                                    Pendente Admin
-                                                                </span>
+                                                                <Tooltip
+                                                                    content={
+                                                                        <div className="space-y-0.5">
+                                                                            <p className="font-semibold text-amber-400 text-xs flex items-center gap-1.5">
+                                                                                <LucideAlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                                                                                Pendente Admin (Menor de 18)
+                                                                            </p>
+                                                                            <p className="text-[11px] text-slate-300 leading-snug">
+                                                                                Requer anexo do termo assinado pelos pais e liberação da coordenação no perfil.
+                                                                            </p>
+                                                                        </div>
+                                                                    }
+                                                                >
+                                                                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center cursor-help transition-all hover:bg-amber-100 hover:border-amber-300 shadow-2xs">
+                                                                        <LucideAlertTriangle className="w-4 h-4 text-amber-600" />
+                                                                    </div>
+                                                                </Tooltip>
                                                             )
                                                         ) : talent.lgpdConsent ? (
-                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                                                                <LucideCheck className="w-3 h-3 text-emerald-600" />
-                                                                Autorizado
-                                                            </span>
+                                                            <Tooltip
+                                                                content={
+                                                                    <div className="space-y-0.5">
+                                                                        <p className="font-semibold text-emerald-400 text-xs flex items-center gap-1.5">
+                                                                            <LucideShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                                                            Autorizado LGPD
+                                                                        </p>
+                                                                        <p className="text-[11px] text-slate-300 leading-snug">
+                                                                            Aluno maior de 18 anos autorizou o compartilhamento do currículo para processos seletivos.
+                                                                        </p>
+                                                                    </div>
+                                                                }
+                                                            >
+                                                                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/80 flex items-center justify-center cursor-help transition-all hover:bg-emerald-100 hover:border-emerald-300 shadow-2xs">
+                                                                    <LucideShieldCheck className="w-4 h-4 text-emerald-600" />
+                                                                </div>
+                                                            </Tooltip>
                                                         ) : (
-                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                                                                <LucideAlertTriangle className="w-3 h-3 text-slate-400" />
-                                                                Pendente
-                                                            </span>
+                                                            <Tooltip
+                                                                content={
+                                                                    <div className="space-y-0.5">
+                                                                        <p className="font-semibold text-slate-300 text-xs flex items-center gap-1.5">
+                                                                            <LucideAlertTriangle className="w-3.5 h-3.5 text-slate-400" />
+                                                                            Pendente de Autorização
+                                                                        </p>
+                                                                        <p className="text-[11px] text-slate-400 leading-snug">
+                                                                            O aluno ainda não confirmou o termo de consentimento LGPD no seu painel.
+                                                                        </p>
+                                                                    </div>
+                                                                }
+                                                            >
+                                                                <div className="w-8 h-8 rounded-xl bg-slate-50 text-slate-400 border border-slate-200/80 flex items-center justify-center cursor-help transition-all hover:bg-slate-100 hover:border-slate-300 shadow-2xs">
+                                                                    <LucideAlertTriangle className="w-4 h-4 text-slate-400" />
+                                                                </div>
+                                                            </Tooltip>
                                                         )}
                                                     </td>
                                                     <td className="px-5 py-3.5 text-right">
