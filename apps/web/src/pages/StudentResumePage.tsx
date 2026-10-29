@@ -718,14 +718,14 @@ export default function StudentResumePage() {
                         </div>
 
                         {/* Checkbox LGPD Aluno */}
-                        <label className="flex items-start gap-3 p-3.5 rounded-xl border border-zinc-200/80 bg-white hover:bg-zinc-50/60 transition-colors cursor-pointer select-none">
+                        <label className="flex items-center gap-3 p-3.5 rounded-xl border border-zinc-200/80 bg-white hover:bg-zinc-50/60 transition-colors cursor-pointer select-none">
                             <input
                                 type="checkbox"
                                 checked={profile.lgpdConsent}
                                 onChange={e => setProfile(p => ({ ...p, lgpdConsent: e.target.checked }))}
-                                className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-amber-600 focus:ring-amber-500"
+                                className="h-4 w-4 rounded border-zinc-300 text-amber-600 focus:ring-amber-500 shrink-0"
                             />
-                            <div className="text-xs">
+                            <div className="text-xs leading-normal">
                                 <span className="font-medium text-zinc-900 block">
                                     Autorizo o Projeto Brilha Mais a compartilhar meu currículo e dados profissionais com empresas parceiras para fins de processos seletivos.
                                 </span>
@@ -783,14 +783,14 @@ export default function StudentResumePage() {
                                     </div>
                                 </div>
 
-                                <label className="flex items-start gap-3 p-3.5 rounded-xl border border-zinc-200/80 bg-white hover:bg-zinc-50/60 transition-colors cursor-pointer select-none">
+                                <label className="flex items-center gap-3 p-3.5 rounded-xl border border-zinc-200/80 bg-white hover:bg-zinc-50/60 transition-colors cursor-pointer select-none">
                                     <input
                                         type="checkbox"
                                         checked={profile.parentConsent}
                                         onChange={e => setProfile(p => ({ ...p, parentConsent: e.target.checked }))}
-                                        className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-amber-600 focus:ring-amber-500"
+                                        className="h-4 w-4 rounded border-zinc-300 text-amber-600 focus:ring-amber-500 shrink-0"
                                     />
-                                    <span className="text-xs font-medium text-zinc-800 leading-tight">
+                                    <span className="text-xs font-medium text-zinc-800 leading-normal">
                                         Declaro que meu responsável legal está ciente e autoriza o envio do meu currículo para empresas conveniadas.
                                     </span>
                                 </label>
