@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { UpdateTalentProfileDto, UpdateResumeDto } from './dto/update-talent-profile.dto';
+import {
+  UpdateTalentProfileDto,
+  UpdateResumeDto,
+  UploadParentDocumentDto,
+  ToggleMinorApprovalDto,
+} from './dto/update-talent-profile.dto';
 
 @Injectable()
 export class TalentService {
@@ -218,6 +223,8 @@ export class TalentService {
     area?: string;
     availableOnly?: boolean;
     hasResumeOnly?: boolean;
+    minorPendingOnly?: boolean;
+    minorApprovedOnly?: boolean;
   }) {
     const where: any = {};
 
@@ -227,6 +234,14 @@ export class TalentService {
 
     if (query.hasResumeOnly) {
       where.resumeUrl = { not: null };
+    }
+
+    if (query.minorPendingOnly) {
+      where.isMinor = true;
+      where.minorApproved = false;
+    } else if (query.minorApprovedOnly) {
+      where.isMinor = true;
+      where.minorApproved = true;
     }
 
     if (query.area) {
@@ -339,7 +354,121 @@ export class TalentService {
       throw new NotFoundException('Perfil de talento não encontrado');
     }
 
-    return profile;
+    let approverName: string | null = null;
+    if (profile.minorApprovedById) {
+      const approver = await this.prisma.user.findUnique({
+        where: { id: profile.minorApprovedById },
+        select: { name: true, email: true },
+      });
+      approverName = approver?.name || approver?.email || null;
+    }
+
+    return {
+      ...profile,
+      approverName,
+    };
+  }
+
+  async uploadParentDocument(
+    idOrUserId: string,
+    adminUser: any,
+    dto: UploadParentDocumentDto,
+  ) {
+    const existing = await this.findOneForAdmin(idOrUserId);
+
+    const updated = await this.prisma.talentProfile.update({
+      where: { id: existing.id },
+      data: {
+        parentDocumentUrl: dto.parentDocumentUrl,
+        parentDocumentFileName: dto.parentDocumentFileName,
+        parentDocumentUploadedAt: new Date(),
+      },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    await this.audit.log(
+      'Upload de Termo dos Pais (Menor de Idade)',
+      `${updated.user.name || 'Aluno'} - ${dto.parentDocumentFileName}`,
+      adminUser.id,
+      updated.userId,
+      {
+        fileName: dto.parentDocumentFileName,
+        url: dto.parentDocumentUrl,
+      },
+    );
+
+    return this.findOneForAdmin(updated.id);
+  }
+
+  async removeParentDocument(idOrUserId: string, adminUser: any) {
+    const existing = await this.findOneForAdmin(idOrUserId);
+
+    const updated = await this.prisma.talentProfile.update({
+      where: { id: existing.id },
+      data: {
+        parentDocumentUrl: null,
+        parentDocumentFileName: null,
+        parentDocumentUploadedAt: null,
+        minorApproved: false,
+        minorApprovedAt: null,
+        minorApprovedById: null,
+      },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    await this.audit.log(
+      'Remoção de Termo dos Pais (Menor de Idade)',
+      `Termo removido de ${updated.user.name || 'Aluno'}`,
+      adminUser.id,
+      updated.userId,
+    );
+
+    return this.findOneForAdmin(updated.id);
+  }
+
+  async toggleMinorApproval(
+    idOrUserId: string,
+    adminUser: any,
+    dto: ToggleMinorApprovalDto,
+  ) {
+    const existing = await this.findOneForAdmin(idOrUserId);
+
+    const updated = await this.prisma.talentProfile.update({
+      where: { id: existing.id },
+      data: {
+        minorApproved: dto.approved,
+        minorApprovedAt: dto.approved ? new Date() : null,
+        minorApprovedById: dto.approved ? adminUser.id : null,
+      },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    await this.audit.log(
+      dto.approved
+        ? 'Liberação de Menor no Banco de Talentos'
+        : 'Revogação de Liberação de Menor',
+      `Status de ${updated.user.name || 'Aluno'}: ${dto.approved ? 'Liberado para Empresas' : 'Pendente'}`,
+      adminUser.id,
+      updated.userId,
+      {
+        minorApproved: dto.approved,
+        approvedBy: adminUser.name || adminUser.email,
+      },
+    );
+
+    return this.findOneForAdmin(updated.id);
   }
 
   async getStats() {
@@ -353,8 +482,22 @@ export class TalentService {
     const minorsWithParentConsent = await this.prisma.talentProfile.count({
       where: { isMinor: true, parentConsent: true },
     });
+    const minorsPendingApproval = await this.prisma.talentProfile.count({
+      where: { isMinor: true, minorApproved: false },
+    });
+    const minorsApproved = await this.prisma.talentProfile.count({
+      where: { isMinor: true, minorApproved: true },
+    });
+    // Available for companies: must be available, consented LGPD, and if minor, must be approved by admin
     const available = await this.prisma.talentProfile.count({
-      where: { isAvailable: true, lgpdConsent: true },
+      where: {
+        isAvailable: true,
+        lgpdConsent: true,
+        OR: [
+          { isMinor: false },
+          { isMinor: true, minorApproved: true },
+        ],
+      },
     });
 
     return {
@@ -362,6 +505,8 @@ export class TalentService {
       withResume,
       lgpdConsented,
       minorsWithParentConsent,
+      minorsPendingApproval,
+      minorsApproved,
       available,
     };
   }

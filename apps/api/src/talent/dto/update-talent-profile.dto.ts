@@ -91,3 +91,17 @@ export class UpdateResumeDto {
   @IsString()
   resumeFileSize?: string;
 }
+
+export class UploadParentDocumentDto {
+  @IsString()
+  parentDocumentUrl: string;
+
+  @IsString()
+  parentDocumentFileName: string;
+}
+
+export class ToggleMinorApprovalDto {
+  @IsBoolean()
+  approved: boolean;
+}
+

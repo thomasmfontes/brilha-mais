@@ -39,6 +39,10 @@ interface TalentProfileData {
     parentName?: string;
     parentContact?: string;
     parentConsent: boolean;
+    parentDocumentUrl?: string;
+    parentDocumentFileName?: string;
+    minorApproved?: boolean;
+    minorApprovedAt?: string;
     user?: {
         name?: string;
         email?: string;
@@ -392,6 +396,39 @@ export default function StudentResumePage() {
                 </div>
             ) : (
                 <form onSubmit={handleSaveProfile} className="space-y-6">
+                    {/* Alerta de Status de Menor de Idade */}
+                    {profile.isMinor && (
+                        profile.minorApproved ? (
+                            <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-start gap-3.5 shadow-2xs">
+                                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                                    <LucideCheck className="w-5 h-5 text-emerald-700" />
+                                </div>
+                                <div className="text-xs text-emerald-950 leading-relaxed">
+                                    <p className="font-semibold text-sm text-emerald-900">
+                                        Autorização Parental Validada pela Coordenação
+                                    </p>
+                                    <p className="mt-0.5 text-emerald-800">
+                                        O termo assinado pelos seus pais/responsáveis foi validado pela equipe do Projeto Brilha Mais. Seu currículo está liberado para encaminhamento e processos seletivos com empresas parceiras.
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-start gap-3.5 shadow-2xs">
+                                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                                    <LucideAlertCircle className="w-5 h-5 text-amber-700" />
+                                </div>
+                                <div className="text-xs text-amber-950 leading-relaxed">
+                                    <p className="font-semibold text-sm text-amber-900">
+                                        Aguardando Validação da Coordenação (Menor de 18 anos)
+                                    </p>
+                                    <p className="mt-0.5 text-amber-800">
+                                        Seu currículo e informações estão salvos. Por você ter menos de 18 anos, a coordenação irá conferir internamente o termo assinado pelos seus responsáveis desde o início das aulas para liberar seu perfil para o encaminhamento a vagas.
+                                    </p>
+                                </div>
+                            </div>
+                        )
+                    )}
+
                     {/* 1. Card: Arquivo do Currículo */}
                     <div className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-2xs space-y-5">
                         <div className="flex items-center gap-3 pb-4 border-b border-zinc-100">
@@ -753,6 +790,18 @@ export default function StudentResumePage() {
                                         Declaro que meu responsável legal está ciente e autoriza o envio do meu currículo para empresas conveniadas.
                                     </span>
                                 </label>
+
+                                {profile.minorApproved ? (
+                                    <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200/70 text-xs font-semibold text-emerald-800">
+                                        <LucideCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                                        <span>Termo parental validado e currículo liberado pela coordenação</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/70 text-xs text-amber-800">
+                                        <LucideAlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                                        <span>Aguardando a coordenação conferir o termo assinado para liberação</span>
+                                    </div>
+                                )}
                             </motion.div>
                         )}
                     </div>

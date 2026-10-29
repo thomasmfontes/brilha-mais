@@ -267,7 +267,11 @@ export default function AdminDashboard() {
 
             const matchesStatus =
                 talentStatusFilter === 'ALL' ||
-                (talentStatusFilter === 'AVAILABLE' ? t.isAvailable : !t.isAvailable);
+                (talentStatusFilter === 'AVAILABLE'
+                    ? (t.isAvailable && t.lgpdConsent && (!t.isMinor || (t.isMinor && t.minorApproved)))
+                    : talentStatusFilter === 'MINOR_PENDING'
+                    ? (t.isMinor && !t.minorApproved)
+                    : !t.isAvailable);
 
             return matchesSearch && matchesTurma && matchesResume && matchesStatus;
         });
@@ -1898,9 +1902,9 @@ export default function AdminDashboard() {
                                     value={talentsStats?.withResume || 0}
                                 />
                                 <AdminStat
-                                    icon={<LucideShieldCheck className="h-5 w-5" />}
-                                    label="Autorizados LGPD"
-                                    value={talentsStats?.lgpdConsented || 0}
+                                    icon={<LucideAlertTriangle className="h-5 w-5" />}
+                                    label="Menores Pendentes"
+                                    value={talentsStats?.minorsPendingApproval || 0}
                                 />
                                 <AdminStat
                                     icon={<LucideCheckCircle2 className="h-5 w-5" />}
@@ -1954,7 +1958,8 @@ export default function AdminDashboard() {
                                             onChange={setTalentStatusFilter}
                                             placeholder="Status"
                                             options={[
-                                                { id: 'AVAILABLE', name: 'Disponíveis' },
+                                                { id: 'AVAILABLE', name: 'Prontos p/ Entrevista' },
+                                                { id: 'MINOR_PENDING', name: 'Menores Pendentes' },
                                                 { id: 'PAUSED', name: 'Pausados' }
                                             ]}
                                         />
@@ -2082,14 +2087,26 @@ export default function AdminDashboard() {
                                                         )}
                                                     </td>
                                                     <td className="px-5 py-3.5">
-                                                        {talent.lgpdConsent ? (
+                                                        {talent.isMinor ? (
+                                                            talent.minorApproved ? (
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                                                                    <LucideCheck className="w-3 h-3 text-emerald-600" />
+                                                                    Liberado (Menor)
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                                                                    <LucideAlertTriangle className="w-3 h-3 text-amber-600" />
+                                                                    Pendente Admin
+                                                                </span>
+                                                            )
+                                                        ) : talent.lgpdConsent ? (
                                                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                                                                 <LucideCheck className="w-3 h-3 text-emerald-600" />
-                                                                Autorizado {talent.isMinor ? '(Menor)' : ''}
+                                                                Autorizado
                                                             </span>
                                                         ) : (
-                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">
-                                                                <LucideAlertTriangle className="w-3 h-3 text-amber-600" />
+                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                                                <LucideAlertTriangle className="w-3 h-3 text-slate-400" />
                                                                 Pendente
                                                             </span>
                                                         )}
@@ -2673,6 +2690,11 @@ export default function AdminDashboard() {
                 isOpen={isTalentModalOpen}
                 onClose={() => setIsTalentModalOpen(false)}
                 talent={selectedTalent}
+                onTalentUpdated={(updated) => {
+                    setSelectedTalent(updated);
+                    setTalents((prev: any[]) => prev.map(t => t.id === updated.id ? { ...t, ...updated } : t));
+                    fetchTalents();
+                }}
             />
 
             {/* Student Materials Modal */}

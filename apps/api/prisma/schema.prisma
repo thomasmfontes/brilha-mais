@@ -409,6 +409,14 @@ model TalentProfile {
   parentContact   String?
   parentConsent   Boolean   @default(false)
 
+  // Documento e Liberacao de Menores pelo Admin
+  parentDocumentUrl        String?
+  parentDocumentFileName   String?
+  parentDocumentUploadedAt DateTime?
+  minorApproved            Boolean   @default(false)
+  minorApprovedAt          DateTime?
+  minorApprovedById        String?
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
