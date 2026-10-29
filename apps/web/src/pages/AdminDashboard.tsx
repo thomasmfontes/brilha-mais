@@ -12,6 +12,7 @@ import { ConfirmModal } from "../components/ConfirmModal";
 import UserMaterialsModal from "../components/UserMaterialsModal";
 import TalentDetailsModal from "../components/TalentDetailsModal";
 import Tooltip from "../components/Tooltip";
+import { formatPhoneMask } from "../utils/formatters";
 import { LucideBriefcase, LucideDownload, LucidePhone, LucideEye, LucideFileText, LucideCheckCircle2, LucideUserCheck } from "lucide-react";
 import CountUp from "../components/CountUp";
 import Skeleton from "../components/Skeleton";
@@ -2172,7 +2173,7 @@ export default function AdminDashboard() {
                                                                     target="_blank"
                                                                     rel="noreferrer"
                                                                     className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-                                                                    title={`Chamar no WhatsApp (${talent.phone})`}
+                                                                    title={`Chamar no WhatsApp (${formatPhoneMask(talent.phone)})`}
                                                                 >
                                                                     <LucidePhone className="w-4 h-4" />
                                                                 </a>

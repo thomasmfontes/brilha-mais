@@ -16,6 +16,7 @@ import {
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import Skeleton from '../components/Skeleton';
+import { formatPhoneMask } from '../utils/formatters';
 
 interface TalentProfileData {
     id?: string;
@@ -167,6 +168,8 @@ export default function StudentResumePage() {
             const { data } = await api.get('/talents/me');
             setProfile({
                 ...data,
+                phone: formatPhoneMask(data.phone),
+                parentContact: formatPhoneMask(data.parentContact),
                 areasOfInterest: Array.isArray(data.areasOfInterest) ? data.areasOfInterest : [],
                 birthDate: data.birthDate ? data.birthDate.split('T')[0] : '',
             });
@@ -546,10 +549,11 @@ export default function StudentResumePage() {
                                     WhatsApp / Telefone
                                 </label>
                                 <input
-                                    type="text"
+                                    type="tel"
+                                    maxLength={15}
                                     placeholder="(11) 98765-4321"
                                     value={profile.phone || ''}
-                                    onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))}
+                                    onChange={e => setProfile(p => ({ ...p, phone: formatPhoneMask(e.target.value) }))}
                                     className="h-10 w-full bg-white border border-zinc-200/80 rounded-xl px-3.5 text-xs sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
                                 />
                             </div>
@@ -769,10 +773,11 @@ export default function StudentResumePage() {
                                             Telefone ou contato do responsável *
                                         </label>
                                         <input
-                                            type="text"
+                                            type="tel"
+                                            maxLength={15}
                                             placeholder="(11) 98765-4321"
                                             value={profile.parentContact || ''}
-                                            onChange={e => setProfile(p => ({ ...p, parentContact: e.target.value }))}
+                                            onChange={e => setProfile(p => ({ ...p, parentContact: formatPhoneMask(e.target.value) }))}
                                             className="h-10 w-full bg-white border border-zinc-200/80 rounded-xl px-3.5 text-xs sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
                                         />
                                     </div>

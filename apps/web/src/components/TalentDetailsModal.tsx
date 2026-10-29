@@ -23,6 +23,7 @@ import {
 import { PortalModal } from './PortalModal';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import { formatPhoneMask } from '../utils/formatters';
 
 export interface TalentItem {
     id: string;
@@ -299,7 +300,7 @@ export default function TalentDetailsModal({
                                 <span>WhatsApp</span>
                                 {currentTalent.phone && (
                                     <span className="text-zinc-400 font-normal hidden sm:inline">
-                                        ({currentTalent.phone})
+                                        ({formatPhoneMask(currentTalent.phone)})
                                     </span>
                                 )}
                             </a>
@@ -562,7 +563,7 @@ export default function TalentDetailsModal({
                                 <div className="pt-2 border-t border-zinc-200/60 space-y-1 text-xs">
                                     <p className="text-zinc-600">
                                         <strong className="text-zinc-900 font-medium">Responsável Legal:</strong> {currentTalent.parentName || 'Não informado'}
-                                        {currentTalent.parentContact && ` • Contato: ${currentTalent.parentContact}`}
+                                        {currentTalent.parentContact && ` • Contato: ${formatPhoneMask(currentTalent.parentContact)}`}
                                     </p>
                                     <p className="text-[11px] text-zinc-500 flex items-center gap-1 mt-1">
                                         <LucideCheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
