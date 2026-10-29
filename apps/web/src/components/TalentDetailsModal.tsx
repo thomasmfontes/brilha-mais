@@ -162,7 +162,6 @@ export default function TalentDetailsModal({
     };
 
     const handleRemoveParentDoc = async () => {
-        if (!confirm('Deseja realmente remover o termo assinado deste aluno? Caso já esteja liberado, a liberação será revogada.')) return;
         setIsDeletingDoc(true);
         try {
             const { data: updated } = await api.delete(`/talents/${currentTalent.id}/parent-document`);
@@ -178,10 +177,8 @@ export default function TalentDetailsModal({
 
     const handleToggleApproval = async (approved: boolean) => {
         if (approved && !currentTalent.parentDocumentUrl) {
-            const proceed = confirm(
-                'Atenção: Nenhum termo digital foi anexado ainda. Deseja aprovar mesmo assim com base no documento físico arquivado na coordenação?'
-            );
-            if (!proceed) return;
+            toast.error('Anexe o termo assinado pelos pais antes de aprovar a liberação.');
+            return;
         }
 
         setIsUpdatingApproval(true);

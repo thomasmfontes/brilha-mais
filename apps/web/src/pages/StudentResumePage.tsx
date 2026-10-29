@@ -274,7 +274,6 @@ export default function StudentResumePage() {
     };
 
     const handleRemoveResume = async () => {
-        if (!window.confirm('Tem certeza que deseja remover o seu currículo?')) return;
         setIsDeletingResume(true);
         try {
             await api.delete('/talents/me/resume');
@@ -285,7 +284,7 @@ export default function StudentResumePage() {
                 resumeFileSize: undefined,
                 resumeUpdatedAt: undefined,
             }));
-            toast.success('Currículo removido.');
+            toast.success('Currículo removido com sucesso!');
         } catch (error) {
             console.error('Erro ao remover currículo:', error);
             toast.error('Erro ao remover arquivo.');
