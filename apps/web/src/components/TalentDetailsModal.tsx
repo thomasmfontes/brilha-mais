@@ -11,6 +11,7 @@ import {
     LucideLinkedin,
     LucideGraduationCap,
     LucideCheckCircle2,
+    LucideCheck,
     LucideAlertCircle,
     LucideExternalLink,
     LucideUpload,
@@ -267,26 +268,26 @@ export default function TalentDetailsModal({
                     </div>
 
                     {/* Barra de Ações Rápidas */}
-                    <div className="flex flex-wrap items-center gap-2.5 mt-5 pt-4 border-t border-zinc-100">
+                    <div className="flex flex-wrap items-center gap-2 mt-4 pt-3.5 border-t border-zinc-100">
                         {currentTalent.resumeUrl ? (
                             <a
                                 href={currentTalent.resumeUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-[#F19B0A] hover:bg-[#D98B08] active:scale-[0.98] text-white shadow-xs inline-flex items-center gap-2 transition-all cursor-pointer"
+                                className="h-8 px-3 rounded-lg text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 text-zinc-700 shadow-2xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                             >
-                                <LucideDownload className="w-4 h-4" />
-                                <span>Baixar Currículo</span>
+                                <LucideDownload className="w-3.5 h-3.5 text-zinc-500" />
+                                <span>Currículo</span>
                                 {currentTalent.resumeFileName && (
-                                    <span className="opacity-80 text-[11px] font-normal max-w-[130px] truncate hidden sm:inline">
+                                    <span className="text-zinc-400 font-normal truncate max-w-[120px] hidden sm:inline">
                                         ({currentTalent.resumeFileName})
                                     </span>
                                 )}
                             </a>
                         ) : (
-                            <span className="h-10 px-3.5 rounded-xl text-xs font-medium bg-zinc-50 text-zinc-400 border border-zinc-200/80 inline-flex items-center gap-2">
-                                <LucideFileText className="w-4 h-4 text-zinc-400" />
-                                <span>Sem currículo anexado</span>
+                            <span className="h-8 px-3 rounded-lg text-xs font-normal text-zinc-400 border border-zinc-200/60 inline-flex items-center gap-1.5">
+                                <LucideFileText className="w-3.5 h-3.5 text-zinc-300" />
+                                <span>Sem currículo</span>
                             </span>
                         )}
 
@@ -295,13 +296,15 @@ export default function TalentDetailsModal({
                                 href={whatsappLink}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="h-10 px-4 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white shadow-xs inline-flex items-center gap-2 transition-all cursor-pointer"
+                                className="h-8 px-3 rounded-lg text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 text-zinc-700 shadow-2xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                             >
-                                <LucidePhone className="w-4 h-4" />
+                                <LucidePhone className="w-3.5 h-3.5 text-emerald-600" />
                                 <span>WhatsApp</span>
-                                <span className="opacity-90 text-[11px] font-normal hidden sm:inline">
-                                    ({currentTalent.phone})
-                                </span>
+                                {currentTalent.phone && (
+                                    <span className="text-zinc-400 font-normal hidden sm:inline">
+                                        ({currentTalent.phone})
+                                    </span>
+                                )}
                             </a>
                         )}
 
@@ -310,188 +313,143 @@ export default function TalentDetailsModal({
                                 href={currentTalent.linkedinUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="h-10 px-3.5 rounded-xl text-xs sm:text-sm font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 text-zinc-700 active:scale-[0.98] shadow-xs inline-flex items-center gap-1.5 transition-all cursor-pointer"
+                                className="h-8 px-3 rounded-lg text-xs font-medium bg-white hover:bg-zinc-50 border border-zinc-200/80 text-zinc-700 shadow-2xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                             >
-                                <LucideLinkedin className="w-4 h-4 text-blue-600" />
+                                <LucideLinkedin className="w-3.5 h-3.5 text-blue-600" />
                                 <span>LinkedIn</span>
-                                <LucideExternalLink className="w-3.5 h-3.5 text-zinc-400" />
+                                <LucideExternalLink className="w-3 h-3 text-zinc-400" />
                             </a>
                         )}
                     </div>
                 </div>
 
                 {/* Conteúdo do Modal */}
-                <div className="p-6 overflow-y-auto space-y-6">
-                    {/* Bloco Específico: Validação e Liberação do Menor de Idade */}
+                <div className="p-6 overflow-y-auto space-y-5">
+                    {/* Validação e Liberação do Menor de Idade (Clean, Compacto e Editorial) */}
                     {currentTalent.isMinor && (
-                        <div className="p-5 rounded-2xl bg-amber-50/40 border border-amber-200/80 space-y-4">
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                                        <LucideShieldAlert className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-sm font-bold text-zinc-900 leading-tight">
-                                            Liberação de Aluno Menor de Idade
-                                        </h4>
-                                        <p className="text-xs text-zinc-600 mt-0.5">
-                                            Exigência de validação interna da coordenação com termo físico assinado pelos pais desde o início do curso.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {currentTalent.minorApproved ? (
-                                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-lg border border-emerald-300 shrink-0">
-                                        <LucideCheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                                        Liberado para Empresas
+                        <div className="p-4 rounded-xl bg-zinc-50/70 border border-zinc-200/80 space-y-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-semibold text-zinc-900">
+                                        Validação de Menor de Idade
                                     </span>
-                                ) : (
-                                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300 shrink-0">
-                                        <LucideAlertCircle className="w-3.5 h-3.5 text-amber-700" />
-                                        Pendente de Liberação
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Informações de Aprovação */}
-                            {currentTalent.minorApproved && (
-                                <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80 text-xs text-emerald-900 leading-relaxed">
-                                    <p className="font-semibold flex items-center gap-1.5">
-                                        <LucideCheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                                        Liberado formalmente pela coordenação
-                                    </p>
-                                    <p className="mt-0.5 text-emerald-800 text-[11px]">
-                                        {currentTalent.approverName ? `Aprovado por: ${currentTalent.approverName}` : 'Aprovado pelo Administrador'}
-                                        {currentTalent.minorApprovedAt && ` em ${new Date(currentTalent.minorApprovedAt).toLocaleDateString('pt-BR')}`}
-                                    </p>
+                                    <span className="text-zinc-300">•</span>
+                                    {currentTalent.minorApproved ? (
+                                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                                            <LucideCheck className="w-3 h-3 text-emerald-600" />
+                                            Liberado p/ empresas
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
+                                            <LucideAlertCircle className="w-3 h-3 text-amber-600" />
+                                            Pendente de liberação
+                                        </span>
+                                    )}
                                 </div>
-                            )}
-
-                            {/* Área do Termo Digitalizado */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-800 block">
-                                    Termo Físico Assinado pelos Pais / Responsáveis
-                                </label>
-
-                                {currentTalent.parentDocumentUrl ? (
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
-                                        <div className="flex items-center gap-2.5 min-w-0">
-                                            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 border border-amber-200/60 flex items-center justify-center shrink-0">
-                                                <LucideFileText className="w-4 h-4" />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-semibold text-zinc-900 truncate">
-                                                    {currentTalent.parentDocumentFileName || 'Termo_Assinado_Pais.pdf'}
-                                                </p>
-                                                <p className="text-[11px] text-zinc-500">
-                                                    {currentTalent.parentDocumentUploadedAt
-                                                        ? `Anexado em ${new Date(currentTalent.parentDocumentUploadedAt).toLocaleDateString('pt-BR')}`
-                                                        : 'Documento anexado'}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
-                                            <a
-                                                href={currentTalent.parentDocumentUrl}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="h-8 px-2.5 rounded-lg text-xs font-medium text-zinc-700 hover:text-zinc-900 bg-white hover:bg-zinc-50 border border-zinc-200 transition-colors inline-flex items-center gap-1.5 shadow-2xs"
-                                                title="Visualizar documento em nova aba"
-                                            >
-                                                <LucideEye className="w-3.5 h-3.5 text-zinc-500" />
-                                                Visualizar
-                                            </a>
-
-                                            <label className="h-8 px-2.5 rounded-lg text-xs font-medium text-zinc-700 hover:text-zinc-900 bg-white hover:bg-zinc-50 border border-zinc-200 transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer">
-                                                {isUploadingDoc ? (
-                                                    <LucideLoader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
-                                                ) : (
-                                                    <LucideUpload className="w-3.5 h-3.5 text-zinc-500" />
-                                                )}
-                                                Substituir
-                                                <input
-                                                    type="file"
-                                                    accept=".pdf,image/png,image/jpeg,image/jpg"
-                                                    onChange={handleParentDocUpload}
-                                                    disabled={isUploadingDoc}
-                                                    className="hidden"
-                                                />
-                                            </label>
-
-                                            <button
-                                                type="button"
-                                                onClick={handleRemoveParentDoc}
-                                                disabled={isDeletingDoc}
-                                                className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-100 transition-colors cursor-pointer"
-                                                title="Excluir documento"
-                                            >
-                                                {isDeletingDoc ? (
-                                                    <LucideLoader2 className="w-3.5 h-3.5 animate-spin" />
-                                                ) : (
-                                                    <LucideTrash2 className="w-3.5 h-3.5" />
-                                                )}
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <label className="flex items-center justify-center gap-2.5 p-4 rounded-xl border border-dashed border-amber-300 hover:border-amber-400 bg-white/70 hover:bg-white transition-all cursor-pointer text-xs font-semibold text-amber-900 text-center shadow-2xs">
-                                        {isUploadingDoc ? (
-                                            <>
-                                                <LucideLoader2 className="w-4 h-4 animate-spin text-amber-600" />
-                                                <span>Enviando documento...</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <LucideUpload className="w-4 h-4 text-amber-600" />
-                                                <span>Anexar Termo Assinado pelos Pais (PDF, JPG ou PNG)</span>
-                                            </>
-                                        )}
-                                        <input
-                                            type="file"
-                                            accept=".pdf,image/png,image/jpeg,image/jpg"
-                                            onChange={handleParentDocUpload}
-                                            disabled={isUploadingDoc}
-                                            className="hidden"
-                                        />
-                                    </label>
-                                )}
-                            </div>
-
-                            {/* Botões de Ação para Aprovar/Revogar */}
-                            <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between gap-3">
-                                <span className="text-[11px] text-zinc-500">
-                                    {currentTalent.minorApproved
-                                        ? 'O aluno está visível para vagas de empresas.'
-                                        : 'A liberação torna o perfil apto a ser encaminhado para processos seletivos.'}
-                                </span>
 
                                 {currentTalent.minorApproved ? (
                                     <button
                                         type="button"
                                         onClick={() => handleToggleApproval(false)}
                                         disabled={isUpdatingApproval}
-                                        className="h-9 px-3 rounded-xl text-xs font-medium text-zinc-600 hover:text-red-600 bg-white hover:bg-red-50 border border-zinc-200 transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5 shadow-2xs"
+                                        className="text-xs font-medium text-zinc-500 hover:text-red-600 underline cursor-pointer transition-colors self-start sm:self-auto disabled:opacity-50"
                                     >
-                                        {isUpdatingApproval && <LucideLoader2 className="w-3.5 h-3.5 animate-spin" />}
-                                        Revogar Liberação
+                                        Revogar liberação
                                     </button>
                                 ) : (
                                     <button
                                         type="button"
                                         onClick={() => handleToggleApproval(true)}
                                         disabled={isUpdatingApproval}
-                                        className="h-9 px-4 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white shadow-xs inline-flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                                        className="h-8 px-3 rounded-lg text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white shadow-2xs transition-all inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto disabled:opacity-50"
                                     >
                                         {isUpdatingApproval ? (
                                             <LucideLoader2 className="w-3.5 h-3.5 animate-spin" />
                                         ) : (
-                                            <LucideCheckCircle2 className="w-3.5 h-3.5" />
+                                            <LucideCheck className="w-3.5 h-3.5" />
                                         )}
-                                        Aprovar e Liberar Menor
+                                        <span>Aprovar e Liberar</span>
                                     </button>
                                 )}
                             </div>
+
+                            {/* Detalhe de quem aprovou */}
+                            {currentTalent.minorApproved && currentTalent.approverName && (
+                                <p className="text-[11px] text-zinc-500">
+                                    Aprovado por {currentTalent.approverName}
+                                    {currentTalent.minorApprovedAt && ` em ${new Date(currentTalent.minorApprovedAt).toLocaleDateString('pt-BR')}`}
+                                </p>
+                            )}
+
+                            {/* Linha do Documento Assinado */}
+                            {currentTalent.parentDocumentUrl ? (
+                                <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-white border border-zinc-200/80 text-xs shadow-2xs">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <LucideFileText className="w-4 h-4 text-zinc-400 shrink-0" />
+                                        <span className="font-medium text-zinc-800 truncate">
+                                            {currentTalent.parentDocumentFileName || 'Termo_Assinado.pdf'}
+                                        </span>
+                                        {currentTalent.parentDocumentUploadedAt && (
+                                            <span className="text-[11px] text-zinc-400 shrink-0 hidden sm:inline">
+                                                • {new Date(currentTalent.parentDocumentUploadedAt).toLocaleDateString('pt-BR')}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <a
+                                            href={currentTalent.parentDocumentUrl}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-xs font-medium text-zinc-600 hover:text-zinc-900 underline"
+                                        >
+                                            Ver
+                                        </a>
+                                        <span className="text-zinc-200">|</span>
+                                        <label className="text-xs font-medium text-zinc-600 hover:text-zinc-900 cursor-pointer">
+                                            {isUploadingDoc ? 'Enviando...' : 'Substituir'}
+                                            <input
+                                                type="file"
+                                                accept=".pdf,image/png,image/jpeg,image/jpg"
+                                                onChange={handleParentDocUpload}
+                                                disabled={isUploadingDoc}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                        <span className="text-zinc-200">|</span>
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveParentDoc}
+                                            disabled={isDeletingDoc}
+                                            className="text-xs text-zinc-400 hover:text-red-600 transition-colors cursor-pointer"
+                                            title="Excluir termo"
+                                        >
+                                            {isDeletingDoc ? (
+                                                <LucideLoader2 className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                                <LucideTrash2 className="w-3.5 h-3.5" />
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <label className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-zinc-200/80 hover:border-zinc-300 hover:bg-zinc-50/50 transition-colors cursor-pointer text-xs shadow-2xs">
+                                    <div className="flex items-center gap-2 text-zinc-600">
+                                        <LucideUpload className="w-3.5 h-3.5 text-zinc-400" />
+                                        <span>Termo físico assinado pelos pais</span>
+                                    </div>
+                                    <span className="text-xs font-medium text-zinc-800 bg-zinc-100 hover:bg-zinc-200/80 px-2.5 py-1 rounded-md transition-colors">
+                                        {isUploadingDoc ? 'Enviando...' : 'Anexar documento'}
+                                    </span>
+                                    <input
+                                        type="file"
+                                        accept=".pdf,image/png,image/jpeg,image/jpg"
+                                        onChange={handleParentDocUpload}
+                                        disabled={isUploadingDoc}
+                                        className="hidden"
+                                    />
+                                </label>
+                            )}
                         </div>
                     )}
 
