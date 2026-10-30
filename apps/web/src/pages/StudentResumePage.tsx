@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LucideUpload,
@@ -159,9 +161,21 @@ export default function StudentResumePage() {
     const [isDeletingResume, setIsDeletingResume] = useState(false);
     const [tagInput, setTagInput] = useState('');
 
-    useEffect(() => {
-        fetchProfile();
+    const userRole = useMemo(() => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (token) return (jwtDecode<any>(token).role || 'STUDENT').toLowerCase();
+        } catch (e) {}
+        return 'student';
     }, []);
+
+    useEffect(() => {
+        if (userRole === 'student') {
+            fetchProfile();
+        } else {
+            setIsLoading(false);
+        }
+    }, [userRole]);
 
     const fetchProfile = async () => {
         try {
@@ -378,6 +392,26 @@ export default function StudentResumePage() {
             setIsSaving(false);
         }
     };
+
+    if (userRole !== 'student') {
+        return (
+            <div className="max-w-xl mx-auto py-16 px-4 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4 border border-amber-200/60 shadow-xs">
+                    <LucideFileText className="w-8 h-8" />
+                </div>
+                <h2 className="text-xl font-bold text-zinc-900 mb-2">Área Exclusiva para Alunos</h2>
+                <p className="text-sm text-zinc-600 mb-6 max-w-md mx-auto leading-relaxed">
+                    A página de preenchimento de currículo é destinada exclusivamente aos alunos para integração com o Banco de Talentos.
+                </p>
+                <Link
+                    to="/admin"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-sm font-medium transition-colors cursor-pointer shadow-xs"
+                >
+                    Ir para o Painel Administrativo
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 w-full pb-10">

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { AuditService } from '../audit/audit.service';
 import {
@@ -15,8 +16,8 @@ export class TalentService {
     private audit: AuditService,
   ) {}
 
-  async getOrCreateProfile(userId: string) {
-    let profile = await this.prisma.talentProfile.findUnique({
+  async getProfile(userId: string) {
+    const profile = await this.prisma.talentProfile.findUnique({
       where: { userId },
       include: {
         user: {
@@ -36,39 +37,65 @@ export class TalentService {
       },
     });
 
-    if (!profile) {
-      profile = await this.prisma.talentProfile.create({
-        data: {
-          userId,
-          isAvailable: true,
-          areasOfInterest: [],
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatarUrl: true,
-              turmas: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-          },
-        },
-      });
+    if (profile) {
+      return profile;
     }
 
-    return profile;
+    // In-memory default for new profiles - DO NOT persist to database on read
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatarUrl: true,
+        turmas: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return {
+      userId,
+      phone: null,
+      birthDate: null,
+      city: null,
+      state: null,
+      headline: null,
+      bio: null,
+      areasOfInterest: [],
+      availability: null,
+      linkedinUrl: null,
+      resumeUrl: null,
+      resumeFileName: null,
+      resumeFileSize: null,
+      resumeUpdatedAt: null,
+      isAvailable: true,
+      lgpdConsent: false,
+      lgpdConsentAt: null,
+      isMinor: false,
+      parentName: null,
+      parentContact: null,
+      parentConsent: false,
+      parentDocumentUrl: null,
+      parentDocumentFileName: null,
+      parentDocumentUploadedAt: null,
+      minorApproved: false,
+      minorApprovedAt: null,
+      minorApprovedById: null,
+      user,
+    };
+  }
+
+  // Alias for backward compatibility if any internal code calls it
+  async getOrCreateProfile(userId: string) {
+    return this.getProfile(userId);
   }
 
   async updateProfile(userId: string, dto: UpdateTalentProfileDto) {
-    // Ensure profile exists
-    await this.getOrCreateProfile(userId);
-
     const dataToUpdate: any = {};
 
     if (dto.phone !== undefined) dataToUpdate.phone = dto.phone || null;
@@ -102,23 +129,29 @@ export class TalentService {
     if (dto.parentContact !== undefined) dataToUpdate.parentContact = dto.parentContact || null;
     if (dto.parentConsent !== undefined) dataToUpdate.parentConsent = Boolean(dto.parentConsent);
 
-    const updated = await this.prisma.talentProfile.update({
+    const userSelect = {
+      id: true,
+      name: true,
+      email: true,
+      avatarUrl: true,
+      turmas: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    };
+
+    const updated = await this.prisma.talentProfile.upsert({
       where: { userId },
-      data: dataToUpdate,
+      create: {
+        userId,
+        ...dataToUpdate,
+      },
+      update: dataToUpdate,
       include: {
         user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatarUrl: true,
-            turmas: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
+          select: userSelect,
         },
       },
     });
@@ -140,11 +173,16 @@ export class TalentService {
   }
 
   async updateResume(userId: string, dto: UpdateResumeDto) {
-    await this.getOrCreateProfile(userId);
-
-    const updated = await this.prisma.talentProfile.update({
+    const updated = await this.prisma.talentProfile.upsert({
       where: { userId },
-      data: {
+      create: {
+        userId,
+        resumeUrl: dto.resumeUrl,
+        resumeFileName: dto.resumeFileName,
+        resumeFileSize: dto.resumeFileSize,
+        resumeUpdatedAt: new Date(),
+      },
+      update: {
         resumeUrl: dto.resumeUrl,
         resumeFileName: dto.resumeFileName,
         resumeFileSize: dto.resumeFileSize,
@@ -190,7 +228,13 @@ export class TalentService {
   }
 
   async removeResume(userId: string) {
-    await this.getOrCreateProfile(userId);
+    const existing = await this.prisma.talentProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!existing) {
+      return null;
+    }
 
     const updated = await this.prisma.talentProfile.update({
       where: { userId },
@@ -226,7 +270,20 @@ export class TalentService {
     minorPendingOnly?: boolean;
     minorApprovedOnly?: boolean;
   }) {
-    const where: any = {};
+    const where: any = {
+      user: {
+        role: Role.STUDENT,
+        ...(query.turmaId
+          ? {
+              turmas: {
+                some: {
+                  id: query.turmaId,
+                },
+              },
+            }
+          : {}),
+      },
+    };
 
     if (query.availableOnly) {
       where.isAvailable = true;
@@ -246,16 +303,6 @@ export class TalentService {
 
     if (query.area) {
       where.areasOfInterest = { has: query.area };
-    }
-
-    if (query.turmaId) {
-      where.user = {
-        turmas: {
-          some: {
-            id: query.turmaId,
-          },
-        },
-      };
     }
 
     if (query.search) {
@@ -472,25 +519,30 @@ export class TalentService {
   }
 
   async getStats() {
-    const totalProfiles = await this.prisma.talentProfile.count();
+    const studentFilter = { user: { role: Role.STUDENT } };
+
+    const totalProfiles = await this.prisma.talentProfile.count({
+      where: studentFilter,
+    });
     const withResume = await this.prisma.talentProfile.count({
-      where: { resumeUrl: { not: null } },
+      where: { ...studentFilter, resumeUrl: { not: null } },
     });
     const lgpdConsented = await this.prisma.talentProfile.count({
-      where: { lgpdConsent: true },
+      where: { ...studentFilter, lgpdConsent: true },
     });
     const minorsWithParentConsent = await this.prisma.talentProfile.count({
-      where: { isMinor: true, parentConsent: true },
+      where: { ...studentFilter, isMinor: true, parentConsent: true },
     });
     const minorsPendingApproval = await this.prisma.talentProfile.count({
-      where: { isMinor: true, minorApproved: false },
+      where: { ...studentFilter, isMinor: true, minorApproved: false },
     });
     const minorsApproved = await this.prisma.talentProfile.count({
-      where: { isMinor: true, minorApproved: true },
+      where: { ...studentFilter, isMinor: true, minorApproved: true },
     });
-    // Available for companies: must be available, consented LGPD, and if minor, must be approved by admin
+    // Available for companies: must be student, available, consented LGPD, and if minor, must be approved by admin
     const available = await this.prisma.talentProfile.count({
       where: {
+        ...studentFilter,
         isAvailable: true,
         lgpdConsent: true,
         OR: [
