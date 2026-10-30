@@ -1178,7 +1178,7 @@ export default function CompanyManagementTab() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Nome Fantasia / Como a empresa é conhecida *
+                  Nome Fantasia *
                 </label>
                 <input
                   type="text"
@@ -1194,7 +1194,7 @@ export default function CompanyManagementTab() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Razão Social Oficial
+                  Razão Social
                 </label>
                 <input
                   type="text"
@@ -1225,22 +1225,7 @@ export default function CompanyManagementTab() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Setor de Atuação / Ramo
-                </label>
-                <input
-                  type="text"
-                  value={formData.segment}
-                  onChange={(e) =>
-                    setFormData({ ...formData, segment: e.target.value })
-                  }
-                  placeholder="Ex: Tecnologia, Varejo, Jurídico..."
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Nome do Responsável no RH *
+                  Responsável no RH *
                 </label>
                 <input
                   type="text"
@@ -1254,9 +1239,9 @@ export default function CompanyManagementTab() {
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  E-mail Corporativo do Contato *
+                  E-mail de Contato *
                 </label>
                 <input
                   type="email"
@@ -1273,9 +1258,9 @@ export default function CompanyManagementTab() {
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Telefone / WhatsApp do RH
+                  Telefone / WhatsApp
                 </label>
                 <input
                   type="text"
@@ -1292,9 +1277,24 @@ export default function CompanyManagementTab() {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Setor de Atuação
+                </label>
+                <input
+                  type="text"
+                  value={formData.segment}
+                  onChange={(e) =>
+                    setFormData({ ...formData, segment: e.target.value })
+                  }
+                  placeholder="Ex: Tecnologia, Varejo, Jurídico..."
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
+                />
+              </div>
+
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Anotações Internas da Coordenação
+                  Observações Internas
                 </label>
                 <textarea
                   rows={2}
@@ -1347,7 +1347,7 @@ export default function CompanyManagementTab() {
           {/* Header */}
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
             <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
-              <Building2 className="h-5 w-5" />
+              <Edit2 className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-lg font-semibold text-slate-900 leading-tight">
@@ -1372,7 +1372,7 @@ export default function CompanyManagementTab() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Nome Fantasia / Como a empresa é conhecida *
+                  Nome Fantasia *
                 </label>
                 <input
                   type="text"
@@ -1388,7 +1388,7 @@ export default function CompanyManagementTab() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Razão Social Oficial
+                  Razão Social
                 </label>
                 <input
                   type="text"
@@ -1419,22 +1419,7 @@ export default function CompanyManagementTab() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Setor de Atuação / Ramo
-                </label>
-                <input
-                  type="text"
-                  value={formData.segment}
-                  onChange={(e) =>
-                    setFormData({ ...formData, segment: e.target.value })
-                  }
-                  placeholder="Ex: Tecnologia, Varejo, Jurídico..."
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Nome do Responsável no RH *
+                  Responsável no RH *
                 </label>
                 <input
                   type="text"
@@ -1448,9 +1433,9 @@ export default function CompanyManagementTab() {
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  E-mail Corporativo do Contato *
+                  E-mail de Contato *
                 </label>
                 <input
                   type="email"
@@ -1467,9 +1452,9 @@ export default function CompanyManagementTab() {
                 />
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Telefone / WhatsApp do RH
+                  Telefone / WhatsApp
                 </label>
                 <input
                   type="text"
@@ -1486,9 +1471,24 @@ export default function CompanyManagementTab() {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Setor de Atuação
+                </label>
+                <input
+                  type="text"
+                  value={formData.segment}
+                  onChange={(e) =>
+                    setFormData({ ...formData, segment: e.target.value })
+                  }
+                  placeholder="Ex: Tecnologia, Varejo, Jurídico..."
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
+                />
+              </div>
+
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Anotações Internas da Coordenação
+                  Observações Internas
                 </label>
                 <textarea
                   rows={2}
