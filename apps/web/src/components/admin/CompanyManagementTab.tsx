@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Building2,
+  Link2,
   Plus,
   Search,
   CheckCircle2,
@@ -325,6 +326,7 @@ export default function CompanyManagementTab() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedRowId, setCopiedRowId] = useState<string | null>(null);
   const [reissuingId, setReissuingId] = useState<string | null>(null);
+  const inviteInputRef = useRef<HTMLInputElement>(null);
 
   // Confirm Modal state (no window.confirm)
   const [confirmModal, setConfirmModal] = useState<{
@@ -497,6 +499,16 @@ export default function CompanyManagementTab() {
     toast.success(
       "Link oficial copiado para a área de transferência!",
     );
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const handleCopyInviteInput = () => {
+    if (!createdInviteData) return;
+    const url = `${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}`;
+    navigator.clipboard.writeText(url);
+    inviteInputRef.current?.select();
+    setCopiedLink(true);
+    toast.success("Link copiado!");
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
@@ -1365,46 +1377,59 @@ export default function CompanyManagementTab() {
         isOpen={!!createdInviteData}
         onClose={() => setCreatedInviteData(null)}
       >
-        <div className="relative w-full max-w-md bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-xl text-left space-y-4">
+        <div className="relative w-full max-w-md bg-white border border-slate-200/80 rounded-2xl p-6 shadow-2xl text-left space-y-4">
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-base font-bold text-slate-900 leading-snug">
-                Link de Ativação
-              </h2>
-              <p className="text-xs text-slate-500 mt-1">
-                Compartilhe com <strong>{createdInviteData?.contactName}</strong> ({createdInviteData?.companyName}) para ativar o acesso.
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                <Link2 className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-base font-bold text-slate-900 leading-snug">
+                  Link de Ativação
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5 truncate">
+                  {createdInviteData?.contactName} • {createdInviteData?.companyName}
+                </p>
+              </div>
             </div>
             <button
               onClick={() => setCreatedInviteData(null)}
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer -mr-1 -mt-1"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 p-1.5 pl-3 rounded-xl border border-slate-200/90 bg-slate-50/60 focus-within:bg-white focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500 transition-colors">
-              <span className="text-xs font-mono text-slate-700 truncate select-all flex-1 min-w-0">
-                {`${window.location.origin}/empresa/ativar?token=${createdInviteData?.inviteToken}`}
-              </span>
+            <label className="text-xs font-semibold text-slate-700 block">
+              Link de acesso exclusivo
+            </label>
+            <div className="relative flex items-center">
+              <input
+                ref={inviteInputRef}
+                type="text"
+                readOnly
+                value={`${window.location.origin}/empresa/ativar?token=${createdInviteData?.inviteToken}`}
+                onClick={handleCopyInviteInput}
+                className="w-full h-10 pl-3.5 pr-24 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200/90 rounded-xl text-xs font-mono text-slate-800 outline-none focus:outline-none transition-colors cursor-pointer select-all"
+              />
               <button
                 type="button"
-                onClick={() => copyInviteLink(createdInviteData!.inviteToken)}
-                className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer ${
+                onClick={handleCopyInviteInput}
+                className={`absolute right-1.5 h-7 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                   copiedLink
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                    : "bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 shadow-2xs"
+                    ? "bg-emerald-600 text-white shadow-2xs"
+                    : "bg-slate-900 hover:bg-slate-800 text-white shadow-2xs"
                 }`}
               >
                 {copiedLink ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5" />
                     <span>Copiado!</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5 text-slate-500" />
+                    <Copy className="w-3.5 h-3.5" />
                     <span>Copiar</span>
                   </>
                 )}
@@ -1415,11 +1440,11 @@ export default function CompanyManagementTab() {
             </p>
           </div>
 
-          <div className="pt-2 flex items-center justify-end gap-2">
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={() => setCreatedInviteData(null)}
-              className="h-9 px-3.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Concluir
             </button>
@@ -1434,10 +1459,10 @@ export default function CompanyManagementTab() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-9 px-3.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] text-white text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
+                className="h-10 px-4 rounded-xl bg-[#128C7E] hover:bg-[#075E54] active:scale-[0.98] text-white text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-all"
               >
-                <WhatsAppIcon className="w-3.5 h-3.5 fill-white" />
-                <span>Enviar no WhatsApp</span>
+                <WhatsAppIcon className="w-4 h-4 fill-white" />
+                <span>Enviar pelo WhatsApp</span>
               </a>
             )}
           </div>
