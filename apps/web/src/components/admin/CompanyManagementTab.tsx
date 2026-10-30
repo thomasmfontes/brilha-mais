@@ -323,6 +323,8 @@ export default function CompanyManagementTab() {
     phone?: string;
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedRowId, setCopiedRowId] = useState<string | null>(null);
+  const [reissuingId, setReissuingId] = useState<string | null>(null);
 
   // Confirm Modal state (no window.confirm)
   const [confirmModal, setConfirmModal] = useState<{
@@ -430,6 +432,8 @@ export default function CompanyManagementTab() {
   };
 
   const handleReissueInvite = async (company: PartnerCompany) => {
+    if (reissuingId) return;
+    setReissuingId(company.id);
     try {
       const res = await api.post(`/companies/${company.id}/reissue-invite`);
       toast.success("Novo convite gerado!");
@@ -443,6 +447,8 @@ export default function CompanyManagementTab() {
       fetchData();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao reemitir convite.");
+    } finally {
+      setReissuingId(null);
     }
   };
 
@@ -480,10 +486,14 @@ export default function CompanyManagementTab() {
     });
   };
 
-  const copyInviteLink = (token: string) => {
+  const copyInviteLink = (token: string, rowId?: string) => {
     const url = `${window.location.origin}/empresa/ativar?token=${token}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
+    if (rowId) {
+      setCopiedRowId(rowId);
+      setTimeout(() => setCopiedRowId(null), 2000);
+    }
     toast.success(
       "Link oficial copiado para a área de transferência!",
     );
@@ -778,20 +788,31 @@ export default function CompanyManagementTab() {
                       <div className="flex items-center justify-end gap-1.5">
                         {c.inviteToken && !c.termsAccepted && (
                           <button
-                            onClick={() => copyInviteLink(c.inviteToken!)}
+                            onClick={() => copyInviteLink(c.inviteToken!, c.id)}
                             className="p-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 text-slate-600 transition-colors cursor-pointer"
                             title="Copiar Link de Convite"
                           >
-                            <Copy className="w-3.5 h-3.5" />
+                            {copiedRowId === c.id ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
                           </button>
                         )}
 
                         <button
                           onClick={() => handleReissueInvite(c)}
-                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+                          disabled={reissuingId === c.id}
+                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 text-slate-600 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                           title="Gerar / Reemitir Link de Convite"
                         >
-                          <RefreshCw className="w-3.5 h-3.5" />
+                          <RefreshCw
+                            className={`w-3.5 h-3.5 ${
+                              reissuingId === c.id
+                                ? "animate-spin text-amber-600"
+                                : ""
+                            }`}
+                          />
                         </button>
 
                         <button
@@ -906,19 +927,30 @@ export default function CompanyManagementTab() {
                   <div className="flex items-center gap-1.5">
                     {c.inviteToken && !c.termsAccepted && (
                       <button
-                        onClick={() => copyInviteLink(c.inviteToken!)}
+                        onClick={() => copyInviteLink(c.inviteToken!, c.id)}
                         className="p-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 text-slate-600 cursor-pointer"
                         title="Copiar Link"
                       >
-                        <Copy className="w-3.5 h-3.5" />
+                        {copiedRowId === c.id ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
                       </button>
                     )}
                     <button
                       onClick={() => handleReissueInvite(c)}
-                      className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer"
+                      disabled={reissuingId === c.id}
+                      className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                       title="Reemitir Convite"
                     >
-                      <RefreshCw className="w-3.5 h-3.5" />
+                      <RefreshCw
+                        className={`w-3.5 h-3.5 ${
+                          reissuingId === c.id
+                            ? "animate-spin text-amber-600"
+                            : ""
+                        }`}
+                      />
                     </button>
                     <button
                       onClick={() => {
