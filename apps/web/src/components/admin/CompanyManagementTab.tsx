@@ -19,7 +19,6 @@ import {
   Briefcase,
   X,
   Share2,
-  MessageCircle,
   ChevronDown,
   Check,
   ShieldCheck,
@@ -290,6 +289,19 @@ function FilterSelect({
   );
 }
 
+function WhatsAppIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.05 20.16C10.57 20.16 9.12 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.8 7.37 7.5 3.67 12.05 3.67C14.25 3.67 16.32 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.16 12.05 20.16ZM16.57 14.39C16.32 14.26 15.1 13.66 14.87 13.58C14.64 13.5 14.47 13.46 14.3 13.71C14.13 13.96 13.65 14.52 13.5 14.69C13.35 14.86 13.2 14.88 12.95 14.76C12.7 14.63 11.89 14.37 10.93 13.51C10.18 12.84 9.67 12.02 9.52 11.77C9.37 11.52 9.5 11.38 9.63 11.26C9.74 11.15 9.88 10.96 10.01 10.81C10.14 10.66 10.18 10.56 10.27 10.39C10.35 10.22 10.31 10.07 10.25 9.95C10.18 9.82 9.67 8.57 9.46 8.06C9.25 7.56 9.04 7.63 8.89 7.62C8.74 7.61 8.57 7.61 8.4 7.61C8.23 7.61 7.95 7.67 7.72 7.92C7.49 8.17 6.84 8.78 6.84 10.03C6.84 11.28 7.75 12.49 7.88 12.66C8.01 12.83 9.67 15.39 12.21 16.49C12.81 16.75 13.28 16.91 13.65 17.03C14.26 17.22 14.81 17.19 15.25 17.13C15.74 17.06 16.75 16.52 16.96 15.93C17.17 15.34 17.17 14.84 17.11 14.73C17.04 14.63 16.82 14.51 16.57 14.39Z" />
+    </svg>
+  );
+}
+
 export default function CompanyManagementTab() {
   const [companies, setCompanies] = useState<PartnerCompany[]>([]);
   const [stats, setStats] = useState<any>(null);
@@ -311,6 +323,7 @@ export default function CompanyManagementTab() {
     inviteToken: string;
     phone?: string;
   } | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // Confirm Modal state (no window.confirm)
   const [confirmModal, setConfirmModal] = useState<{
@@ -471,9 +484,11 @@ export default function CompanyManagementTab() {
   const copyInviteLink = (token: string) => {
     const url = `${window.location.origin}/empresa/ativar?token=${token}`;
     navigator.clipboard.writeText(url);
+    setCopiedLink(true);
     toast.success(
-      "Link oficial de ativação copiado para a área de transferência!",
+      "Link oficial copiado para a área de transferência!",
     );
+    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   // Filtered companies
@@ -1107,14 +1122,19 @@ export default function CompanyManagementTab() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-zinc-900 text-xs font-semibold shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-zinc-900 text-xs font-semibold shadow-2xs transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
-                  <LoadingSpinner size="sm" />
+                  <>
+                    <LoadingSpinner size="sm" variant="current" />
+                    <span>Cadastrando...</span>
+                  </>
                 ) : (
-                  <Plus className="w-3.5 h-3.5" />
+                  <>
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Cadastrar e Gerar Convite</span>
+                  </>
                 )}
-                <span>Cadastrar e Gerar Convite</span>
               </button>
             </div>
           </form>
@@ -1290,14 +1310,19 @@ export default function CompanyManagementTab() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-zinc-900 text-xs font-semibold shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-zinc-900 text-xs font-semibold shadow-2xs transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
-                  <LoadingSpinner size="sm" />
+                  <>
+                    <LoadingSpinner size="sm" variant="current" />
+                    <span>Salvando...</span>
+                  </>
                 ) : (
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Salvar Alterações</span>
+                  </>
                 )}
-                <span>Salvar Alterações</span>
               </button>
             </div>
           </form>
@@ -1309,17 +1334,18 @@ export default function CompanyManagementTab() {
         isOpen={!!createdInviteData}
         onClose={() => setCreatedInviteData(null)}
       >
-        <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden text-left space-y-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shrink-0">
-              <CheckCircle2 className="h-5 w-5" />
+        <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden text-left space-y-5">
+          {/* Header */}
+          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 shrink-0">
+              <Building2 className="w-5 h-5" />
             </div>
-            <div className="space-y-0.5 min-w-0 flex-1">
+            <div className="min-w-0 flex-1">
               <h2 className="text-lg font-semibold text-slate-900 leading-tight">
-                Link de Ativação Corporativa Gerado!
+                Convite de Acesso Gerado
               </h2>
-              <p className="text-xs text-slate-500">
-                Envie para {createdInviteData?.contactName} ({createdInviteData?.companyName})
+              <p className="text-xs text-slate-500 mt-0.5">
+                Envie o link de ativação para o responsável da empresa parceira.
               </p>
             </div>
             <button
@@ -1330,57 +1356,99 @@ export default function CompanyManagementTab() {
             </button>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 space-y-2">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-              Link Oficial Temporário (7 dias)
-            </span>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                readOnly
-                value={`${window.location.origin}/empresa/ativar?token=${createdInviteData?.inviteToken}`}
-                className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-xs font-mono text-slate-800 focus:outline-none"
-              />
+          {/* Recipient Details Chip */}
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-slate-900 truncate">
+                  {createdInviteData?.companyName}
+                </span>
+                <span className="text-slate-300">•</span>
+                <span className="text-xs text-slate-600 truncate">
+                  {createdInviteData?.contactName}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                {createdInviteData?.contactEmail}
+                {createdInviteData?.phone
+                  ? ` • ${formatPhoneMask(createdInviteData.phone)}`
+                  : ""}
+              </p>
+            </div>
+            <div className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200/60 text-amber-800 text-[11px] font-medium">
+              <Clock className="w-3 h-3 text-amber-600" />
+              <span>Válido por 7 dias</span>
+            </div>
+          </div>
+
+          {/* Link Section */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 block">
+              Link de ativação
+            </label>
+            <div className="flex items-center gap-2 p-1.5 pl-3 rounded-xl border border-slate-200 bg-white shadow-2xs focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500 transition-colors">
+              <span className="text-xs font-mono text-slate-600 truncate select-all flex-1 min-w-0">
+                {`${window.location.origin}/empresa/ativar?token=${createdInviteData?.inviteToken}`}
+              </span>
               <button
+                type="button"
                 onClick={() => copyInviteLink(createdInviteData!.inviteToken)}
-                className="h-9 px-3.5 rounded-lg bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 transition-all"
+                className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer ${
+                  copiedLink
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    : "bg-slate-900 hover:bg-slate-800 text-white"
+                }`}
               >
-                <Copy className="w-3.5 h-3.5" />
-                <span>Copiar</span>
+                {copiedLink ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Copiado!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copiar</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
 
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Ao abrir o link, o recrutador aceitará o{" "}
-            <strong>Termo de Compromisso e Confidencialidade LGPD</strong> e
-            definirá a senha para acessar o banco de talentos.
-          </p>
+          {/* Security / LGPD Notice */}
+          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 text-xs text-slate-600">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              No primeiro acesso, o recrutador aceitará o{" "}
+              <strong>Termo de Confidencialidade LGPD</strong> e definirá a senha para acessar o Banco de Talentos.
+            </p>
+          </div>
 
+          {/* Actions */}
           <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            <button
+              type="button"
+              onClick={() => setCreatedInviteData(null)}
+              className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              Concluir
+            </button>
+
             {createdInviteData?.phone && (
               <a
                 href={`https://wa.me/55${createdInviteData.phone.replace(
                   /\D/g,
                   "",
                 )}?text=${encodeURIComponent(
-                  `Olá ${createdInviteData.contactName}! Segue o link exclusivo para ativação do acesso corporativo da ${createdInviteData.companyName} ao Banco de Talentos do Instituto Brilha Mais: ${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}`,
+                  `Olá ${createdInviteData.contactName}! Segue o link exclusivo para ativação do acesso corporativo da ${createdInviteData.companyName} ao Banco de Talentos do Instituto Brilha Mais:\n\n${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}\n\nO link é válido por 7 dias. Ao acessar, basta definir sua senha e aceitar o termo de confidencialidade.`,
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
+                className="h-10 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] text-white text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-all"
               >
-                <MessageCircle className="w-4 h-4" />
+                <WhatsAppIcon className="w-4 h-4 fill-white" />
                 <span>Enviar pelo WhatsApp</span>
               </a>
             )}
-
-            <button
-              onClick={() => setCreatedInviteData(null)}
-              className="h-10 px-5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              Concluir
-            </button>
           </div>
         </div>
       </PortalModal>
