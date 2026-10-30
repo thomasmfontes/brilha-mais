@@ -1404,32 +1404,32 @@ export default function CompanyManagementTab() {
             <label className="text-xs font-semibold text-slate-700 block">
               Link de acesso exclusivo
             </label>
-            <div className="relative flex items-center">
+            <div className="flex items-center gap-2">
               <input
                 ref={inviteInputRef}
                 type="text"
                 readOnly
                 value={`${window.location.origin}/empresa/ativar?token=${createdInviteData?.inviteToken}`}
-                onClick={handleCopyInviteInput}
-                className="w-full h-10 pl-3.5 pr-24 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200/90 rounded-xl text-xs font-mono text-slate-800 outline-none focus:outline-none transition-colors cursor-pointer select-all"
+                onFocus={(e) => e.target.select()}
+                className="flex-1 h-10 px-3.5 bg-slate-50 border border-slate-200/90 rounded-xl text-xs font-mono text-slate-700 outline-none focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors cursor-text select-all"
               />
               <button
                 type="button"
                 onClick={handleCopyInviteInput}
-                className={`absolute right-1.5 h-7 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`h-10 px-4 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
                   copiedLink
-                    ? "bg-emerald-600 text-white shadow-2xs"
-                    : "bg-slate-900 hover:bg-slate-800 text-white shadow-2xs"
+                    ? "bg-emerald-50 border-emerald-300 text-emerald-700"
+                    : "bg-white border-slate-200 hover:bg-slate-50 text-slate-700 shadow-2xs"
                 }`}
               >
                 {copiedLink ? (
                   <>
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Copiado!</span>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Copiado</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5" />
+                    <Copy className="w-3.5 h-3.5 text-slate-500" />
                     <span>Copiar</span>
                   </>
                 )}
