@@ -21,7 +21,6 @@ import {
   Share2,
   ChevronDown,
   Check,
-  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../../utils/api";
@@ -1329,74 +1328,41 @@ export default function CompanyManagementTab() {
         </div>
       </PortalModal>
 
-      {/* Modal V2: Convite Gerado com Sucesso */}
+      {/* Modal: Convite Gerado */}
       <PortalModal
         isOpen={!!createdInviteData}
         onClose={() => setCreatedInviteData(null)}
       >
-        <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden text-left space-y-5">
-          {/* Header */}
-          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 shrink-0">
-              <Building2 className="w-5 h-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-lg font-semibold text-slate-900 leading-tight">
-                Convite de Acesso Gerado
+        <div className="relative w-full max-w-md bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-xl text-left space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-slate-900 leading-snug">
+                Link de Ativação
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Envie o link de ativação para o responsável da empresa parceira.
+              <p className="text-xs text-slate-500 mt-1">
+                Compartilhe com <strong>{createdInviteData?.contactName}</strong> ({createdInviteData?.companyName}) para ativar o acesso.
               </p>
             </div>
             <button
               onClick={() => setCreatedInviteData(null)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer -mr-1 -mt-1"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Recipient Details Chip */}
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-semibold text-slate-900 truncate">
-                  {createdInviteData?.companyName}
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="text-xs text-slate-600 truncate">
-                  {createdInviteData?.contactName}
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                {createdInviteData?.contactEmail}
-                {createdInviteData?.phone
-                  ? ` • ${formatPhoneMask(createdInviteData.phone)}`
-                  : ""}
-              </p>
-            </div>
-            <div className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200/60 text-amber-800 text-[11px] font-medium">
-              <Clock className="w-3 h-3 text-amber-600" />
-              <span>Válido por 7 dias</span>
-            </div>
-          </div>
-
-          {/* Link Section */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 block">
-              Link de ativação
-            </label>
-            <div className="flex items-center gap-2 p-1.5 pl-3 rounded-xl border border-slate-200 bg-white shadow-2xs focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500 transition-colors">
-              <span className="text-xs font-mono text-slate-600 truncate select-all flex-1 min-w-0">
+            <div className="flex items-center gap-2 p-1.5 pl-3 rounded-xl border border-slate-200/90 bg-slate-50/60 focus-within:bg-white focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500 transition-colors">
+              <span className="text-xs font-mono text-slate-700 truncate select-all flex-1 min-w-0">
                 {`${window.location.origin}/empresa/ativar?token=${createdInviteData?.inviteToken}`}
               </span>
               <button
                 type="button"
                 onClick={() => copyInviteLink(createdInviteData!.inviteToken)}
-                className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer ${
+                className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer ${
                   copiedLink
                     ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                    : "bg-slate-900 hover:bg-slate-800 text-white"
+                    : "bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 shadow-2xs"
                 }`}
               >
                 {copiedLink ? (
@@ -1406,29 +1372,22 @@ export default function CompanyManagementTab() {
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5" />
+                    <Copy className="w-3.5 h-3.5 text-slate-500" />
                     <span>Copiar</span>
                   </>
                 )}
               </button>
             </div>
-          </div>
-
-          {/* Security / LGPD Notice */}
-          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 text-xs text-slate-600">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              No primeiro acesso, o recrutador aceitará o{" "}
-              <strong>Termo de Confidencialidade LGPD</strong> e definirá a senha para acessar o Banco de Talentos.
+            <p className="text-[11px] text-slate-400">
+              Válido por 7 dias. O recrutador aceitará o termo da LGPD no primeiro acesso.
             </p>
           </div>
 
-          {/* Actions */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2.5">
+          <div className="pt-2 flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={() => setCreatedInviteData(null)}
-              className="h-10 px-4 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              className="h-9 px-3.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Concluir
             </button>
@@ -1439,14 +1398,14 @@ export default function CompanyManagementTab() {
                   /\D/g,
                   "",
                 )}?text=${encodeURIComponent(
-                  `Olá ${createdInviteData.contactName}! Segue o link exclusivo para ativação do acesso corporativo da ${createdInviteData.companyName} ao Banco de Talentos do Instituto Brilha Mais:\n\n${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}\n\nO link é válido por 7 dias. Ao acessar, basta definir sua senha e aceitar o termo de confidencialidade.`,
+                  `Olá ${createdInviteData.contactName}! Segue o link de ativação da ${createdInviteData.companyName} no Banco de Talentos do Instituto Brilha Mais: ${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}`,
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-10 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] text-white text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-all"
+                className="h-9 px-3.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] active:scale-[0.98] text-white text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
               >
-                <WhatsAppIcon className="w-4 h-4 fill-white" />
-                <span>Enviar pelo WhatsApp</span>
+                <WhatsAppIcon className="w-3.5 h-3.5 fill-white" />
+                <span>Enviar no WhatsApp</span>
               </a>
             )}
           </div>
