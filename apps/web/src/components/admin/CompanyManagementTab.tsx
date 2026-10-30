@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Building2,
   Plus,
@@ -20,10 +20,16 @@ import {
   X,
   Share2,
   MessageCircle,
+  ChevronDown,
+  Check,
+  ShieldCheck,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
 import LoadingSpinner from "../LoadingSpinner";
+import Skeleton from "../Skeleton";
+import CountUp from "../CountUp";
 
 interface PartnerCompany {
   id: string;
@@ -48,6 +54,237 @@ interface PartnerCompany {
     hired: number;
   };
   createdAt: string;
+}
+
+// Skeletons matching AdminDashboard pattern
+const StatSkeleton = () => (
+  <div className="p-5 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center justify-between">
+    <div className="space-y-2">
+      <Skeleton className="h-3 w-20" variant="rectangle" />
+      <Skeleton className="h-7 w-16" variant="rounded" />
+    </div>
+    <Skeleton className="h-10 w-10" variant="rounded" />
+  </div>
+);
+
+const CompanyRowSkeleton = () => (
+  <tr className="border-b border-slate-100 last:border-0">
+    <td className="py-3.5 px-4">
+      <div className="space-y-1.5">
+        <Skeleton className="h-4 w-40" variant="rectangle" />
+        <Skeleton className="h-3 w-48" variant="rectangle" />
+      </div>
+    </td>
+    <td className="py-3.5 px-4">
+      <div className="space-y-1.5">
+        <Skeleton className="h-4 w-28" variant="rectangle" />
+        <Skeleton className="h-3 w-36" variant="rectangle" />
+      </div>
+    </td>
+    <td className="py-3.5 px-4">
+      <Skeleton className="h-6 w-28" variant="rounded" />
+    </td>
+    <td className="py-3.5 px-4">
+      <div className="flex items-center justify-center gap-2">
+        <Skeleton className="h-6 w-12" variant="rounded" />
+        <Skeleton className="h-6 w-12" variant="rounded" />
+        <Skeleton className="h-6 w-12" variant="rounded" />
+      </div>
+    </td>
+    <td className="py-3.5 px-4 text-right">
+      <div className="flex items-center justify-end gap-1.5">
+        <Skeleton className="h-7 w-7" variant="rounded" />
+        <Skeleton className="h-7 w-7" variant="rounded" />
+        <Skeleton className="h-7 w-7" variant="rounded" />
+      </div>
+    </td>
+  </tr>
+);
+
+const CompanyCardSkeleton = () => (
+  <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-4 overflow-hidden">
+    <div className="flex items-start justify-between gap-3">
+      <div className="space-y-1.5 flex-1 min-w-0">
+        <Skeleton className="h-4 w-40" variant="rectangle" />
+        <Skeleton className="h-3 w-32" variant="rectangle" />
+      </div>
+      <Skeleton className="h-6 w-16 shrink-0" variant="rounded" />
+    </div>
+    <div className="space-y-2 pt-3 border-t border-slate-100">
+      <Skeleton className="h-3 w-36" variant="rectangle" />
+      <Skeleton className="h-3 w-48" variant="rectangle" />
+    </div>
+    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+      <Skeleton className="h-4 w-28" variant="rectangle" />
+      <div className="flex gap-1.5">
+        <Skeleton className="h-7 w-7" variant="rounded" />
+        <Skeleton className="h-7 w-7" variant="rounded" />
+      </div>
+    </div>
+  </div>
+);
+
+// Standard Stat Card with CountUp
+function AdminStat({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="p-5 rounded-xl bg-white border border-slate-200/80 hover:border-slate-300 transition-colors shadow-2xs flex items-center justify-between">
+      <div className="space-y-1">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          {label}
+        </p>
+        <p className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 leading-tight">
+          <CountUp value={value} />
+        </p>
+      </div>
+      <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+        {icon}
+      </div>
+    </div>
+  );
+}
+
+// Standard FilterSelect matching AdminDashboard
+function FilterSelect({
+  icon: Icon,
+  value,
+  onChange,
+  options,
+  placeholder,
+}: {
+  icon: React.ElementType;
+  value: string;
+  onChange: (val: string) => void;
+  options: { id: string; name: string }[];
+  placeholder: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const isActive = value !== "ALL" && value !== "all";
+  const selectedOption =
+    value === "ALL" || value === "all"
+      ? null
+      : options.find((o) => o.id === value);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          w-full sm:w-auto min-w-[150px] h-9 flex items-center justify-between px-3 rounded-lg text-xs font-medium outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-colors select-none cursor-pointer
+          ${
+            isActive
+              ? "bg-amber-50/80 border border-amber-300 text-amber-900 shadow-2xs"
+              : isOpen
+                ? "bg-slate-100 border border-slate-300 text-slate-900"
+                : "bg-white border border-slate-200/80 hover:bg-slate-50 hover:border-slate-300 text-slate-600"
+          }
+        `}
+      >
+        <div className="flex items-center gap-2 flex-1 min-w-0 pr-2">
+          <div
+            className={`shrink-0 transition-colors ${
+              isActive ? "text-amber-600" : "text-slate-400"
+            }`}
+          >
+            <Icon className="h-3.5 w-3.5" />
+          </div>
+          <span className="truncate text-left flex-1">
+            {isActive && selectedOption ? selectedOption.name : placeholder}
+          </span>
+        </div>
+        <div
+          className={`shrink-0 transition-transform duration-200 ${
+            isOpen
+              ? "rotate-180 text-slate-900"
+              : isActive
+                ? "text-amber-600"
+                : "text-slate-400"
+          }`}
+        >
+          <ChevronDown className="h-3 w-3" />
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute z-50 top-full left-0 mt-1.5 w-[200px] bg-white border border-slate-200/90 rounded-xl shadow-lg overflow-hidden"
+          >
+            <div className="max-h-[260px] overflow-y-auto custom-scrollbar p-1 flex flex-col gap-0.5">
+              <button
+                type="button"
+                onClick={() => {
+                  onChange("all");
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
+                  value === "all" || value === "ALL"
+                    ? "bg-amber-50 text-amber-800 font-semibold"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                <span>Todos os Status</span>
+                {(value === "all" || value === "ALL") && (
+                  <Check className="h-3.5 w-3.5 text-amber-600 shrink-0 ml-1" />
+                )}
+              </button>
+              {options
+                .filter((opt) => opt.id !== "all" && opt.id !== "ALL")
+                .map((opt) => {
+                  const isSelected = value === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => {
+                        onChange(opt.id);
+                        setIsOpen(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
+                        isSelected
+                          ? "bg-amber-50 text-amber-800 font-semibold"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      }`}
+                    >
+                      <span className="truncate">{opt.name}</span>
+                      {isSelected && (
+                        <Check className="h-3.5 w-3.5 text-amber-600 shrink-0 ml-1" />
+                      )}
+                    </button>
+                  );
+                })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export default function CompanyManagementTab() {
@@ -106,7 +343,11 @@ export default function CompanyManagementTab() {
 
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.contactName.trim() || !formData.contactEmail.trim()) {
+    if (
+      !formData.name.trim() ||
+      !formData.contactName.trim() ||
+      !formData.contactEmail.trim()
+    ) {
       toast.error("Preencha o Nome da Empresa, Contato e E-mail.");
       return;
     }
@@ -181,13 +422,21 @@ export default function CompanyManagementTab() {
 
   const handleToggleActive = async (company: PartnerCompany) => {
     const action = company.isActive ? "desativar" : "reativar";
-    if (!window.confirm(`Deseja realmente ${action} o convênio com ${company.name}?`)) {
+    if (
+      !window.confirm(
+        `Deseja realmente ${action} o convênio com ${company.name}?`,
+      )
+    ) {
       return;
     }
 
     try {
-      await api.patch(`/companies/${company.id}`, { isActive: !company.isActive });
-      toast.success(`Empresa ${company.isActive ? "desativada" : "reativada"} com sucesso.`);
+      await api.patch(`/companies/${company.id}`, {
+        isActive: !company.isActive,
+      });
+      toast.success(
+        `Empresa ${company.isActive ? "desativada" : "reativada"} com sucesso.`,
+      );
       fetchData();
     } catch (err: any) {
       toast.error("Erro ao alterar status da empresa.");
@@ -197,7 +446,9 @@ export default function CompanyManagementTab() {
   const copyInviteLink = (token: string) => {
     const url = `${window.location.origin}/empresa/ativar?token=${token}`;
     navigator.clipboard.writeText(url);
-    toast.success("Link oficial de ativação copiado para a área de transferência!");
+    toast.success(
+      "Link oficial de ativação copiado para a área de transferência!",
+    );
   };
 
   // Filtered companies
@@ -210,13 +461,21 @@ export default function CompanyManagementTab() {
         const matchContact = c.contactName.toLowerCase().includes(q);
         const matchEmail = c.contactEmail.toLowerCase().includes(q);
         const matchCnpj = c.cnpj?.includes(q);
-        if (!matchName && !matchTrade && !matchContact && !matchEmail && !matchCnpj) {
+        if (
+          !matchName &&
+          !matchTrade &&
+          !matchContact &&
+          !matchEmail &&
+          !matchCnpj
+        ) {
           return false;
         }
       }
 
-      if (statusFilter === "active" && (!c.isActive || !c.termsAccepted)) return false;
-      if (statusFilter === "pending" && (c.termsAccepted || !c.isActive)) return false;
+      if (statusFilter === "active" && (!c.isActive || !c.termsAccepted))
+        return false;
+      if (statusFilter === "pending" && (c.termsAccepted || !c.isActive))
+        return false;
       if (statusFilter === "inactive" && c.isActive) return false;
 
       return true;
@@ -226,131 +485,114 @@ export default function CompanyManagementTab() {
   return (
     <div className="space-y-6">
       {/* Metric Cards Banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Empresas Parceiras
-            </span>
-            <Building2 className="w-4 h-4 text-zinc-400" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold text-zinc-900">
-            {stats?.totalCompanies ?? companies.length}
-          </div>
-          <span className="text-[11px] text-zinc-400">cadastradas no programa</span>
-        </div>
-
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Empresas Ativas
-            </span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold text-emerald-600">
-            {stats?.activeCompanies ?? 0}
-          </div>
-          <span className="text-[11px] text-zinc-400">com termo LGPD aceito</span>
-        </div>
-
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Em Entrevista
-            </span>
-            <Users className="w-4 h-4 text-amber-500" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold text-amber-600">
-            {stats?.totalInterview ?? 0}
-          </div>
-          <span className="text-[11px] text-zinc-400">processos seletivos</span>
-        </div>
-
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Contratações
-            </span>
-            <Award className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-bold text-emerald-600">
-            {stats?.totalHired ?? 0}
-          </div>
-          <span className="text-[11px] text-zinc-400">alunos empregados</span>
-        </div>
-      </div>
-
-      {/* Control Bar: Search, Filters & Action Button */}
-      <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-3 w-full sm:w-auto flex-1">
-          {/* Search */}
-          <div className="relative flex-1 max-w-sm">
-            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por empresa, contato, e-mail..."
-              className="w-full h-10 pl-9 pr-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {loading ? (
+          <>
+            <StatSkeleton />
+            <StatSkeleton />
+            <StatSkeleton />
+            <StatSkeleton />
+          </>
+        ) : (
+          <>
+            <AdminStat
+              icon={<Building2 className="h-5 w-5" />}
+              label="Empresas Parceiras"
+              value={stats?.totalCompanies ?? companies.length}
             />
-          </div>
-
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-          >
-            <option value="all">Todos os Status</option>
-            <option value="active">Ativas (LGPD Aceito)</option>
-            <option value="pending">Convite Pendente</option>
-            <option value="inactive">Inativas</option>
-          </select>
-        </div>
-
-        <button
-          onClick={() => {
-            setFormData({
-              name: "",
-              tradeName: "",
-              cnpj: "",
-              segment: "",
-              contactName: "",
-              contactEmail: "",
-              contactPhone: "",
-              notes: "",
-            });
-            setShowCreateModal(true);
-          }}
-          className="w-full sm:w-auto h-10 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-zinc-900 font-semibold text-xs transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer flex-shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Cadastrar Empresa Parceira</span>
-        </button>
+            <AdminStat
+              icon={<CheckCircle2 className="h-5 w-5" />}
+              label="Empresas Ativas"
+              value={stats?.activeCompanies ?? 0}
+            />
+            <AdminStat
+              icon={<Users className="h-5 w-5" />}
+              label="Em Entrevista"
+              value={stats?.totalInterview ?? 0}
+            />
+            <AdminStat
+              icon={<Award className="h-5 w-5" />}
+              label="Contratações"
+              value={stats?.totalHired ?? 0}
+            />
+          </>
+        )}
       </div>
 
-      {/* Table / List */}
+      {/* Control Bar: Search, Custom FilterSelect & Action Button */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+        <div className="flex flex-col md:flex-row gap-2.5 items-center justify-between">
+          <div className="flex flex-col sm:flex-row gap-2.5 items-center flex-1 w-full md:w-auto">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar por empresa, contato, e-mail..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+              />
+            </div>
+
+            {/* Custom FilterSelect */}
+            <div className="w-full sm:w-auto">
+              <FilterSelect
+                icon={CheckCircle2}
+                value={statusFilter}
+                onChange={setStatusFilter}
+                placeholder="Status"
+                options={[
+                  { id: "all", name: "Todos os Status" },
+                  { id: "active", name: "Ativas (LGPD Aceito)" },
+                  { id: "pending", name: "Convite Pendente" },
+                  { id: "inactive", name: "Inativas" },
+                ]}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between sm:justify-end gap-3 w-full md:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+            <div className="hidden lg:flex items-center shrink-0">
+              <span className="text-xs text-slate-500">
+                Total:{" "}
+                <strong className="text-slate-900 font-semibold">
+                  {filteredCompanies.length}
+                </strong>{" "}
+                {filteredCompanies.length === 1 ? "empresa" : "empresas"}
+              </span>
+            </div>
+
+            <button
+              onClick={() => {
+                setFormData({
+                  name: "",
+                  tradeName: "",
+                  cnpj: "",
+                  segment: "",
+                  contactName: "",
+                  contactEmail: "",
+                  contactPhone: "",
+                  notes: "",
+                });
+                setShowCreateModal(true);
+              }}
+              className="w-full sm:w-auto h-9 px-4 rounded-lg bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-zinc-900 font-semibold text-xs transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Cadastrar Empresa Parceira</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Table / List / Skeleton */}
       {loading ? (
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-12 text-center">
-          <LoadingSpinner size="lg" />
-          <p className="text-xs text-zinc-500 mt-2">Carregando empresas parceiras...</p>
-        </div>
-      ) : filteredCompanies.length === 0 ? (
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-12 text-center">
-          <Building2 className="w-10 h-10 text-zinc-300 mx-auto mb-3" />
-          <h3 className="text-sm font-bold text-zinc-900">
-            Nenhuma empresa parceira cadastrada
-          </h3>
-          <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
-            Cadastre empresas conveniadas para emitir convites e abrir o acesso ao Banco de Talentos.
-          </p>
-        </div>
-      ) : (
         <>
-          {/* Desktop Table */}
-          <div className="hidden md:block bg-white border border-zinc-200/80 rounded-2xl shadow-xs overflow-hidden">
+          {/* Desktop Skeleton Table */}
+          <div className="hidden md:block bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
             <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-50/70 border-b border-zinc-200 text-zinc-600 uppercase tracking-wider font-semibold text-[11px]">
+              <thead className="bg-slate-50/70 border-b border-slate-200 text-slate-600 uppercase tracking-wider font-semibold text-[11px]">
                 <tr>
                   <th className="py-3.5 px-4">Empresa</th>
                   <th className="py-3.5 px-4">Contato RH</th>
@@ -359,21 +601,68 @@ export default function CompanyManagementTab() {
                   <th className="py-3.5 px-4 text-right">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100 text-zinc-700">
+              <tbody className="divide-y divide-slate-100">
+                <CompanyRowSkeleton />
+                <CompanyRowSkeleton />
+                <CompanyRowSkeleton />
+                <CompanyRowSkeleton />
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Skeleton Cards */}
+          <div className="md:hidden space-y-3">
+            <CompanyCardSkeleton />
+            <CompanyCardSkeleton />
+            <CompanyCardSkeleton />
+          </div>
+        </>
+      ) : filteredCompanies.length === 0 ? (
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-2xs">
+          <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-slate-900">
+            {search || statusFilter !== "all"
+              ? "Nenhuma empresa encontrada com os filtros atuais"
+              : "Nenhuma empresa parceira cadastrada"}
+          </h3>
+          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            {search || statusFilter !== "all"
+              ? "Tente ajustar os termos da busca ou limpar o filtro de status."
+              : "Cadastre empresas conveniadas para emitir convites e abrir o acesso ao Banco de Talentos."}
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50/70 border-b border-slate-200 text-slate-600 uppercase tracking-wider font-semibold text-[11px]">
+                <tr>
+                  <th className="py-3.5 px-4">Empresa</th>
+                  <th className="py-3.5 px-4">Contato RH</th>
+                  <th className="py-3.5 px-4">Status & LGPD</th>
+                  <th className="py-3.5 px-4 text-center">Funil de Talentos</th>
+                  <th className="py-3.5 px-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filteredCompanies.map((c) => (
-                  <tr key={c.id} className="hover:bg-zinc-50/50 transition-colors">
+                  <tr
+                    key={c.id}
+                    className="hover:bg-slate-50/50 transition-colors"
+                  >
                     {/* Empresa */}
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-zinc-900 text-sm">
+                      <div className="font-bold text-slate-900 text-sm">
                         {c.name}
                       </div>
                       {c.tradeName && (
-                        <div className="text-[11px] text-zinc-400 truncate max-w-xs">
+                        <div className="text-[11px] text-slate-400 truncate max-w-xs">
                           {c.tradeName}
                         </div>
                       )}
                       {c.cnpj && (
-                        <div className="text-[10px] text-zinc-400 font-mono">
+                        <div className="text-[10px] text-slate-400 font-mono">
                           CNPJ: {c.cnpj}
                         </div>
                       )}
@@ -381,17 +670,17 @@ export default function CompanyManagementTab() {
 
                     {/* Contato RH */}
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-zinc-800 flex items-center gap-1.5">
-                        <UserCheck className="w-3.5 h-3.5 text-zinc-400" />
+                      <div className="font-semibold text-slate-800 flex items-center gap-1.5">
+                        <UserCheck className="w-3.5 h-3.5 text-slate-400" />
                         <span>{c.contactName}</span>
                       </div>
-                      <div className="text-zinc-500 flex items-center gap-1.5 mt-0.5">
-                        <Mail className="w-3.5 h-3.5 text-zinc-400" />
+                      <div className="text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        <Mail className="w-3.5 h-3.5 text-slate-400" />
                         <span>{c.contactEmail}</span>
                       </div>
                       {c.contactPhone && (
-                        <div className="text-zinc-500 flex items-center gap-1.5 mt-0.5">
-                          <Phone className="w-3.5 h-3.5 text-zinc-400" />
+                        <div className="text-slate-500 flex items-center gap-1.5 mt-0.5">
+                          <Phone className="w-3.5 h-3.5 text-slate-400" />
                           <span>{c.contactPhone}</span>
                         </div>
                       )}
@@ -400,7 +689,7 @@ export default function CompanyManagementTab() {
                     {/* Status & LGPD */}
                     <td className="py-3.5 px-4">
                       {!c.isActive ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
                           Inativa
                         </span>
                       ) : c.termsAccepted ? (
@@ -451,7 +740,7 @@ export default function CompanyManagementTab() {
                         {c.inviteToken && !c.termsAccepted && (
                           <button
                             onClick={() => copyInviteLink(c.inviteToken!)}
-                            className="p-1.5 rounded-lg border border-zinc-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 text-zinc-600 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 text-slate-600 transition-colors cursor-pointer"
                             title="Copiar Link de Convite"
                           >
                             <Copy className="w-3.5 h-3.5" />
@@ -460,7 +749,7 @@ export default function CompanyManagementTab() {
 
                         <button
                           onClick={() => handleReissueInvite(c)}
-                          className="p-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-zinc-600 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
                           title="Gerar / Reemitir Link de Convite"
                         >
                           <RefreshCw className="w-3.5 h-3.5" />
@@ -480,7 +769,7 @@ export default function CompanyManagementTab() {
                             });
                             setEditingCompany(c);
                           }}
-                          className="p-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-zinc-600 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
                           title="Editar Dados da Empresa"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -490,10 +779,14 @@ export default function CompanyManagementTab() {
                           onClick={() => handleToggleActive(c)}
                           className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
                             c.isActive
-                              ? "border-zinc-200 text-zinc-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200"
+                              ? "border-slate-200 text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200"
                               : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
                           }`}
-                          title={c.isActive ? "Desativar Empresa" : "Reativar Empresa"}
+                          title={
+                            c.isActive
+                              ? "Desativar Empresa"
+                              : "Reativar Empresa"
+                          }
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -505,23 +798,25 @@ export default function CompanyManagementTab() {
             </table>
           </div>
 
-          {/* Mobile Cards List (Matching Users tab pattern) */}
+          {/* Mobile Cards List (Matching Users/Talents tab pattern) */}
           <div className="md:hidden space-y-3">
             {filteredCompanies.map((c) => (
               <div
                 key={c.id}
-                className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs space-y-3"
+                className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h4 className="font-bold text-zinc-900 text-sm">{c.name}</h4>
+                    <h4 className="font-bold text-slate-900 text-sm">
+                      {c.name}
+                    </h4>
                     {c.tradeName && (
-                      <p className="text-xs text-zinc-500">{c.tradeName}</p>
+                      <p className="text-xs text-slate-500">{c.tradeName}</p>
                     )}
                   </div>
 
                   {!c.isActive ? (
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-100 text-zinc-600 border border-zinc-200">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
                       Inativa
                     </span>
                   ) : c.termsAccepted ? (
@@ -535,26 +830,26 @@ export default function CompanyManagementTab() {
                   )}
                 </div>
 
-                <div className="text-xs text-zinc-600 space-y-1 bg-zinc-50 p-2.5 rounded-xl border border-zinc-200/60">
+                <div className="text-xs text-slate-600 space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
                   <div className="flex items-center gap-1.5">
-                    <UserCheck className="w-3.5 h-3.5 text-zinc-400" />
+                    <UserCheck className="w-3.5 h-3.5 text-slate-400" />
                     <span>{c.contactName}</span>
                   </div>
                   <div className="flex items-center gap-1.5 truncate">
-                    <Mail className="w-3.5 h-3.5 text-zinc-400" />
+                    <Mail className="w-3.5 h-3.5 text-slate-400" />
                     <span className="truncate">{c.contactEmail}</span>
                   </div>
                   {c.contactPhone && (
                     <div className="flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-zinc-400" />
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
                       <span>{c.contactPhone}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between text-xs pt-1 border-t border-zinc-100">
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-zinc-500">
+                    <span className="text-[11px] font-semibold text-slate-500">
                       Funil:
                     </span>
                     <span className="font-bold text-blue-600">
@@ -572,7 +867,7 @@ export default function CompanyManagementTab() {
                     {c.inviteToken && !c.termsAccepted && (
                       <button
                         onClick={() => copyInviteLink(c.inviteToken!)}
-                        className="p-1.5 rounded-lg border border-zinc-200 hover:bg-amber-50 text-zinc-600"
+                        className="p-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 text-slate-600 cursor-pointer"
                         title="Copiar Link"
                       >
                         <Copy className="w-3.5 h-3.5" />
@@ -580,7 +875,7 @@ export default function CompanyManagementTab() {
                     )}
                     <button
                       onClick={() => handleReissueInvite(c)}
-                      className="p-1.5 rounded-lg border border-zinc-200 text-zinc-600"
+                      className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer"
                       title="Reemitir Convite"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
@@ -599,7 +894,7 @@ export default function CompanyManagementTab() {
                         });
                         setEditingCompany(c);
                       }}
-                      className="p-1.5 rounded-lg border border-zinc-200 text-zinc-600"
+                      className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
@@ -614,26 +909,29 @@ export default function CompanyManagementTab() {
       {/* Modal: Cadastrar Empresa Parceira */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-zinc-200/80 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
-            <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200/80 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-amber-600" />
-                <h3 className="text-base font-bold text-zinc-900">
+                <h3 className="text-base font-bold text-slate-900">
                   Cadastrar Empresa Parceira
                 </h3>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateCompany} className="p-6 space-y-4 text-xs">
+            <form
+              onSubmit={handleCreateCompany}
+              className="p-6 space-y-4 text-xs"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Nome Fantasia / Como a empresa é conhecida *
                   </label>
                   <input
@@ -644,12 +942,12 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, name: e.target.value })
                     }
                     placeholder="Ex: Magazine Luiza, Nubank, Grupo Ultra..."
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Razão Social Oficial
                   </label>
                   <input
@@ -659,12 +957,12 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, tradeName: e.target.value })
                     }
                     placeholder="Ex: Magazine Luiza S.A."
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     CNPJ
                   </label>
                   <input
@@ -674,12 +972,12 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, cnpj: e.target.value })
                     }
                     placeholder="00.000.000/0000-00"
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Setor de Atuação / Ramo
                   </label>
                   <input
@@ -689,12 +987,12 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, segment: e.target.value })
                     }
                     placeholder="Ex: Tecnologia, Varejo, Jurídico..."
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Nome do Responsável no RH *
                   </label>
                   <input
@@ -705,12 +1003,12 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, contactName: e.target.value })
                     }
                     placeholder="Ex: Ana Paula Ribeiro"
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     E-mail Corporativo do Contato *
                   </label>
                   <input
@@ -718,30 +1016,36 @@ export default function CompanyManagementTab() {
                     required
                     value={formData.contactEmail}
                     onChange={(e) =>
-                      setFormData({ ...formData, contactEmail: e.target.value })
+                      setFormData({
+                        ...formData,
+                        contactEmail: e.target.value,
+                      })
                     }
                     placeholder="rh@empresa.com.br"
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Telefone / WhatsApp do RH
                   </label>
                   <input
                     type="text"
                     value={formData.contactPhone}
                     onChange={(e) =>
-                      setFormData({ ...formData, contactPhone: e.target.value })
+                      setFormData({
+                        ...formData,
+                        contactPhone: e.target.value,
+                      })
                     }
                     placeholder="(11) 98765-4321"
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Anotações Internas da Coordenação
                   </label>
                   <textarea
@@ -751,16 +1055,16 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, notes: e.target.value })
                     }
                     placeholder="Notas internas sobre perfil de vagas, convênio ou requisitos..."
-                    className="w-full p-2.5 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 resize-none"
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 resize-none"
                   />
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-zinc-100 flex items-center justify-end gap-2">
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -769,7 +1073,11 @@ export default function CompanyManagementTab() {
                   disabled={isSubmitting}
                   className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-900 text-xs font-semibold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
                 >
-                  {isSubmitting ? <LoadingSpinner size="sm" /> : <Plus className="w-3.5 h-3.5" />}
+                  {isSubmitting ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <Plus className="w-3.5 h-3.5" />
+                  )}
                   <span>Cadastrar e Gerar Convite</span>
                 </button>
               </div>
@@ -781,26 +1089,29 @@ export default function CompanyManagementTab() {
       {/* Modal: Editar Empresa */}
       {editingCompany && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-zinc-200/80 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
-            <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200/80 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Edit2 className="w-5 h-5 text-amber-600" />
-                <h3 className="text-base font-bold text-zinc-900">
+                <h3 className="text-base font-bold text-slate-900">
                   Editar Empresa Parceira
                 </h3>
               </div>
               <button
                 onClick={() => setEditingCompany(null)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleUpdateCompany} className="p-6 space-y-4 text-xs">
+            <form
+              onSubmit={handleUpdateCompany}
+              className="p-6 space-y-4 text-xs"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Nome Fantasia *
                   </label>
                   <input
@@ -810,12 +1121,12 @@ export default function CompanyManagementTab() {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Razão Social
                   </label>
                   <input
@@ -824,12 +1135,12 @@ export default function CompanyManagementTab() {
                     onChange={(e) =>
                       setFormData({ ...formData, tradeName: e.target.value })
                     }
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     CNPJ
                   </label>
                   <input
@@ -838,12 +1149,12 @@ export default function CompanyManagementTab() {
                     onChange={(e) =>
                       setFormData({ ...formData, cnpj: e.target.value })
                     }
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Responsável no RH *
                   </label>
                   <input
@@ -853,12 +1164,12 @@ export default function CompanyManagementTab() {
                     onChange={(e) =>
                       setFormData({ ...formData, contactName: e.target.value })
                     }
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     E-mail de Contato *
                   </label>
                   <input
@@ -866,28 +1177,34 @@ export default function CompanyManagementTab() {
                     required
                     value={formData.contactEmail}
                     onChange={(e) =>
-                      setFormData({ ...formData, contactEmail: e.target.value })
+                      setFormData({
+                        ...formData,
+                        contactEmail: e.target.value,
+                      })
                     }
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Telefone / WhatsApp
                   </label>
                   <input
                     type="text"
                     value={formData.contactPhone}
                     onChange={(e) =>
-                      setFormData({ ...formData, contactPhone: e.target.value })
+                      setFormData({
+                        ...formData,
+                        contactPhone: e.target.value,
+                      })
                     }
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Setor de Atuação
                   </label>
                   <input
@@ -896,12 +1213,12 @@ export default function CompanyManagementTab() {
                     onChange={(e) =>
                       setFormData({ ...formData, segment: e.target.value })
                     }
-                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-slate-700 mb-1">
                     Observações Internas
                   </label>
                   <textarea
@@ -910,16 +1227,16 @@ export default function CompanyManagementTab() {
                     onChange={(e) =>
                       setFormData({ ...formData, notes: e.target.value })
                     }
-                    className="w-full p-2.5 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 resize-none"
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 resize-none"
                   />
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-zinc-100 flex items-center justify-end gap-2">
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setEditingCompany(null)}
-                  className="px-4 py-2 rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -928,7 +1245,11 @@ export default function CompanyManagementTab() {
                   disabled={isSubmitting}
                   className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-900 text-xs font-semibold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
                 >
-                  {isSubmitting ? <LoadingSpinner size="sm" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                  {isSubmitting ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
                   <span>Salvar Alterações</span>
                 </button>
               </div>
@@ -946,17 +1267,18 @@ export default function CompanyManagementTab() {
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-zinc-900">
+                <h3 className="text-base font-bold text-slate-900">
                   Link de Ativação Corporativa Gerado!
                 </h3>
-                <p className="text-xs text-zinc-500">
-                  Envie este link para {createdInviteData.contactName} ({createdInviteData.companyName})
+                <p className="text-xs text-slate-500">
+                  Envie este link para {createdInviteData.contactName} (
+                  {createdInviteData.companyName})
                 </p>
               </div>
             </div>
 
-            <div className="bg-zinc-50 border border-zinc-200/80 rounded-xl p-3 space-y-2">
-              <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider block">
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 space-y-2">
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
                 Link Oficial Temporário (7 dias)
               </span>
               <div className="flex items-center gap-2">
@@ -964,11 +1286,11 @@ export default function CompanyManagementTab() {
                   type="text"
                   readOnly
                   value={`${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}`}
-                  className="w-full h-9 px-3 rounded-lg border border-zinc-200 bg-white text-xs font-mono text-zinc-800 focus:outline-none"
+                  className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-xs font-mono text-slate-800 focus:outline-none"
                 />
                 <button
                   onClick={() => copyInviteLink(createdInviteData.inviteToken)}
-                  className="h-9 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer flex-shrink-0"
+                  className="h-9 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span>Copiar</span>
@@ -976,15 +1298,20 @@ export default function CompanyManagementTab() {
               </div>
             </div>
 
-            <p className="text-xs text-zinc-600 leading-relaxed">
-              Ao abrir o link, o recrutador aceitará o <strong>Termo de Compromisso e Confidencialidade LGPD</strong> e definirá a senha para acessar o banco de talentos.
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Ao abrir o link, o recrutador aceitará o{" "}
+              <strong>Termo de Compromisso e Confidencialidade LGPD</strong> e
+              definirá a senha para acessar o banco de talentos.
             </p>
 
             <div className="pt-2 flex items-center justify-end gap-2">
               {createdInviteData.phone && (
                 <a
-                  href={`https://wa.me/55${createdInviteData.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
-                    `Olá ${createdInviteData.contactName}! Segue o link exclusivo para ativação do acesso corporativo da ${createdInviteData.companyName} ao Banco de Talentos do Instituto Brilha Mais: ${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}`
+                  href={`https://wa.me/55${createdInviteData.phone.replace(
+                    /\D/g,
+                    "",
+                  )}?text=${encodeURIComponent(
+                    `Olá ${createdInviteData.contactName}! Segue o link exclusivo para ativação do acesso corporativo da ${createdInviteData.companyName} ao Banco de Talentos do Instituto Brilha Mais: ${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}`,
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -997,7 +1324,7 @@ export default function CompanyManagementTab() {
 
               <button
                 onClick={() => setCreatedInviteData(null)}
-                className="px-4 py-2 rounded-xl border border-zinc-200 bg-white text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
               >
                 Concluir
               </button>
