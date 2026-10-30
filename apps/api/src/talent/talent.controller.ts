@@ -31,13 +31,11 @@ export class TalentController {
   // --- Student Endpoints ---
 
   @Get('me')
-  @Roles(Role.STUDENT)
   getMyProfile(@Req() req: any) {
     return this.talentService.getProfile(req.user.id);
   }
 
   @Put('me')
-  @Roles(Role.STUDENT)
   updateMyProfile(
     @Req() req: any,
     @Body() dto: UpdateTalentProfileDto,
@@ -46,7 +44,6 @@ export class TalentController {
   }
 
   @Post('me/resume')
-  @Roles(Role.STUDENT)
   updateMyResume(
     @Req() req: any,
     @Body() dto: UpdateResumeDto,
@@ -55,7 +52,6 @@ export class TalentController {
   }
 
   @Delete('me/resume')
-  @Roles(Role.STUDENT)
   removeMyResume(@Req() req: any) {
     return this.talentService.removeResume(req.user.id);
   }

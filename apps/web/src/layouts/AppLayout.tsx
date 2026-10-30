@@ -31,13 +31,13 @@ import SettingsModal from "../components/SettingsModal";
 import api from "../utils/api";
 import { toast } from "react-hot-toast";
 
-const baseMenuItems = [
+const menuItems = [
     { icon: <LucideLayoutDashboard className="h-5 w-5" />, label: "Dashboard", path: "/dashboard" },
     { icon: <LucidePlayCircle className="h-5 w-5" />, label: "Meus Cursos", path: "/my-courses" },
     { icon: <LucideSearch className="h-5 w-5" />, label: "Explorar", path: "/explore" },
     { icon: <LucideGraduationCap className="h-5 w-5" />, label: "Certificados", path: "/certificates" },
     { icon: <LucideBookOpen className="h-5 w-5" />, label: "Recursos", path: "/resources" },
-    { icon: <LucideBriefcase className="h-5 w-5" />, label: "Meu Currículo", path: "/curriculo", roles: ['student'] },
+    { icon: <LucideBriefcase className="h-5 w-5" />, label: "Meu Currículo", path: "/curriculo" },
 ];
 
 const adminItems = [
@@ -177,11 +177,7 @@ export function AppLayout() {
 
     const visibleAdminItems = useMemo(() => adminItems.filter(item => item.roles.includes(userRole)), [userRole]);
 
-    const visibleMenuItems = useMemo(() => {
-        return baseMenuItems.filter(item => !item.roles || item.roles.includes(userRole));
-    }, [userRole]);
-
-    const activeIndex = useMemo(() => visibleMenuItems.findIndex(item => item.path === location.pathname), [visibleMenuItems, location.pathname]);
+    const activeIndex = useMemo(() => menuItems.findIndex(item => item.path === location.pathname), [location.pathname]);
 
     const currentPageTitle = useMemo(() => {
         const path = location.pathname;
@@ -262,7 +258,7 @@ export function AppLayout() {
 
                 {/* Nav items */}
                 <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto no-scrollbar">
-                    {visibleMenuItems.map((item: any) => {
+                    {menuItems.map((item: any) => {
                         const isActive = location.pathname === item.path;
                         return (
                             <Link
@@ -787,7 +783,7 @@ export function AppLayout() {
             <nav className="md:hidden fixed bottom-5 left-5 right-5 z-[100]" style={{ isolation: 'isolate' }}>
                 <LayoutGroup id="mobile-pill">
                     <div className="bg-slate-900/90 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl shadow-slate-950/20 px-2 py-1.5 max-w-sm mx-auto flex items-center justify-between relative overflow-hidden">
-                        {visibleMenuItems.map((item) => {
+                        {menuItems.map((item) => {
                             const isActive = location.pathname === item.path;
                             return (
                                 <Link
