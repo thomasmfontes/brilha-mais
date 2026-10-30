@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import CoursePage from "./pages/CoursePage";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminCompaniesPage from "./pages/AdminCompaniesPage";
 import ExplorePage from "./pages/ExplorePage";
 import CertificatesPage from "./pages/CertificatesPage";
 import StudentResumePage from "./pages/StudentResumePage";
@@ -83,6 +84,7 @@ function App() {
                     <Route path="/instructor/submissions" element={<InstructorSubmissions />} />
                     <Route path="/instructor/turma/:id/meetings" element={<InstructorMeetings />} />
                     <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/empresas" element={<AdminCompaniesPage />} />
                     <Route path="/my-courses" element={<MyCoursesPage />} />
                     <Route path="/explore" element={<ExplorePage />} />
                     <Route path="/certificates" element={<CertificatesPage />} />

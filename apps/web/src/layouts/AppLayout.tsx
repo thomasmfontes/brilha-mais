@@ -18,7 +18,8 @@ import {
     LucideLoader2,
     LucideQrCode,
     LucideFingerprint,
-    LucideChevronDown
+    LucideChevronDown,
+    LucideBuilding2
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
@@ -44,6 +45,7 @@ const adminItems = [
     { icon: <LucideMonitorPlay className="h-5 w-5" />, label: "Instrutor", path: "/instructor", roles: ['instructor', 'admin', 'super_admin'] },
     { icon: <LucideCheckCircle className="h-5 w-5" />, label: "Correções", path: "/instructor/submissions", roles: ['instructor', 'admin', 'super_admin'] },
     { icon: <LucideSettings2 className="h-5 w-5" />, label: "Administração", path: "/admin", roles: ['admin', 'super_admin'] },
+    { icon: <LucideBuilding2 className="h-5 w-5" />, label: "Empresas", path: "/admin/empresas", roles: ['admin', 'super_admin'] },
 ];
 
 export function AppLayout() {
