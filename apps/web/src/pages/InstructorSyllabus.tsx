@@ -632,7 +632,7 @@ export default function InstructorSyllabus() {
                                             <div>
                                                 <label className="text-xs font-medium text-slate-700 mb-1.5 block">Título da aula</label>
                                                 <input
-                                                    className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 transition-all"
+                                                    className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 transition-colors"
                                                     value={lesson.title}
                                                     onChange={(e) => updateLesson(mIdx, lIdx, { title: e.target.value })}
                                                     placeholder="Ex: Introdução e conceitos fundamentais"
@@ -644,7 +644,7 @@ export default function InstructorSyllabus() {
                                                     Descrição da aula <span className="text-slate-400 font-normal">(opcional)</span>
                                                 </label>
                                                 <textarea
-                                                    className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 transition-all min-h-[72px] resize-y"
+                                                    className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 transition-colors min-h-[72px] resize-y"
                                                     value={lesson.description || ''}
                                                     onChange={(e) => updateLesson(mIdx, lIdx, { description: e.target.value })}
                                                     placeholder="Uma breve introdução sobre o que será tratado nesta aula..."
@@ -659,7 +659,7 @@ export default function InstructorSyllabus() {
                                                             <LucidePlay className="h-4 w-4 fill-current" />
                                                         </div>
                                                         <input
-                                                            className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 transition-all"
+                                                            className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 transition-colors"
                                                             value={lesson.youtubeId || ''}
                                                             onChange={(e) => handleYoutubeIdChange(mIdx, lIdx, e.target.value)}
                                                             placeholder="Cole a URL ou código do vídeo"
@@ -724,7 +724,7 @@ export default function InstructorSyllabus() {
                                                     <div className="space-y-1.5">
                                                         <label className="text-xs font-medium text-slate-700 block">Instruções / Enunciado do Desafio</label>
                                                         <textarea
-                                                            className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 transition-all min-h-[100px] resize-y"
+                                                            className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 transition-colors min-h-[100px] resize-y"
                                                             value={lesson.content || ''}
                                                             onChange={(e) => updateLesson(mIdx, lIdx, { content: e.target.value })}
                                                             placeholder="Descreva o que o aluno deve fazer neste desafio..."
@@ -736,7 +736,7 @@ export default function InstructorSyllabus() {
                                                         </label>
                                                         <input
                                                             type="datetime-local"
-                                                            className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 transition-all"
+                                                            className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 transition-colors"
                                                             value={lesson.deadline ? new Date(new Date(lesson.deadline).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
@@ -804,7 +804,7 @@ export default function InstructorSyllabus() {
                                                                 <div className="space-y-1">
                                                                     <label className="text-xs font-medium text-slate-700 block">Enunciado da pergunta</label>
                                                                     <input
-                                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 transition-all font-medium"
+                                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-400 transition-colors font-medium"
                                                                         value={q.text}
                                                                         onChange={(e) => updateQuestionText(mIdx, lIdx, qIdx, e.target.value)}
                                                                         placeholder="Ex: Qual o principal benefício do método?"
@@ -816,7 +816,7 @@ export default function InstructorSyllabus() {
                                                                         Explicação da resposta <span className="text-slate-400 font-normal">(opcional)</span>
                                                                     </label>
                                                                     <textarea
-                                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 outline-none focus:border-slate-400 transition-all min-h-[56px] resize-none"
+                                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 outline-none focus:border-slate-400 transition-colors min-h-[56px] resize-none"
                                                                         value={q.explanation || ''}
                                                                         onChange={(e) => updateQuestionExplanation(mIdx, lIdx, qIdx, e.target.value)}
                                                                         placeholder="Ex: A resposta correta é a B porque..."

@@ -1293,7 +1293,7 @@ export default function AdminDashboard() {
                                     placeholder="Buscar turmas..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                                    className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                                 />
                             </div>
 
@@ -1436,7 +1436,7 @@ export default function AdminDashboard() {
                                             placeholder="Buscar usuários..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                                            className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                                         />
                                     </div>
 
@@ -1707,7 +1707,7 @@ export default function AdminDashboard() {
                                     placeholder="Buscar usuários..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                                    className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                                 />
                             </div>
 
@@ -1972,7 +1972,7 @@ export default function AdminDashboard() {
                                             placeholder="Buscar por nome, e-mail, cidade ou objetivo..."
                                             value={talentSearchQuery}
                                             onChange={(e) => setTalentSearchQuery(e.target.value)}
-                                            className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                                            className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                                         />
                                     </div>
 
@@ -2271,7 +2271,7 @@ export default function AdminDashboard() {
                                     placeholder="Buscar por nome, e-mail, cidade ou objetivo..."
                                     value={talentSearchQuery}
                                     onChange={(e) => setTalentSearchQuery(e.target.value)}
-                                    className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                                    className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                                 />
                             </div>
 
@@ -2818,7 +2818,7 @@ export default function AdminDashboard() {
                         <div className="space-y-1.5">
                             <label className="text-xs font-semibold text-slate-700">Nome da Área</label>
                             <input 
-                                className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                                className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                                 placeholder="Ex: Tecnologia, Inglês, etc." 
                                 value={categoryName} 
                                 onChange={(e) => setCategoryName(e.target.value)} 
@@ -2887,7 +2887,7 @@ export default function AdminDashboard() {
                         <div className="space-y-1.5">
                             <label className="text-xs font-semibold text-slate-700">Nome da Turma</label>
                             <input 
-                                className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                                className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                                 placeholder="Ex: Turma A 2024" 
                                 value={turmaName} 
                                 onChange={(e) => setTurmaName(e.target.value)} 
@@ -2897,7 +2897,7 @@ export default function AdminDashboard() {
                         <div className="space-y-1.5">
                             <label className="text-xs font-semibold text-slate-700">Descrição</label>
                             <textarea 
-                                className="w-full bg-white border border-slate-200/80 rounded-xl p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all resize-none min-h-[90px]"
+                                className="w-full bg-white border border-slate-200/80 rounded-xl p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors resize-none min-h-[90px]"
                                 placeholder="Breve resumo ou observações sobre a turma..." 
                                 value={turmaDescription} 
                                 onChange={(e) => setTurmaDescription(e.target.value)} 
@@ -2908,7 +2908,7 @@ export default function AdminDashboard() {
                             <div className="space-y-1.5">
                                 <label className="text-xs font-semibold text-slate-700">Localidade</label>
                                 <select 
-                                    className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3 text-sm text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                                    className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3 text-sm text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                                     value={tempLocationId || ""} 
                                     onChange={(e) => setTempLocationId(e.target.value || null)}
                                 >
@@ -2967,7 +2967,7 @@ export default function AdminDashboard() {
                         <div className="space-y-1.5">
                             <label className="text-xs font-semibold text-slate-700">Nome da Localidade</label>
                             <input 
-                                className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                                className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                                 placeholder="Ex: Água Rasa, Cubatão..." 
                                 value={locationName} 
                                 onChange={(e) => setLocationName(e.target.value)} 

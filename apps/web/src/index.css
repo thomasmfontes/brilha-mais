@@ -57,20 +57,45 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  button:focus,
-  button:focus-visible,
-  input:focus,
-  input:focus-visible,
-  textarea:focus,
-  textarea:focus-visible,
-  select:focus,
-  select:focus-visible,
-  [role="button"]:focus,
-  [role="button"]:focus-visible,
-  [tabindex]:focus,
-  [tabindex]:focus-visible {
+  button,
+  input,
+  textarea,
+  select,
+  [role="button"],
+  [tabindex] {
     outline: none !important;
     outline-offset: 0 !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  button:focus,
+  button:focus-visible,
+  button:active,
+  input:focus,
+  input:focus-visible,
+  input:active,
+  textarea:focus,
+  textarea:focus-visible,
+  textarea:active,
+  select:focus,
+  select:focus-visible,
+  select:active,
+  [role="button"]:focus,
+  [role="button"]:focus-visible,
+  [role="button"]:active,
+  [tabindex]:focus,
+  [tabindex]:focus-visible,
+  [tabindex]:active {
+    outline: none !important;
+    outline-offset: 0 !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  /* Prevent Tailwind box-shadow ring black interpolation flash on focus */
+  input,
+  textarea,
+  select {
+    transition-property: color, background-color, border-color !important;
   }
 }
 
@@ -145,4 +170,21 @@
       linear-gradient(to right, rgba(217, 119, 6, 0.035) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(217, 119, 6, 0.035) 1px, transparent 1px);
   }
+}
+
+/* Definitively suppress browser focus outlines and box-shadow black flash */
+button,
+input,
+textarea,
+select,
+[role="button"],
+[tabindex] {
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+
+input,
+textarea,
+select {
+  transition-property: color, background-color, border-color !important;
 }

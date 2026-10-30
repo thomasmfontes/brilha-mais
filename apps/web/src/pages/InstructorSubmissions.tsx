@@ -319,7 +319,7 @@ export default function InstructorSubmissions() {
                         placeholder="Buscar por aluno ou aula..." 
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full h-10 bg-white border border-slate-200/80 rounded-xl pl-10 pr-4 text-sm font-normal text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all outline-none"
+                        className="w-full h-10 bg-white border border-slate-200/80 rounded-xl pl-10 pr-4 text-sm font-normal text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors outline-none"
                     />
                 </div>
                 <div className="relative">
@@ -684,7 +684,7 @@ export default function InstructorSubmissions() {
                                                 value={feedback}
                                                 onChange={(e) => setFeedback(e.target.value)}
                                                 placeholder="Oriente o aluno sobre pontos fortes e melhorias..."
-                                                className="w-full bg-white border border-slate-200/80 rounded-xl p-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all min-h-[120px] resize-none"
+                                                className="w-full bg-white border border-slate-200/80 rounded-xl p-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors min-h-[120px] resize-none"
                                             />
                                         </div>
 

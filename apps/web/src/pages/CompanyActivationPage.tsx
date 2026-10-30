@@ -277,7 +277,7 @@ export default function CompanyActivationPage() {
                       placeholder="Mínimo 6 caracteres"
                       minLength={6}
                       required
-                      className="w-full h-11 px-3 pr-10 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                      className="w-full h-11 px-3 pr-10 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors"
                     />
                     <button
                       type="button"
@@ -300,7 +300,7 @@ export default function CompanyActivationPage() {
                     placeholder="Repita a senha"
                     minLength={6}
                     required
-                    className="w-full h-11 px-3 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
+                    className="w-full h-11 px-3 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors"
                   />
                 </div>
               </div>

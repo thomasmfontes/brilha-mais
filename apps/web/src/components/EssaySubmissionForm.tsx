@@ -274,7 +274,7 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
                             onChange={(e) => setEssayResponse(e.target.value)}
                             readOnly={isLocked}
                             placeholder="Escreva sua resposta detalhada para este desafio..."
-                            className={`w-full bg-white border border-slate-200 rounded-xl p-3.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 outline-none transition-all min-h-[200px] resize-y ${
+                            className={`w-full bg-white border border-slate-200 rounded-xl p-3.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-400/20 outline-none transition-colors min-h-[200px] resize-y ${
                                 isLocked ? 'opacity-70 cursor-not-allowed bg-slate-50/50' : ''
                             }`}
                         />

@@ -50,7 +50,7 @@ export default function ExplorePage() {
                         placeholder="Buscar cursos por título ou instrutor..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-white border border-zinc-200/80 rounded-xl pl-11 pr-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-[#F19B0A] focus:ring-2 focus:ring-[#F19B0A]/10 outline-none transition-all shadow-xs"
+                        className="w-full bg-white border border-zinc-200/80 rounded-xl pl-11 pr-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-[#F19B0A] focus:ring-2 focus:ring-[#F19B0A]/10 outline-none transition-colors shadow-xs"
                     />
                 </div>
 
