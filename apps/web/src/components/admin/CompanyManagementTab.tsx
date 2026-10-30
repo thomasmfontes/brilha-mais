@@ -22,6 +22,8 @@ import {
   Share2,
   ChevronDown,
   Check,
+  ShieldCheck,
+  Bookmark,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../../utils/api";
@@ -29,6 +31,7 @@ import { toast } from "react-hot-toast";
 import LoadingSpinner from "../LoadingSpinner";
 import Skeleton from "../Skeleton";
 import CountUp from "../CountUp";
+import Tooltip from "../Tooltip";
 import { PortalModal } from "../PortalModal";
 import { ConfirmModal } from "../ConfirmModal";
 import { formatPhoneMask, formatCnpjMask } from "../../utils/formatters";
@@ -71,33 +74,36 @@ const StatSkeleton = () => (
 
 const CompanyRowSkeleton = () => (
   <tr className="border-b border-slate-100 last:border-0">
-    <td className="py-3.5 px-4">
-      <div className="space-y-1.5">
-        <Skeleton className="h-4 w-40" variant="rectangle" />
-        <Skeleton className="h-3 w-48" variant="rectangle" />
+    <td className="px-5 py-3.5">
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-9 w-9" variant="rounded" />
+        <div className="space-y-1.5">
+          <Skeleton className="h-4 w-36" variant="rectangle" />
+          <Skeleton className="h-3 w-48" variant="rectangle" />
+        </div>
       </div>
     </td>
-    <td className="py-3.5 px-4">
+    <td className="px-5 py-3.5">
       <div className="space-y-1.5">
         <Skeleton className="h-4 w-28" variant="rectangle" />
         <Skeleton className="h-3 w-36" variant="rectangle" />
       </div>
     </td>
-    <td className="py-3.5 px-4">
-      <Skeleton className="h-6 w-28" variant="rounded" />
+    <td className="px-5 py-3.5 text-center">
+      <Skeleton className="h-7 w-28 mx-auto" variant="rounded" />
     </td>
-    <td className="py-3.5 px-4">
-      <div className="flex items-center justify-center gap-2">
-        <Skeleton className="h-6 w-12" variant="rounded" />
-        <Skeleton className="h-6 w-12" variant="rounded" />
-        <Skeleton className="h-6 w-12" variant="rounded" />
+    <td className="px-5 py-3.5 text-center">
+      <div className="flex justify-center gap-1.5">
+        <Skeleton className="h-6 w-10" variant="rounded" />
+        <Skeleton className="h-6 w-10" variant="rounded" />
+        <Skeleton className="h-6 w-10" variant="rounded" />
       </div>
     </td>
-    <td className="py-3.5 px-4 text-right">
+    <td className="px-5 py-3.5 text-right">
       <div className="flex items-center justify-end gap-1.5">
-        <Skeleton className="h-7 w-7" variant="rounded" />
-        <Skeleton className="h-7 w-7" variant="rounded" />
-        <Skeleton className="h-7 w-7" variant="rounded" />
+        <Skeleton className="h-8 w-8" variant="rounded" />
+        <Skeleton className="h-8 w-8" variant="rounded" />
+        <Skeleton className="h-8 w-8" variant="rounded" />
       </div>
     </td>
   </tr>
@@ -580,24 +586,315 @@ export default function CompanyManagementTab() {
         )}
       </div>
 
-      {/* Control Bar: Search, Custom FilterSelect & Action Button */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
-        <div className="flex flex-col md:flex-row gap-2.5 items-center justify-between">
-          <div className="flex flex-col sm:flex-row gap-2.5 items-center flex-1 w-full md:w-auto">
-            {/* Search Input */}
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Buscar por empresa, contato, e-mail..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
-              />
+      {/* Desktop Table View (Matching Banco de Talentos unified pattern) */}
+      <div className="hidden xl:block bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden relative z-20">
+        {/* Header Interno com Filtros */}
+        <div className="p-3.5 border-b border-slate-100 bg-slate-50/50">
+          <div className="flex flex-col md:flex-row gap-2.5 items-center justify-between">
+            <div className="flex flex-col md:flex-row gap-2.5 items-center flex-1 w-full md:w-auto">
+              <div className="relative w-full md:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar por empresa, contato, e-mail..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
+                <FilterSelect
+                  icon={CheckCircle2}
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  placeholder="Status"
+                  options={[
+                    { id: "all", name: "Todos os Status" },
+                    { id: "active", name: "Ativas (LGPD Aceito)" },
+                    { id: "pending", name: "Convite Pendente" },
+                    { id: "inactive", name: "Inativas" },
+                  ]}
+                />
+              </div>
             </div>
 
-            {/* Custom FilterSelect */}
-            <div className="w-full sm:w-auto">
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="text-xs text-slate-500 hidden sm:inline">
+                Total:{" "}
+                <strong className="text-slate-900 font-semibold">
+                  {filteredCompanies.length}
+                </strong>{" "}
+                {filteredCompanies.length === 1 ? "empresa" : "empresas"}
+              </span>
+
+              <button
+                onClick={() => {
+                  setFormData({
+                    name: "",
+                    tradeName: "",
+                    cnpj: "",
+                    segment: "",
+                    contactName: "",
+                    contactEmail: "",
+                    contactPhone: "",
+                    notes: "",
+                  });
+                  setShowCreateModal(true);
+                }}
+                className="h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs transition-all active:scale-[0.98] shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Cadastrar Empresa Parceira</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabela de Empresas */}
+        <div className="w-full overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left min-w-[1000px]">
+            <thead>
+              <tr className="border-b border-slate-200/80 text-xs font-semibold text-slate-600 bg-slate-50/75">
+                <th className="px-5 py-3 w-[28%]">Empresa</th>
+                <th className="px-5 py-3 w-[24%]">Contato RH</th>
+                <th className="px-5 py-3 w-[16%] text-center">Status / LGPD</th>
+                <th className="px-5 py-3 w-[18%] text-center">Funil de Talentos</th>
+                <th className="px-5 py-3 w-[14%] text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <>
+                  <CompanyRowSkeleton />
+                  <CompanyRowSkeleton />
+                  <CompanyRowSkeleton />
+                </>
+              ) : filteredCompanies.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-12 text-center">
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-3">
+                      <Building2 className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-slate-900">
+                      {search || statusFilter !== "all"
+                        ? "Nenhuma empresa encontrada"
+                        : "Nenhuma empresa parceira cadastrada"}
+                    </h3>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+                      {search || statusFilter !== "all"
+                        ? "A busca atual não retornou resultados com os filtros selecionados."
+                        : "Cadastre empresas conveniadas para emitir convites e abrir o acesso ao Banco de Talentos."}
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredCompanies.map((c) => (
+                  <tr
+                    key={c.id}
+                    className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors"
+                  >
+                    {/* Empresa */}
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0 font-bold text-xs shadow-2xs">
+                          <Building2 className="w-4 h-4 text-amber-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-slate-900 truncate text-xs sm:text-sm">
+                            {c.name}
+                          </p>
+                          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 truncate mt-0.5">
+                            <span className="truncate">
+                              {c.tradeName || c.segment || "Empresa Parceira"}
+                            </span>
+                            {c.cnpj && (
+                              <>
+                                <span className="text-slate-300">•</span>
+                                <span className="font-mono text-slate-500 font-medium shrink-0">
+                                  {formatCnpjMask(c.cnpj)}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Contato RH */}
+                    <td className="px-5 py-3.5">
+                      <p className="font-medium text-slate-800 text-xs truncate leading-snug">
+                        {c.contactName}
+                      </p>
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-400 truncate mt-0.5">
+                        <span className="truncate">{c.contactEmail}</span>
+                        {c.contactPhone && (
+                          <>
+                            <span className="text-slate-300">•</span>
+                            <span className="text-slate-500 font-medium shrink-0">
+                              {formatPhoneMask(c.contactPhone)}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Status & LGPD */}
+                    <td className="px-5 py-3.5 text-center">
+                      <div className="flex items-center justify-center">
+                        {!c.isActive ? (
+                          <Tooltip content="Empresa temporariamente desativada no sistema">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 shadow-2xs">
+                              Inativa
+                            </span>
+                          </Tooltip>
+                        ) : c.termsAccepted ? (
+                          <Tooltip content="Termo de Compromisso e Confidencialidade LGPD assinado digitalmente. Acesso liberado.">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-2xs">
+                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Ativa (LGPD)</span>
+                            </span>
+                          </Tooltip>
+                        ) : c.isInviteExpired ? (
+                          <Tooltip content="O link de convite expirou após 7 dias. Clique em reemitir para gerar um novo convite.">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200/60 shadow-2xs">
+                              <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                              <span>Convite Expirado</span>
+                            </span>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip content="Convite emitido aguardando aceite da LGPD e definição de senha de acesso.">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/60 shadow-2xs">
+                              <Clock className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Convite Pendente</span>
+                            </span>
+                          </Tooltip>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Funil de Talentos */}
+                    <td className="px-5 py-3.5 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Tooltip content={`${c.pipelineStats?.saved || 0} alunos salvos no radar`}>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium">
+                            <Bookmark className="w-3 h-3 text-slate-500" />
+                            <span>{c.pipelineStats?.saved || 0}</span>
+                          </span>
+                        </Tooltip>
+                        <Tooltip content={`${c.pipelineStats?.interview || 0} em processo seletivo`}>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 text-xs font-medium">
+                            <UserCheck className="w-3 h-3 text-amber-600" />
+                            <span>{c.pipelineStats?.interview || 0}</span>
+                          </span>
+                        </Tooltip>
+                        <Tooltip content={`${c.pipelineStats?.hired || 0} contratações efetivadas`}>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-xs font-medium">
+                            <Award className="w-3 h-3 text-emerald-600" />
+                            <span>{c.pipelineStats?.hired || 0}</span>
+                          </span>
+                        </Tooltip>
+                      </div>
+                    </td>
+
+                    {/* Ações */}
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {c.inviteToken && !c.termsAccepted && (
+                          <Tooltip content={copiedRowId === c.id ? "Link copiado!" : "Copiar link de convite"}>
+                            <button
+                              type="button"
+                              onClick={() => copyInviteLink(c.inviteToken!, c.id)}
+                              className="w-8 h-8 rounded-xl bg-white hover:bg-amber-50 text-slate-500 hover:text-amber-600 border border-zinc-200/80 hover:border-amber-300 flex items-center justify-center transition-all shadow-2xs cursor-pointer group"
+                            >
+                              {copiedRowId === c.id ? (
+                                <Check className="w-4 h-4 text-emerald-600" />
+                              ) : (
+                                <Copy className="w-4 h-4 group-hover:scale-105 transition-transform" />
+                              )}
+                            </button>
+                          </Tooltip>
+                        )}
+
+                        <Tooltip content="Gerar / Reemitir Link de Convite">
+                          <button
+                            type="button"
+                            onClick={() => handleReissueInvite(c)}
+                            disabled={reissuingId === c.id}
+                            className="w-8 h-8 rounded-xl bg-white hover:bg-amber-50 text-slate-500 hover:text-amber-600 border border-zinc-200/80 hover:border-amber-300 flex items-center justify-center transition-all shadow-2xs cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <RefreshCw
+                              className={`w-4 h-4 group-hover:scale-105 transition-transform ${
+                                reissuingId === c.id
+                                  ? "animate-spin text-amber-600"
+                                  : ""
+                              }`}
+                            />
+                          </button>
+                        </Tooltip>
+
+                        <Tooltip content="Editar Dados da Empresa">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                name: c.name,
+                                tradeName: c.tradeName || "",
+                                cnpj: formatCnpjMask(c.cnpj) || "",
+                                segment: c.segment || "",
+                                contactName: c.contactName,
+                                contactEmail: c.contactEmail,
+                                contactPhone: formatPhoneMask(c.contactPhone) || "",
+                                notes: c.notes || "",
+                              });
+                              setEditingCompany(c);
+                            }}
+                            className="w-8 h-8 rounded-xl bg-white hover:bg-amber-50 text-slate-500 hover:text-amber-600 border border-zinc-200/80 hover:border-amber-300 flex items-center justify-center transition-all shadow-2xs cursor-pointer group"
+                          >
+                            <Edit2 className="w-4 h-4 group-hover:scale-105 transition-transform" />
+                          </button>
+                        </Tooltip>
+
+                        <Tooltip content={c.isActive ? "Desativar Empresa" : "Reativar Empresa"}>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleActive(c)}
+                            className={`w-8 h-8 rounded-xl bg-white border border-zinc-200/80 flex items-center justify-center transition-all shadow-2xs cursor-pointer group ${
+                              c.isActive
+                                ? "hover:bg-red-50 text-slate-500 hover:text-red-600 hover:border-red-300"
+                                : "hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 hover:border-emerald-300"
+                            }`}
+                          >
+                            <Trash2 className="w-4 h-4 group-hover:scale-105 transition-transform" />
+                          </button>
+                        </Tooltip>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Mobile Card List (Matching Banco de Talentos mobile pattern) */}
+      <div className="xl:hidden space-y-4">
+        {/* Mobile Filter & Action Header */}
+        <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar por empresa, contato, e-mail..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <div className="flex-1">
               <FilterSelect
                 icon={CheckCircle2}
                 value={statusFilter}
@@ -605,25 +902,12 @@ export default function CompanyManagementTab() {
                 placeholder="Status"
                 options={[
                   { id: "all", name: "Todos os Status" },
-                  { id: "active", name: "Ativas (LGPD Aceito)" },
-                  { id: "pending", name: "Convite Pendente" },
+                  { id: "active", name: "Ativas" },
+                  { id: "pending", name: "Pendentes" },
                   { id: "inactive", name: "Inativas" },
                 ]}
               />
             </div>
-          </div>
-
-          <div className="flex items-center justify-between sm:justify-end gap-3 w-full md:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-            <div className="hidden lg:flex items-center shrink-0">
-              <span className="text-xs text-slate-500">
-                Total:{" "}
-                <strong className="text-slate-900 font-semibold">
-                  {filteredCompanies.length}
-                </strong>{" "}
-                {filteredCompanies.length === 1 ? "empresa" : "empresas"}
-              </span>
-            </div>
-
             <button
               onClick={() => {
                 setFormData({
@@ -638,357 +922,182 @@ export default function CompanyManagementTab() {
                 });
                 setShowCreateModal(true);
               }}
-              className="w-full sm:w-auto h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs transition-all active:scale-[0.98] shadow-xs flex items-center justify-center gap-2 cursor-pointer shrink-0"
+              className="h-9 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium text-xs transition-all active:scale-[0.98] shadow-xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4" />
-              <span>Cadastrar Empresa Parceira</span>
+              <span>Cadastrar</span>
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Table / List / Skeleton */}
-      {loading ? (
-        <>
-          {/* Desktop Skeleton Table */}
-          <div className="hidden md:block bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/70 border-b border-slate-200 text-slate-600 uppercase tracking-wider font-semibold text-[11px]">
-                <tr>
-                  <th className="py-3.5 px-4">Empresa</th>
-                  <th className="py-3.5 px-4">Contato RH</th>
-                  <th className="py-3.5 px-4">Status & LGPD</th>
-                  <th className="py-3.5 px-4 text-center">Funil de Talentos</th>
-                  <th className="py-3.5 px-4 text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                <CompanyRowSkeleton />
-                <CompanyRowSkeleton />
-                <CompanyRowSkeleton />
-                <CompanyRowSkeleton />
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile Skeleton Cards */}
-          <div className="md:hidden space-y-3">
+        {loading ? (
+          <>
             <CompanyCardSkeleton />
             <CompanyCardSkeleton />
-            <CompanyCardSkeleton />
+          </>
+        ) : filteredCompanies.length === 0 ? (
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-8 text-center shadow-2xs">
+            <Building2 className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+            <h3 className="text-sm font-semibold text-slate-900">
+              Nenhuma empresa encontrada
+            </h3>
+            <p className="text-xs text-slate-400 mt-1">
+              A busca atual não retornou resultados.
+            </p>
           </div>
-        </>
-      ) : filteredCompanies.length === 0 ? (
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-2xs">
-          <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-sm font-semibold text-slate-900">
-            {search || statusFilter !== "all"
-              ? "Nenhuma empresa encontrada com os filtros atuais"
-              : "Nenhuma empresa parceira cadastrada"}
-          </h3>
-          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-            {search || statusFilter !== "all"
-              ? "Tente ajustar os termos da busca ou limpar o filtro de status."
-              : "Cadastre empresas conveniadas para emitir convites e abrir o acesso ao Banco de Talentos."}
-          </p>
-        </div>
-      ) : (
-        <>
-          {/* Desktop Table */}
-          <div className="hidden md:block bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/70 border-b border-slate-200 text-slate-600 uppercase tracking-wider font-semibold text-[11px]">
-                <tr>
-                  <th className="py-3.5 px-4">Empresa</th>
-                  <th className="py-3.5 px-4">Contato RH</th>
-                  <th className="py-3.5 px-4">Status & LGPD</th>
-                  <th className="py-3.5 px-4 text-center">Funil de Talentos</th>
-                  <th className="py-3.5 px-4 text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredCompanies.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="hover:bg-slate-50/50 transition-colors"
-                  >
-                    {/* Empresa */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900 text-sm">
-                        {c.name}
-                      </div>
-                      {c.tradeName && (
-                        <div className="text-[11px] text-slate-400 truncate max-w-xs">
-                          {c.tradeName}
-                        </div>
-                      )}
-                      {c.cnpj && (
-                        <div className="text-[10px] text-slate-400 font-mono">
-                          CNPJ: {formatCnpjMask(c.cnpj)}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Contato RH */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800 flex items-center gap-1.5">
-                        <UserCheck className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{c.contactName}</span>
-                      </div>
-                      <div className="text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        <Mail className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{c.contactEmail}</span>
-                      </div>
-                      {c.contactPhone && (
-                        <div className="text-slate-500 flex items-center gap-1.5 mt-0.5">
-                          <Phone className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{formatPhoneMask(c.contactPhone)}</span>
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Status & LGPD */}
-                    <td className="py-3.5 px-4">
-                      {!c.isActive ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                          Inativa
-                        </span>
-                      ) : c.termsAccepted ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          Ativa (LGPD Aceito)
-                        </span>
-                      ) : c.isInviteExpired ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">
-                          <AlertCircle className="w-3.5 h-3.5 text-red-600" />
-                          Convite Expirado
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                          <Clock className="w-3.5 h-3.5 text-amber-600" />
-                          Convite Pendente
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Funil de Talentos */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <span
-                          className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold"
-                          title="Salvos no radar"
-                        >
-                          📌 {c.pipelineStats?.saved || 0}
-                        </span>
-                        <span
-                          className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-bold"
-                          title="Em entrevista"
-                        >
-                          💬 {c.pipelineStats?.interview || 0}
-                        </span>
-                        <span
-                          className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold"
-                          title="Contratados"
-                        >
-                          🎉 {c.pipelineStats?.hired || 0}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Ações */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {c.inviteToken && !c.termsAccepted && (
-                          <button
-                            onClick={() => copyInviteLink(c.inviteToken!, c.id)}
-                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 text-slate-600 transition-colors cursor-pointer"
-                            title="Copiar Link de Convite"
-                          >
-                            {copiedRowId === c.id ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-600" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => handleReissueInvite(c)}
-                          disabled={reissuingId === c.id}
-                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 text-slate-600 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                          title="Gerar / Reemitir Link de Convite"
-                        >
-                          <RefreshCw
-                            className={`w-3.5 h-3.5 ${
-                              reissuingId === c.id
-                                ? "animate-spin text-amber-600"
-                                : ""
-                            }`}
-                          />
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setFormData({
-                              name: c.name,
-                              tradeName: c.tradeName || "",
-                              cnpj: formatCnpjMask(c.cnpj) || "",
-                              segment: c.segment || "",
-                              contactName: c.contactName,
-                              contactEmail: c.contactEmail,
-                              contactPhone: formatPhoneMask(c.contactPhone) || "",
-                              notes: c.notes || "",
-                            });
-                            setEditingCompany(c);
-                          }}
-                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
-                          title="Editar Dados da Empresa"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-
-                        <button
-                          onClick={() => handleToggleActive(c)}
-                          className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
-                            c.isActive
-                              ? "border-slate-200 text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-200"
-                              : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
-                          }`}
-                          title={
-                            c.isActive ? "Desativar Empresa" : "Reativar Empresa"
-                          }
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile Cards List (Matching Users/Talents tab pattern) */}
-          <div className="md:hidden space-y-3">
-            {filteredCompanies.map((c) => (
-              <div
-                key={c.id}
-                className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-sm">{c.name}</h4>
-                    {c.tradeName && (
-                      <p className="text-xs text-slate-500">{c.tradeName}</p>
-                    )}
-                    {c.cnpj && (
-                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">
-                        CNPJ: {formatCnpjMask(c.cnpj)}
-                      </p>
-                    )}
+        ) : (
+          filteredCompanies.map((c) => (
+            <div
+              key={c.id}
+              className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0 font-bold text-sm shadow-2xs">
+                    <Building2 className="w-5 h-5 text-amber-600" />
                   </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-sm text-slate-900 truncate leading-snug">
+                      {c.name}
+                    </h3>
+                    <p className="text-xs text-slate-400 truncate mt-0.5">
+                      {c.tradeName || c.segment || "Empresa Parceira"}
+                      {c.cnpj && ` • ${formatCnpjMask(c.cnpj)}`}
+                    </p>
+                  </div>
+                </div>
 
+                <div className="shrink-0">
                   {!c.isActive ? (
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
                       Inativa
                     </span>
                   ) : c.termsAccepted ? (
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600" />
                       Ativa
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">
+                      <Clock className="w-3 h-3 text-amber-600" />
                       Pendente
                     </span>
                   )}
                 </div>
+              </div>
 
-                <div className="text-xs text-slate-600 space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
-                  <div className="flex items-center gap-1.5">
-                    <UserCheck className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{c.contactName}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 truncate">
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="truncate">{c.contactEmail}</span>
-                  </div>
-                  {c.contactPhone && (
-                    <div className="flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{formatPhoneMask(c.contactPhone)}</span>
-                    </div>
-                  )}
+              <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 space-y-1.5 text-xs text-slate-600">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 font-medium">Contato:</span>
+                  <span className="font-medium text-slate-800">
+                    {c.contactName}
+                  </span>
                 </div>
-
-                <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-slate-500">
-                      Funil:
+                <div className="flex items-center justify-between truncate">
+                  <span className="text-slate-400 font-medium">E-mail:</span>
+                  <span className="text-slate-600 truncate">{c.contactEmail}</span>
+                </div>
+                {c.contactPhone && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400 font-medium">
+                      Telefone / Whats:
                     </span>
-                    <span className="font-bold text-blue-600">
-                      📌 {c.pipelineStats?.saved || 0}
-                    </span>
-                    <span className="font-bold text-amber-600">
-                      💬 {c.pipelineStats?.interview || 0}
-                    </span>
-                    <span className="font-bold text-emerald-600">
-                      🎉 {c.pipelineStats?.hired || 0}
+                    <span className="text-slate-600 font-medium">
+                      {formatPhoneMask(c.contactPhone)}
                     </span>
                   </div>
+                )}
+              </div>
 
-                  <div className="flex items-center gap-1.5">
-                    {c.inviteToken && !c.termsAccepted && (
-                      <button
-                        onClick={() => copyInviteLink(c.inviteToken!, c.id)}
-                        className="p-1.5 rounded-lg border border-slate-200 hover:bg-amber-50 text-slate-600 cursor-pointer"
-                        title="Copiar Link"
-                      >
-                        {copiedRowId === c.id ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleReissueInvite(c)}
-                      disabled={reissuingId === c.id}
-                      className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                      title="Reemitir Convite"
-                    >
-                      <RefreshCw
-                        className={`w-3.5 h-3.5 ${
-                          reissuingId === c.id
-                            ? "animate-spin text-amber-600"
-                            : ""
-                        }`}
-                      />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setFormData({
-                          name: c.name,
-                          tradeName: c.tradeName || "",
-                          cnpj: formatCnpjMask(c.cnpj) || "",
-                          segment: c.segment || "",
-                          contactName: c.contactName,
-                          contactEmail: c.contactEmail,
-                          contactPhone: formatPhoneMask(c.contactPhone) || "",
-                          notes: c.notes || "",
-                        });
-                        setEditingCompany(c);
-                      }}
-                      className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <span className="text-[11px] text-slate-400 font-medium">
+                  Funil de Vagas:
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-[11px] font-medium"
+                    title="Radar"
+                  >
+                    <Bookmark className="w-3 h-3 text-slate-500" />{" "}
+                    {c.pipelineStats?.saved || 0}
+                  </span>
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 text-[11px] font-medium"
+                    title="Entrevista"
+                  >
+                    <UserCheck className="w-3 h-3 text-amber-600" />{" "}
+                    {c.pipelineStats?.interview || 0}
+                  </span>
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[11px] font-medium"
+                    title="Contratados"
+                  >
+                    <Award className="w-3 h-3 text-emerald-600" />{" "}
+                    {c.pipelineStats?.hired || 0}
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-        </>
-      )}
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                {c.inviteToken && !c.termsAccepted && (
+                  <button
+                    type="button"
+                    onClick={() => copyInviteLink(c.inviteToken!, c.id)}
+                    className="h-8 px-3 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {copiedRowId === c.id ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Copiar Link</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => handleReissueInvite(c)}
+                  disabled={reissuingId === c.id}
+                  className="h-8 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <RefreshCw
+                    className={`w-3.5 h-3.5 ${
+                      reissuingId === c.id ? "animate-spin text-amber-600" : ""
+                    }`}
+                  />
+                  <span>Reemitir</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData({
+                      name: c.name,
+                      tradeName: c.tradeName || "",
+                      cnpj: formatCnpjMask(c.cnpj) || "",
+                      segment: c.segment || "",
+                      contactName: c.contactName,
+                      contactEmail: c.contactEmail,
+                      contactPhone: formatPhoneMask(c.contactPhone) || "",
+                      notes: c.notes || "",
+                    });
+                    setEditingCompany(c);
+                  }}
+                  className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  <span>Editar</span>
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
 
       {/* Modal V2: Cadastrar Empresa Parceira */}
       <PortalModal
@@ -1459,7 +1568,7 @@ export default function CompanyManagementTab() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-10 px-4 rounded-xl bg-[#128C7E] hover:bg-[#075E54] active:scale-[0.98] text-white text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs transition-all"
+                className="h-10 px-5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] active:scale-[0.98] text-white text-xs font-medium flex items-center gap-2 cursor-pointer shadow-xs transition-all"
               >
                 <WhatsAppIcon className="w-4 h-4 fill-white" />
                 <span>Enviar pelo WhatsApp</span>
