@@ -157,24 +157,24 @@ const UserCardSkeleton = () => (
 );
 
 const TalentCardSkeleton = () => (
-    <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-4">
+    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-4 overflow-hidden">
         <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
                 <Skeleton className="h-11 w-11 shrink-0" variant="circle" />
-                <div className="space-y-1.5 flex-1">
-                    <Skeleton className="h-4 w-36" variant="rectangle" />
-                    <Skeleton className="h-3 w-48" variant="rectangle" />
+                <div className="space-y-1.5 min-w-0 flex-1">
+                    <Skeleton className="h-4 w-32 max-w-[80%]" variant="rectangle" />
+                    <Skeleton className="h-3 w-44 max-w-[95%]" variant="rectangle" />
                 </div>
             </div>
-            <Skeleton className="h-6 w-20 shrink-0" variant="rounded" />
+            <Skeleton className="h-6 w-16 shrink-0" variant="rounded" />
         </div>
         <div className="space-y-2.5 pt-3 border-t border-slate-100">
             <Skeleton className="h-4 w-full" variant="rectangle" />
             <Skeleton className="h-4 w-3/4" variant="rectangle" />
         </div>
         <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-            <Skeleton className="h-8 w-24" variant="rounded" />
-            <Skeleton className="h-8 w-24" variant="rounded" />
+            <Skeleton className="h-8 w-20" variant="rounded" />
+            <Skeleton className="h-8 w-20" variant="rounded" />
         </div>
     </div>
 );
@@ -1012,7 +1012,7 @@ export default function AdminDashboard() {
                         )}
                     </div>
 
-                    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xs">
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xs overflow-hidden">
                         <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
                             <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
                                 <LucideShield className="h-4.5 w-4.5" />
@@ -1037,24 +1037,27 @@ export default function AdminDashboard() {
                             <div>
                                 <div className="space-y-0">
                                     {auditLogs.map((log, idx) => (
-                                        <div key={idx} className="relative pl-6 border-l border-slate-200 pb-5 last:pb-0 group">
+                                        <div key={idx} className="relative pl-6 border-l border-slate-200 pb-5 last:pb-0 group min-w-0">
                                             <div className="absolute -left-1.5 top-1.5 h-3 w-3 rounded-full bg-amber-500 ring-4 ring-white" />
 
-                                            <div className="space-y-1">
+                                            <div className="space-y-1 min-w-0">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs text-slate-400 font-medium">
                                                         {timeAgo(log.time)}
                                                     </span>
                                                 </div>
-                                                <div className="text-sm">
+                                                <div className="text-sm leading-relaxed min-w-0">
                                                     <span className="font-semibold text-slate-900">
                                                         {log.user}
                                                     </span>
                                                     <span className="text-slate-500 font-normal">
                                                         {' '}— {log.action}:{' '}
                                                     </span>
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200/60">
-                                                        {log.entity}
+                                                    <span
+                                                        className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200/60 max-w-full truncate align-middle"
+                                                        title={log.entity}
+                                                    >
+                                                        <span className="truncate">{log.entity}</span>
                                                     </span>
                                                 </div>
                                             </div>
