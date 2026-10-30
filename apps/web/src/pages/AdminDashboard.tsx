@@ -91,16 +91,32 @@ const TalentSkeleton = () => (
                 </div>
             </div>
         </td>
-        <td className="px-5 py-3.5"><Skeleton className="h-4 w-24" variant="rectangle" /></td>
         <td className="px-5 py-3.5">
-            <div className="space-y-1.5">
-                <Skeleton className="h-4 w-28" variant="rectangle" />
-                <Skeleton className="h-4 w-40" variant="rectangle" />
+            <div className="flex gap-1.5">
+                <Skeleton className="h-5 w-24" variant="rounded" />
             </div>
         </td>
-        <td className="px-5 py-3.5"><Skeleton className="h-7 w-24" variant="rounded" /></td>
-        <td className="px-5 py-3.5"><Skeleton className="h-5 w-20" variant="rounded" /></td>
-        <td className="px-5 py-3.5 text-right"><Skeleton className="h-8 w-16 ml-auto" variant="rounded" /></td>
+        <td className="px-5 py-3.5">
+            <div className="space-y-1.5">
+                <Skeleton className="h-4 w-32" variant="rectangle" />
+                <div className="flex gap-1">
+                    <Skeleton className="h-4 w-16" variant="rounded" />
+                    <Skeleton className="h-4 w-20" variant="rounded" />
+                </div>
+            </div>
+        </td>
+        <td className="px-5 py-3.5 text-center">
+            <Skeleton className="h-8 w-8 mx-auto" variant="rounded" />
+        </td>
+        <td className="px-5 py-3.5 text-center">
+            <Skeleton className="h-8 w-8 mx-auto" variant="rounded" />
+        </td>
+        <td className="px-5 py-3.5 text-right">
+            <div className="flex items-center justify-end gap-1.5">
+                <Skeleton className="h-8 w-8" variant="rounded" />
+                <Skeleton className="h-8 w-8" variant="rounded" />
+            </div>
+        </td>
     </tr>
 );
 
@@ -1982,11 +1998,11 @@ export default function AdminDashboard() {
                                 <thead>
                                     <tr className="border-b border-slate-200/80 text-xs font-semibold text-slate-600 bg-slate-50/75">
                                         <th className="px-5 py-3 w-[26%]">Aluno</th>
-                                        <th className="px-5 py-3 w-[16%]">Turma(s)</th>
-                                        <th className="px-5 py-3 w-[24%]">Objetivo / Áreas</th>
-                                        <th className="px-5 py-3 w-[12%]">Currículo</th>
-                                        <th className="px-5 py-3 w-[10%]">LGPD</th>
-                                        <th className="px-5 py-3 w-[12%] text-right">Ações</th>
+                                        <th className="px-5 py-3 w-[18%]">Turma(s)</th>
+                                        <th className="px-5 py-3 w-[26%]">Objetivo / Áreas</th>
+                                        <th className="px-5 py-3 w-[10%] text-center">Currículo</th>
+                                        <th className="px-5 py-3 w-[10%] text-center">LGPD</th>
+                                        <th className="px-5 py-3 w-[10%] text-right">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -2031,38 +2047,51 @@ export default function AdminDashboard() {
                                                                 <p className="font-semibold text-slate-900 truncate text-xs sm:text-sm">
                                                                     {talent.user?.name || 'Aluno'}
                                                                 </p>
-                                                                <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                                                                    {talent.user?.email}
-                                                                    {talent.city ? ` • ${talent.city}${talent.state ? ` - ${talent.state}` : ''}` : ''}
-                                                                </p>
+                                                                <div className="flex items-center gap-1.5 text-[11px] text-slate-400 truncate mt-0.5">
+                                                                    <span className="truncate">{talent.user?.email}</span>
+                                                                    {talent.city && (
+                                                                        <>
+                                                                            <span className="text-slate-300">•</span>
+                                                                            <span className="text-slate-500 font-medium shrink-0">{talent.city}{talent.state ? `/${talent.state}` : ''}</span>
+                                                                        </>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-5 py-3.5 text-slate-600 text-xs">
-                                                        {talent.user?.turmas?.map((t: any) => t.name).join(', ') || (
-                                                            <span className="text-slate-400 italic">Sem turma</span>
-                                                        )}
+                                                    <td className="px-5 py-3.5">
+                                                        <div className="flex flex-wrap items-center gap-1.5">
+                                                            {talent.user?.turmas && talent.user.turmas.length > 0 ? (
+                                                                talent.user.turmas.map((t: any, i: number) => (
+                                                                    <span key={`turma-${i}`} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium">
+                                                                        {t.name}
+                                                                    </span>
+                                                                ))
+                                                            ) : (
+                                                                <span className="text-slate-400 italic text-xs">Sem turma</span>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                     <td className="px-5 py-3.5">
-                                                        <div className="space-y-1 max-w-xs">
+                                                        <div className="space-y-1.5 max-w-sm">
                                                             {talent.headline ? (
-                                                                <p className="font-medium text-slate-800 text-xs truncate">
+                                                                <p className="font-medium text-slate-800 text-xs truncate leading-snug" title={talent.headline}>
                                                                     {talent.headline}
                                                                 </p>
                                                             ) : (
                                                                 <p className="text-slate-400 text-xs italic">
-                                                                    Objetivo não preenchido
+                                                                    Objetivo não informado
                                                                 </p>
                                                             )}
                                                             {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
                                                                 <div className="flex flex-wrap gap-1">
                                                                     {talent.areasOfInterest.slice(0, 3).map((a: string, idx: number) => (
-                                                                        <span key={idx} className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium border border-slate-200/60">
+                                                                        <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 text-[10px] font-medium border border-slate-200/60">
                                                                             {a}
                                                                         </span>
                                                                     ))}
                                                                     {talent.areasOfInterest.length > 3 && (
-                                                                        <span className="text-[10px] text-slate-400 self-center">
+                                                                        <span className="text-[10px] text-slate-400 self-center font-medium">
                                                                             +{talent.areasOfInterest.length - 3}
                                                                         </span>
                                                                     )}
@@ -2070,36 +2099,76 @@ export default function AdminDashboard() {
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-5 py-3.5">
-                                                        {talent.resumeUrl ? (
-                                                            <Tooltip content={talent.resumeFileName ? `Baixar currículo (${talent.resumeFileName})` : 'Baixar Currículo (PDF)'}>
-                                                                <a
-                                                                    href={talent.resumeUrl}
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                    className="w-8 h-8 rounded-xl bg-white hover:bg-amber-50 text-[#F19B0A] hover:text-[#D98B08] border border-zinc-200/80 hover:border-amber-300 flex items-center justify-center transition-all shadow-2xs cursor-pointer group"
-                                                                >
-                                                                    <LucideDownload className="w-4 h-4 text-[#F19B0A] group-hover:scale-105 transition-transform" />
-                                                                </a>
-                                                            </Tooltip>
-                                                        ) : (
-                                                            <span className="text-slate-400 text-xs italic">
-                                                                Não enviado
-                                                            </span>
-                                                        )}
+                                                    <td className="px-5 py-3.5 text-center">
+                                                        <div className="flex items-center justify-center">
+                                                            {talent.resumeUrl ? (
+                                                                <Tooltip content={talent.resumeFileName ? `Baixar currículo (${talent.resumeFileName})` : 'Baixar Currículo (PDF)'}>
+                                                                    <a
+                                                                        href={talent.resumeUrl}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                        className="w-8 h-8 rounded-xl bg-white hover:bg-amber-50 text-[#F19B0A] hover:text-[#D98B08] border border-zinc-200/80 hover:border-amber-300 flex items-center justify-center transition-all shadow-2xs cursor-pointer group"
+                                                                    >
+                                                                        <LucideDownload className="w-4 h-4 text-[#F19B0A] group-hover:scale-105 transition-transform" />
+                                                                    </a>
+                                                                </Tooltip>
+                                                            ) : (
+                                                                <span className="text-slate-300 text-xs">
+                                                                    —
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </td>
-                                                    <td className="px-5 py-3.5">
-                                                        {talent.isMinor ? (
-                                                            talent.minorApproved ? (
+                                                    <td className="px-5 py-3.5 text-center">
+                                                        <div className="flex items-center justify-center">
+                                                            {talent.isMinor ? (
+                                                                talent.minorApproved ? (
+                                                                    <Tooltip
+                                                                        content={
+                                                                            <div className="space-y-0.5">
+                                                                                <p className="font-semibold text-emerald-400 text-xs flex items-center gap-1.5">
+                                                                                    <LucideShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                                                                    Liberado (Menor de 18)
+                                                                                </p>
+                                                                                <p className="text-[11px] text-slate-300 leading-snug">
+                                                                                    Termo parental assinado e validado pela coordenação. Aluno pronto para encaminhamento.
+                                                                                </p>
+                                                                            </div>
+                                                                        }
+                                                                    >
+                                                                        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/80 flex items-center justify-center cursor-help transition-all hover:bg-emerald-100 hover:border-emerald-300 shadow-2xs">
+                                                                            <LucideShieldCheck className="w-4 h-4 text-emerald-600" />
+                                                                        </div>
+                                                                    </Tooltip>
+                                                                ) : (
+                                                                    <Tooltip
+                                                                        content={
+                                                                            <div className="space-y-0.5">
+                                                                                <p className="font-semibold text-amber-400 text-xs flex items-center gap-1.5">
+                                                                                    <LucideAlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                                                                                    Pendente Admin (Menor de 18)
+                                                                                </p>
+                                                                                <p className="text-[11px] text-slate-300 leading-snug">
+                                                                                    Requer anexo do termo assinado pelos pais e liberação da coordenação no perfil.
+                                                                                </p>
+                                                                            </div>
+                                                                        }
+                                                                    >
+                                                                        <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center cursor-help transition-all hover:bg-amber-100 hover:border-amber-300 shadow-2xs">
+                                                                            <LucideAlertTriangle className="w-4 h-4 text-amber-600" />
+                                                                        </div>
+                                                                    </Tooltip>
+                                                                )
+                                                            ) : talent.lgpdConsent ? (
                                                                 <Tooltip
                                                                     content={
                                                                         <div className="space-y-0.5">
                                                                             <p className="font-semibold text-emerald-400 text-xs flex items-center gap-1.5">
                                                                                 <LucideShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                                                                                Liberado (Menor de 18)
+                                                                                Autorizado LGPD
                                                                             </p>
                                                                             <p className="text-[11px] text-slate-300 leading-snug">
-                                                                                Termo parental assinado e validado pela coordenação. Aluno pronto para encaminhamento.
+                                                                                Aluno maior de 18 anos autorizou o compartilhamento do currículo para processos seletivos.
                                                                             </p>
                                                                         </div>
                                                                     }
@@ -2112,83 +2181,49 @@ export default function AdminDashboard() {
                                                                 <Tooltip
                                                                     content={
                                                                         <div className="space-y-0.5">
-                                                                            <p className="font-semibold text-amber-400 text-xs flex items-center gap-1.5">
-                                                                                <LucideAlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                                                                                Pendente Admin (Menor de 18)
+                                                                            <p className="font-semibold text-slate-300 text-xs flex items-center gap-1.5">
+                                                                                <LucideAlertTriangle className="w-3.5 h-3.5 text-slate-400" />
+                                                                                Pendente de Autorização
                                                                             </p>
-                                                                            <p className="text-[11px] text-slate-300 leading-snug">
-                                                                                Requer anexo do termo assinado pelos pais e liberação da coordenação no perfil.
+                                                                            <p className="text-[11px] text-slate-400 leading-snug">
+                                                                                O aluno ainda não confirmou o termo de consentimento LGPD no seu painel.
                                                                             </p>
                                                                         </div>
                                                                     }
                                                                 >
-                                                                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center cursor-help transition-all hover:bg-amber-100 hover:border-amber-300 shadow-2xs">
-                                                                        <LucideAlertTriangle className="w-4 h-4 text-amber-600" />
+                                                                    <div className="w-8 h-8 rounded-xl bg-slate-50 text-slate-400 border border-slate-200/80 flex items-center justify-center cursor-help transition-all hover:bg-slate-100 hover:border-slate-300 shadow-2xs">
+                                                                        <LucideAlertTriangle className="w-4 h-4 text-slate-400" />
                                                                     </div>
                                                                 </Tooltip>
-                                                            )
-                                                        ) : talent.lgpdConsent ? (
-                                                            <Tooltip
-                                                                content={
-                                                                    <div className="space-y-0.5">
-                                                                        <p className="font-semibold text-emerald-400 text-xs flex items-center gap-1.5">
-                                                                            <LucideShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                                                                            Autorizado LGPD
-                                                                        </p>
-                                                                        <p className="text-[11px] text-slate-300 leading-snug">
-                                                                            Aluno maior de 18 anos autorizou o compartilhamento do currículo para processos seletivos.
-                                                                        </p>
-                                                                    </div>
-                                                                }
-                                                            >
-                                                                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/80 flex items-center justify-center cursor-help transition-all hover:bg-emerald-100 hover:border-emerald-300 shadow-2xs">
-                                                                    <LucideShieldCheck className="w-4 h-4 text-emerald-600" />
-                                                                </div>
-                                                            </Tooltip>
-                                                        ) : (
-                                                            <Tooltip
-                                                                content={
-                                                                    <div className="space-y-0.5">
-                                                                        <p className="font-semibold text-slate-300 text-xs flex items-center gap-1.5">
-                                                                            <LucideAlertTriangle className="w-3.5 h-3.5 text-slate-400" />
-                                                                            Pendente de Autorização
-                                                                        </p>
-                                                                        <p className="text-[11px] text-slate-400 leading-snug">
-                                                                            O aluno ainda não confirmou o termo de consentimento LGPD no seu painel.
-                                                                        </p>
-                                                                    </div>
-                                                                }
-                                                            >
-                                                                <div className="w-8 h-8 rounded-xl bg-slate-50 text-slate-400 border border-slate-200/80 flex items-center justify-center cursor-help transition-all hover:bg-slate-100 hover:border-slate-300 shadow-2xs">
-                                                                    <LucideAlertTriangle className="w-4 h-4 text-slate-400" />
-                                                                </div>
-                                                            </Tooltip>
-                                                        )}
+                                                            )}
+                                                        </div>
                                                     </td>
                                                     <td className="px-5 py-3.5 text-right">
                                                         <div className="flex items-center justify-end gap-1.5">
                                                             {phoneDigits && (
-                                                                <a
-                                                                    href={`https://wa.me/55${phoneDigits}?text=${encodeURIComponent(`Olá ${talent.user?.name || ''}, tudo bem? Aqui é da coordenação do Projeto Brilha Mais sobre uma oportunidade de vaga.`)}`}
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-                                                                    title={`Chamar no WhatsApp (${formatPhoneMask(talent.phone)})`}
-                                                                >
-                                                                    <LucidePhone className="w-4 h-4" />
-                                                                </a>
+                                                                <Tooltip content={`WhatsApp (${formatPhoneMask(talent.phone)})`}>
+                                                                    <a
+                                                                        href={`https://wa.me/55${phoneDigits}?text=${encodeURIComponent(`Olá ${talent.user?.name || ''}, tudo bem? Aqui é da coordenação do Projeto Brilha Mais sobre uma oportunidade de vaga.`)}`}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                        className="w-8 h-8 rounded-xl bg-white hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 border border-zinc-200/80 hover:border-emerald-300 flex items-center justify-center transition-all shadow-2xs cursor-pointer group"
+                                                                    >
+                                                                        <LucidePhone className="w-4 h-4 group-hover:scale-105 transition-transform" />
+                                                                    </a>
+                                                                </Tooltip>
                                                             )}
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setSelectedTalent(talent);
-                                                                    setIsTalentModalOpen(true);
-                                                                }}
-                                                                className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
-                                                                title="Ver Perfil"
-                                                            >
-                                                                <LucideEye className="w-4 h-4" />
-                                                            </button>
+                                                            <Tooltip content="Visualizar Perfil Completo">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setSelectedTalent(talent);
+                                                                        setIsTalentModalOpen(true);
+                                                                    }}
+                                                                    className="w-8 h-8 rounded-xl bg-white hover:bg-amber-50 text-slate-500 hover:text-amber-600 border border-zinc-200/80 hover:border-amber-300 flex items-center justify-center transition-all shadow-2xs cursor-pointer group"
+                                                                >
+                                                                    <LucideEye className="w-4 h-4 group-hover:scale-105 transition-transform" />
+                                                                </button>
+                                                            </Tooltip>
                                                         </div>
                                                     </td>
                                                 </tr>
