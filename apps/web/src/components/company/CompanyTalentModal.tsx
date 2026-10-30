@@ -462,10 +462,10 @@ export default function CompanyTalentModal({
                 type="button"
                 onClick={handleDownloadResume}
                 disabled={isDownloading}
-                className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-zinc-900 text-xs font-semibold transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                className="h-10 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isDownloading ? (
-                  <LoadingSpinner size="sm" />
+                  <LoadingSpinner size="sm" variant="white" />
                 ) : (
                   <Download className="w-4 h-4" />
                 )}

@@ -659,7 +659,7 @@ export default function CompanyPortalPage() {
                 </p>
                 <button
                   onClick={() => setActiveTab("catalog")}
-                  className="mt-4 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-900 font-semibold text-xs transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+                  className="mt-4 h-10 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs transition-all active:scale-[0.98] shadow-xs cursor-pointer inline-flex items-center gap-2"
                 >
                   <Users className="w-3.5 h-3.5" />
                   <span>Explorar Banco de Talentos</span>

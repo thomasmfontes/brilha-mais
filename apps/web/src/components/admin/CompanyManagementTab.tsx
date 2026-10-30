@@ -638,7 +638,7 @@ export default function CompanyManagementTab() {
                 });
                 setShowCreateModal(true);
               }}
-              className="w-full sm:w-auto h-9 px-4 rounded-lg bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-zinc-900 font-semibold text-xs transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              className="w-full sm:w-auto h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs transition-all active:scale-[0.98] shadow-xs flex items-center justify-center gap-2 cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Cadastrar Empresa Parceira</span>
@@ -1165,11 +1165,11 @@ export default function CompanyManagementTab() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-zinc-900 text-xs font-semibold shadow-2xs transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+                className="h-10 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
-                    <LoadingSpinner size="sm" variant="current" />
+                    <LoadingSpinner size="sm" variant="white" />
                     <span>Cadastrando...</span>
                   </>
                 ) : (
@@ -1353,11 +1353,11 @@ export default function CompanyManagementTab() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-zinc-900 text-xs font-semibold shadow-2xs transition-colors cursor-pointer flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+                className="h-10 px-5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
-                    <LoadingSpinner size="sm" variant="current" />
+                    <LoadingSpinner size="sm" variant="white" />
                     <span>Salvando...</span>
                   </>
                 ) : (

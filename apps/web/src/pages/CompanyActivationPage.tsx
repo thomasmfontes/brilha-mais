@@ -311,11 +311,11 @@ export default function CompanyActivationPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || !termsAccepted}
-                className="w-full sm:w-auto h-11 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-zinc-900 font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full sm:w-auto h-11 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-medium text-sm transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
-                    <LoadingSpinner size="sm" />
+                    <LoadingSpinner size="sm" variant="white" />
                     <span>Ativando Acesso...</span>
                   </>
                 ) : (
