@@ -1347,7 +1347,7 @@ export default function CompanyManagementTab() {
           {/* Header */}
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
             <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
-              <Edit2 className="h-5 w-5" />
+              <Building2 className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-lg font-semibold text-slate-900 leading-tight">
@@ -1372,7 +1372,7 @@ export default function CompanyManagementTab() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Nome Fantasia *
+                  Nome Fantasia / Como a empresa é conhecida *
                 </label>
                 <input
                   type="text"
@@ -1381,13 +1381,14 @@ export default function CompanyManagementTab() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
+                  placeholder="Ex: Magazine Luiza, Nubank, Grupo Ultra..."
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Razão Social
+                  Razão Social Oficial
                 </label>
                 <input
                   type="text"
@@ -1395,7 +1396,8 @@ export default function CompanyManagementTab() {
                   onChange={(e) =>
                     setFormData({ ...formData, tradeName: e.target.value })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
+                  placeholder="Ex: Magazine Luiza S.A."
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1411,13 +1413,28 @@ export default function CompanyManagementTab() {
                     setFormData({ ...formData, cnpj: formatCnpjMask(e.target.value) })
                   }
                   placeholder="00.000.000/0000-00"
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 font-mono focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none font-mono transition-colors"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Responsável no RH *
+                  Setor de Atuação / Ramo
+                </label>
+                <input
+                  type="text"
+                  value={formData.segment}
+                  onChange={(e) =>
+                    setFormData({ ...formData, segment: e.target.value })
+                  }
+                  placeholder="Ex: Tecnologia, Varejo, Jurídico..."
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Nome do Responsável no RH *
                 </label>
                 <input
                   type="text"
@@ -1426,13 +1443,14 @@ export default function CompanyManagementTab() {
                   onChange={(e) =>
                     setFormData({ ...formData, contactName: e.target.value })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
+                  placeholder="Ex: Ana Paula Ribeiro"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  E-mail de Contato *
+                  E-mail Corporativo do Contato *
                 </label>
                 <input
                   type="email"
@@ -1444,13 +1462,14 @@ export default function CompanyManagementTab() {
                       contactEmail: e.target.value,
                     })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
+                  placeholder="rh@empresa.com.br"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Telefone / WhatsApp
+                  Telefone / WhatsApp do RH
                 </label>
                 <input
                   type="text"
@@ -1463,27 +1482,13 @@ export default function CompanyManagementTab() {
                     })
                   }
                   placeholder="(11) 98765-4321"
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Setor de Atuação
-                </label>
-                <input
-                  type="text"
-                  value={formData.segment}
-                  onChange={(e) =>
-                    setFormData({ ...formData, segment: e.target.value })
-                  }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Observações Internas
+                  Anotações Internas da Coordenação
                 </label>
                 <textarea
                   rows={2}
@@ -1491,7 +1496,8 @@ export default function CompanyManagementTab() {
                   onChange={(e) =>
                     setFormData({ ...formData, notes: e.target.value })
                   }
-                  className="w-full p-3 bg-white border border-slate-200/80 rounded-xl text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none resize-none transition-colors"
+                  placeholder="Notas internas sobre perfil de vagas, convênio ou requisitos..."
+                  className="w-full p-3 bg-white border border-slate-200/80 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none resize-none transition-colors"
                 />
               </div>
             </div>
