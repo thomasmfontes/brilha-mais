@@ -2072,16 +2072,16 @@ export default function AdminDashboard() {
                                                     </td>
                                                     <td className="px-5 py-3.5">
                                                         {talent.resumeUrl ? (
-                                                            <a
-                                                                href={talent.resumeUrl}
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="h-8 px-2.5 rounded-lg text-xs font-medium text-zinc-700 hover:text-zinc-900 bg-white hover:bg-zinc-50 border border-zinc-200/80 transition-colors shadow-2xs inline-flex items-center gap-1.5"
-                                                                title={talent.resumeFileName || 'Baixar Currículo'}
-                                                            >
-                                                                <LucideDownload className="w-3.5 h-3.5 text-[#F19B0A]" />
-                                                                <span>Baixar PDF</span>
-                                                            </a>
+                                                            <Tooltip content={talent.resumeFileName ? `Baixar currículo (${talent.resumeFileName})` : 'Baixar Currículo (PDF)'}>
+                                                                <a
+                                                                    href={talent.resumeUrl}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className="w-8 h-8 rounded-xl bg-white hover:bg-amber-50 text-[#F19B0A] hover:text-[#D98B08] border border-zinc-200/80 hover:border-amber-300 flex items-center justify-center transition-all shadow-2xs cursor-pointer group"
+                                                                >
+                                                                    <LucideDownload className="w-4 h-4 text-[#F19B0A] group-hover:scale-105 transition-transform" />
+                                                                </a>
+                                                            </Tooltip>
                                                         ) : (
                                                             <span className="text-slate-400 text-xs italic">
                                                                 Não enviado
