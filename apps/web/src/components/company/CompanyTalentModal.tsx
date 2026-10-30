@@ -23,6 +23,7 @@ import {
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
 import LoadingSpinner from "../LoadingSpinner";
+import { PortalModal } from "../PortalModal";
 
 export interface CompanyTalent {
   id: string;
@@ -182,8 +183,8 @@ export default function CompanyTalentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-2xl border border-zinc-200/80 my-auto animate-in fade-in zoom-in-95 duration-150">
+    <PortalModal isOpen={true} onClose={onClose} className="relative z-[100000] w-full max-w-3xl">
+      <div className="bg-white rounded-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200/80 overflow-hidden text-left">
         
         {/* Header */}
         <div className="px-6 py-5 border-b border-zinc-100 flex items-start justify-between gap-4">
@@ -478,6 +479,6 @@ export default function CompanyTalentModal({
           </div>
         </div>
       </div>
-    </div>
+    </PortalModal>
   );
 }

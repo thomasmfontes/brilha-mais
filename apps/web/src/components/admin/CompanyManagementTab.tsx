@@ -30,6 +30,8 @@ import { toast } from "react-hot-toast";
 import LoadingSpinner from "../LoadingSpinner";
 import Skeleton from "../Skeleton";
 import CountUp from "../CountUp";
+import { PortalModal } from "../PortalModal";
+import { ConfirmModal } from "../ConfirmModal";
 
 interface PartnerCompany {
   id: string;
@@ -309,6 +311,17 @@ export default function CompanyManagementTab() {
     phone?: string;
   } | null>(null);
 
+  // Confirm Modal state (no window.confirm)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    confirmText: string;
+    variant: "danger" | "primary" | "warning";
+    onConfirm: () => Promise<void>;
+  } | null>(null);
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     tradeName: "",
@@ -420,27 +433,38 @@ export default function CompanyManagementTab() {
     }
   };
 
-  const handleToggleActive = async (company: PartnerCompany) => {
-    const action = company.isActive ? "desativar" : "reativar";
-    if (
-      !window.confirm(
-        `Deseja realmente ${action} o convênio com ${company.name}?`,
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await api.patch(`/companies/${company.id}`, {
-        isActive: !company.isActive,
-      });
-      toast.success(
-        `Empresa ${company.isActive ? "desativada" : "reativada"} com sucesso.`,
-      );
-      fetchData();
-    } catch (err: any) {
-      toast.error("Erro ao alterar status da empresa.");
-    }
+  const handleToggleActive = (company: PartnerCompany) => {
+    const isDeactivating = company.isActive;
+    setConfirmModal({
+      isOpen: true,
+      title: isDeactivating
+        ? "Desativar Empresa Parceira"
+        : "Reativar Empresa Parceira",
+      description: isDeactivating
+        ? `Tem certeza que deseja suspender o convênio com ${company.name}? Os recrutadores desta empresa não conseguirão acessar o Banco de Talentos.`
+        : `Deseja reativar o convênio e restaurar o acesso corporativo de ${company.name}?`,
+      confirmText: isDeactivating ? "Sim, Desativar" : "Sim, Reativar",
+      variant: isDeactivating ? "danger" : "primary",
+      onConfirm: async () => {
+        setIsConfirmLoading(true);
+        try {
+          await api.patch(`/companies/${company.id}`, {
+            isActive: !company.isActive,
+          });
+          toast.success(
+            `Empresa ${
+              company.isActive ? "desativada" : "reativada"
+            } com sucesso.`,
+          );
+          fetchData();
+        } catch (err: any) {
+          toast.error("Erro ao alterar status da empresa.");
+        } finally {
+          setIsConfirmLoading(false);
+          setConfirmModal(null);
+        }
+      },
+    });
   };
 
   const copyInviteLink = (token: string) => {
@@ -577,7 +601,7 @@ export default function CompanyManagementTab() {
                 });
                 setShowCreateModal(true);
               }}
-              className="w-full sm:w-auto h-9 px-4 rounded-lg bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-zinc-900 font-semibold text-xs transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              className="w-full sm:w-auto h-9 px-4 rounded-lg bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-zinc-900 font-semibold text-xs transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Cadastrar Empresa Parceira</span>
@@ -783,9 +807,7 @@ export default function CompanyManagementTab() {
                               : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
                           }`}
                           title={
-                            c.isActive
-                              ? "Desativar Empresa"
-                              : "Reativar Empresa"
+                            c.isActive ? "Desativar Empresa" : "Reativar Empresa"
                           }
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -807,9 +829,7 @@ export default function CompanyManagementTab() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm">
-                      {c.name}
-                    </h4>
+                    <h4 className="font-bold text-slate-900 text-sm">{c.name}</h4>
                     {c.tradeName && (
                       <p className="text-xs text-slate-500">{c.tradeName}</p>
                     )}
@@ -906,431 +926,465 @@ export default function CompanyManagementTab() {
         </>
       )}
 
-      {/* Modal: Cadastrar Empresa Parceira */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200/80 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-amber-600" />
-                <h3 className="text-base font-bold text-slate-900">
-                  Cadastrar Empresa Parceira
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      {/* Modal V2: Cadastrar Empresa Parceira */}
+      <PortalModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+      >
+        <div className="relative w-full max-w-xl bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+              <Building2 className="h-5 w-5" />
             </div>
-
-            <form
-              onSubmit={handleCreateCompany}
-              className="p-6 space-y-4 text-xs"
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg font-semibold text-slate-900 leading-tight">
+                Cadastrar Empresa Parceira
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Cadastre uma nova organização para conceder acesso corporativo ao Banco de Talentos.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCreateModal(false)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Nome Fantasia / Como a empresa é conhecida *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder="Ex: Magazine Luiza, Nubank, Grupo Ultra..."
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Razão Social Oficial
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.tradeName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, tradeName: e.target.value })
-                    }
-                    placeholder="Ex: Magazine Luiza S.A."
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    CNPJ
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cnpj}
-                    onChange={(e) =>
-                      setFormData({ ...formData, cnpj: e.target.value })
-                    }
-                    placeholder="00.000.000/0000-00"
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Setor de Atuação / Ramo
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.segment}
-                    onChange={(e) =>
-                      setFormData({ ...formData, segment: e.target.value })
-                    }
-                    placeholder="Ex: Tecnologia, Varejo, Jurídico..."
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Nome do Responsável no RH *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.contactName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, contactName: e.target.value })
-                    }
-                    placeholder="Ex: Ana Paula Ribeiro"
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    E-mail Corporativo do Contato *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.contactEmail}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contactEmail: e.target.value,
-                      })
-                    }
-                    placeholder="rh@empresa.com.br"
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Telefone / WhatsApp do RH
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.contactPhone}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contactPhone: e.target.value,
-                      })
-                    }
-                    placeholder="(11) 98765-4321"
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Anotações Internas da Coordenação
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={formData.notes}
-                    onChange={(e) =>
-                      setFormData({ ...formData, notes: e.target.value })
-                    }
-                    placeholder="Notas internas sobre perfil de vagas, convênio ou requisitos..."
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 resize-none"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-900 text-xs font-semibold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-                >
-                  {isSubmitting ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <Plus className="w-3.5 h-3.5" />
-                  )}
-                  <span>Cadastrar e Gerar Convite</span>
-                </button>
-              </div>
-            </form>
+              <X className="w-4 h-4" />
+            </button>
           </div>
-        </div>
-      )}
 
-      {/* Modal: Editar Empresa */}
-      {editingCompany && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200/80 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Edit2 className="w-5 h-5 text-amber-600" />
-                <h3 className="text-base font-bold text-slate-900">
-                  Editar Empresa Parceira
-                </h3>
-              </div>
-              <button
-                onClick={() => setEditingCompany(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form
-              onSubmit={handleUpdateCompany}
-              className="p-6 space-y-4 text-xs"
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Nome Fantasia *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Razão Social
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.tradeName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, tradeName: e.target.value })
-                    }
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    CNPJ
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cnpj}
-                    onChange={(e) =>
-                      setFormData({ ...formData, cnpj: e.target.value })
-                    }
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Responsável no RH *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.contactName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, contactName: e.target.value })
-                    }
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    E-mail de Contato *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.contactEmail}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contactEmail: e.target.value,
-                      })
-                    }
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Telefone / WhatsApp
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.contactPhone}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contactPhone: e.target.value,
-                      })
-                    }
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Setor de Atuação
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.segment}
-                    onChange={(e) =>
-                      setFormData({ ...formData, segment: e.target.value })
-                    }
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block font-semibold text-slate-700 mb-1">
-                    Observações Internas
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={formData.notes}
-                    onChange={(e) =>
-                      setFormData({ ...formData, notes: e.target.value })
-                    }
-                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 resize-none"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingCompany(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-900 text-xs font-semibold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
-                >
-                  {isSubmitting ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                  )}
-                  <span>Salvar Alterações</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal: Convite Gerado com Sucesso */}
-      {createdInviteData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-amber-300 animate-in fade-in zoom-in-95 duration-150 p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Link de Ativação Corporativa Gerado!
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Envie este link para {createdInviteData.contactName} (
-                  {createdInviteData.companyName})
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 space-y-2">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                Link Oficial Temporário (7 dias)
-              </span>
-              <div className="flex items-center gap-2">
+          <form
+            onSubmit={handleCreateCompany}
+            className="flex-1 overflow-y-auto pr-1 space-y-4 text-xs custom-scrollbar"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Nome Fantasia / Como a empresa é conhecida *
+                </label>
                 <input
                   type="text"
-                  readOnly
-                  value={`${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}`}
-                  className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-xs font-mono text-slate-800 focus:outline-none"
+                  required
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder="Ex: Magazine Luiza, Nubank, Grupo Ultra..."
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
                 />
-                <button
-                  onClick={() => copyInviteLink(createdInviteData.inviteToken)}
-                  className="h-9 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copiar</span>
-                </button>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Razão Social Oficial
+                </label>
+                <input
+                  type="text"
+                  value={formData.tradeName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tradeName: e.target.value })
+                  }
+                  placeholder="Ex: Magazine Luiza S.A."
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  CNPJ
+                </label>
+                <input
+                  type="text"
+                  value={formData.cnpj}
+                  onChange={(e) =>
+                    setFormData({ ...formData, cnpj: e.target.value })
+                  }
+                  placeholder="00.000.000/0000-00"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none font-mono transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Setor de Atuação / Ramo
+                </label>
+                <input
+                  type="text"
+                  value={formData.segment}
+                  onChange={(e) =>
+                    setFormData({ ...formData, segment: e.target.value })
+                  }
+                  placeholder="Ex: Tecnologia, Varejo, Jurídico..."
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Nome do Responsável no RH *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.contactName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, contactName: e.target.value })
+                  }
+                  placeholder="Ex: Ana Paula Ribeiro"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  E-mail Corporativo do Contato *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.contactEmail}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contactEmail: e.target.value,
+                    })
+                  }
+                  placeholder="rh@empresa.com.br"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Telefone / WhatsApp do RH
+                </label>
+                <input
+                  type="text"
+                  value={formData.contactPhone}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contactPhone: e.target.value,
+                    })
+                  }
+                  placeholder="(11) 98765-4321"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Anotações Internas da Coordenação
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.notes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
+                  placeholder="Notas internas sobre perfil de vagas, convênio ou requisitos..."
+                  className="w-full p-3 bg-white border border-slate-200/80 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none resize-none transition-all"
+                />
               </div>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Ao abrir o link, o recrutador aceitará o{" "}
-              <strong>Termo de Compromisso e Confidencialidade LGPD</strong> e
-              definirá a senha para acessar o banco de talentos.
-            </p>
-
-            <div className="pt-2 flex items-center justify-end gap-2">
-              {createdInviteData.phone && (
-                <a
-                  href={`https://wa.me/55${createdInviteData.phone.replace(
-                    /\D/g,
-                    "",
-                  )}?text=${encodeURIComponent(
-                    `Olá ${createdInviteData.contactName}! Segue o link exclusivo para ativação do acesso corporativo da ${createdInviteData.companyName} ao Banco de Talentos do Instituto Brilha Mais: ${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}`,
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Enviar pelo WhatsApp</span>
-                </a>
-              )}
-
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
               <button
-                onClick={() => setCreatedInviteData(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-100 cursor-pointer"
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                className="h-10 px-4 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                Concluir
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-zinc-900 text-xs font-semibold shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <Plus className="w-3.5 h-3.5" />
+                )}
+                <span>Cadastrar e Gerar Convite</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </PortalModal>
+
+      {/* Modal V2: Editar Empresa */}
+      <PortalModal
+        isOpen={!!editingCompany}
+        onClose={() => setEditingCompany(null)}
+      >
+        <div className="relative w-full max-w-xl bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+              <Edit2 className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg font-semibold text-slate-900 leading-tight">
+                Editar Empresa Parceira
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Atualize as informações cadastrais e contatos da organização conveniada.
+              </p>
+            </div>
+            <button
+              onClick={() => setEditingCompany(null)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <form
+            onSubmit={handleUpdateCompany}
+            className="flex-1 overflow-y-auto pr-1 space-y-4 text-xs custom-scrollbar"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Nome Fantasia *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Razão Social
+                </label>
+                <input
+                  type="text"
+                  value={formData.tradeName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tradeName: e.target.value })
+                  }
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  CNPJ
+                </label>
+                <input
+                  type="text"
+                  value={formData.cnpj}
+                  onChange={(e) =>
+                    setFormData({ ...formData, cnpj: e.target.value })
+                  }
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 font-mono focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Responsável no RH *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.contactName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, contactName: e.target.value })
+                  }
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  E-mail de Contato *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.contactEmail}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contactEmail: e.target.value,
+                    })
+                  }
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Telefone / WhatsApp
+                </label>
+                <input
+                  type="text"
+                  value={formData.contactPhone}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contactPhone: e.target.value,
+                    })
+                  }
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Setor de Atuação
+                </label>
+                <input
+                  type="text"
+                  value={formData.segment}
+                  onChange={(e) =>
+                    setFormData({ ...formData, segment: e.target.value })
+                  }
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Observações Internas
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.notes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
+                  className="w-full p-3 bg-white border border-slate-200/80 rounded-xl text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none resize-none transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setEditingCompany(null)}
+                className="h-10 px-4 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-zinc-900 text-xs font-semibold shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                )}
+                <span>Salvar Alterações</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </PortalModal>
+
+      {/* Modal V2: Convite Gerado com Sucesso */}
+      <PortalModal
+        isOpen={!!createdInviteData}
+        onClose={() => setCreatedInviteData(null)}
+      >
+        <div className="relative w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden text-left space-y-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shrink-0">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div className="space-y-0.5 min-w-0 flex-1">
+              <h2 className="text-lg font-semibold text-slate-900 leading-tight">
+                Link de Ativação Corporativa Gerado!
+              </h2>
+              <p className="text-xs text-slate-500">
+                Envie para {createdInviteData?.contactName} ({createdInviteData?.companyName})
+              </p>
+            </div>
+            <button
+              onClick={() => setCreatedInviteData(null)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 space-y-2">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              Link Oficial Temporário (7 dias)
+            </span>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                value={`${window.location.origin}/empresa/ativar?token=${createdInviteData?.inviteToken}`}
+                className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-xs font-mono text-slate-800 focus:outline-none"
+              />
+              <button
+                onClick={() => copyInviteLink(createdInviteData!.inviteToken)}
+                className="h-9 px-3.5 rounded-lg bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 transition-all"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copiar</span>
               </button>
             </div>
           </div>
+
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Ao abrir o link, o recrutador aceitará o{" "}
+            <strong>Termo de Compromisso e Confidencialidade LGPD</strong> e
+            definirá a senha para acessar o banco de talentos.
+          </p>
+
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            {createdInviteData?.phone && (
+              <a
+                href={`https://wa.me/55${createdInviteData.phone.replace(
+                  /\D/g,
+                  "",
+                )}?text=${encodeURIComponent(
+                  `Olá ${createdInviteData.contactName}! Segue o link exclusivo para ativação do acesso corporativo da ${createdInviteData.companyName} ao Banco de Talentos do Instituto Brilha Mais: ${window.location.origin}/empresa/ativar?token=${createdInviteData.inviteToken}`,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Enviar pelo WhatsApp</span>
+              </a>
+            )}
+
+            <button
+              onClick={() => setCreatedInviteData(null)}
+              className="h-10 px-5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              Concluir
+            </button>
+          </div>
         </div>
+      </PortalModal>
+
+      {/* Confirm Modal V2 (substituindo window.confirm) */}
+      {confirmModal && (
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          onClose={() => !isConfirmLoading && setConfirmModal(null)}
+          onConfirm={confirmModal.onConfirm}
+          isLoading={isConfirmLoading}
+          title={confirmModal.title}
+          description={confirmModal.description}
+          confirmText={confirmModal.confirmText}
+          variant={confirmModal.variant}
+        />
       )}
     </div>
   );
