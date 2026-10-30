@@ -32,6 +32,7 @@ import Skeleton from "../Skeleton";
 import CountUp from "../CountUp";
 import { PortalModal } from "../PortalModal";
 import { ConfirmModal } from "../ConfirmModal";
+import { formatPhoneMask, formatCnpjMask } from "../../utils/formatters";
 
 interface PartnerCompany {
   id: string;
@@ -555,7 +556,7 @@ export default function CompanyManagementTab() {
                 placeholder="Buscar por empresa, contato, e-mail..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
               />
             </div>
 
@@ -687,7 +688,7 @@ export default function CompanyManagementTab() {
                       )}
                       {c.cnpj && (
                         <div className="text-[10px] text-slate-400 font-mono">
-                          CNPJ: {c.cnpj}
+                          CNPJ: {formatCnpjMask(c.cnpj)}
                         </div>
                       )}
                     </td>
@@ -705,7 +706,7 @@ export default function CompanyManagementTab() {
                       {c.contactPhone && (
                         <div className="text-slate-500 flex items-center gap-1.5 mt-0.5">
                           <Phone className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{c.contactPhone}</span>
+                          <span>{formatPhoneMask(c.contactPhone)}</span>
                         </div>
                       )}
                     </td>
@@ -784,11 +785,11 @@ export default function CompanyManagementTab() {
                             setFormData({
                               name: c.name,
                               tradeName: c.tradeName || "",
-                              cnpj: c.cnpj || "",
+                              cnpj: formatCnpjMask(c.cnpj) || "",
                               segment: c.segment || "",
                               contactName: c.contactName,
                               contactEmail: c.contactEmail,
-                              contactPhone: c.contactPhone || "",
+                              contactPhone: formatPhoneMask(c.contactPhone) || "",
                               notes: c.notes || "",
                             });
                             setEditingCompany(c);
@@ -833,6 +834,11 @@ export default function CompanyManagementTab() {
                     {c.tradeName && (
                       <p className="text-xs text-slate-500">{c.tradeName}</p>
                     )}
+                    {c.cnpj && (
+                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                        CNPJ: {formatCnpjMask(c.cnpj)}
+                      </p>
+                    )}
                   </div>
 
                   {!c.isActive ? (
@@ -862,7 +868,7 @@ export default function CompanyManagementTab() {
                   {c.contactPhone && (
                     <div className="flex items-center gap-1.5">
                       <Phone className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{c.contactPhone}</span>
+                      <span>{formatPhoneMask(c.contactPhone)}</span>
                     </div>
                   )}
                 </div>
@@ -905,11 +911,11 @@ export default function CompanyManagementTab() {
                         setFormData({
                           name: c.name,
                           tradeName: c.tradeName || "",
-                          cnpj: c.cnpj || "",
+                          cnpj: formatCnpjMask(c.cnpj) || "",
                           segment: c.segment || "",
                           contactName: c.contactName,
                           contactEmail: c.contactEmail,
-                          contactPhone: c.contactPhone || "",
+                          contactPhone: formatPhoneMask(c.contactPhone) || "",
                           notes: c.notes || "",
                         });
                         setEditingCompany(c);
@@ -970,7 +976,7 @@ export default function CompanyManagementTab() {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Ex: Magazine Luiza, Nubank, Grupo Ultra..."
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -985,7 +991,7 @@ export default function CompanyManagementTab() {
                     setFormData({ ...formData, tradeName: e.target.value })
                   }
                   placeholder="Ex: Magazine Luiza S.A."
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -996,11 +1002,12 @@ export default function CompanyManagementTab() {
                 <input
                   type="text"
                   value={formData.cnpj}
+                  maxLength={18}
                   onChange={(e) =>
-                    setFormData({ ...formData, cnpj: e.target.value })
+                    setFormData({ ...formData, cnpj: formatCnpjMask(e.target.value) })
                   }
                   placeholder="00.000.000/0000-00"
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none font-mono transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none font-mono transition-colors"
                 />
               </div>
 
@@ -1015,7 +1022,7 @@ export default function CompanyManagementTab() {
                     setFormData({ ...formData, segment: e.target.value })
                   }
                   placeholder="Ex: Tecnologia, Varejo, Jurídico..."
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1031,7 +1038,7 @@ export default function CompanyManagementTab() {
                     setFormData({ ...formData, contactName: e.target.value })
                   }
                   placeholder="Ex: Ana Paula Ribeiro"
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1050,7 +1057,7 @@ export default function CompanyManagementTab() {
                     })
                   }
                   placeholder="rh@empresa.com.br"
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1061,14 +1068,15 @@ export default function CompanyManagementTab() {
                 <input
                   type="text"
                   value={formData.contactPhone}
+                  maxLength={15}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      contactPhone: e.target.value,
+                      contactPhone: formatPhoneMask(e.target.value),
                     })
                   }
                   placeholder="(11) 98765-4321"
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1083,7 +1091,7 @@ export default function CompanyManagementTab() {
                     setFormData({ ...formData, notes: e.target.value })
                   }
                   placeholder="Notas internas sobre perfil de vagas, convênio ou requisitos..."
-                  className="w-full p-3 bg-white border border-slate-200/80 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none resize-none transition-all"
+                  className="w-full p-3 bg-white border border-slate-200/80 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none resize-none transition-colors"
                 />
               </div>
             </div>
@@ -1156,7 +1164,7 @@ export default function CompanyManagementTab() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1170,7 +1178,7 @@ export default function CompanyManagementTab() {
                   onChange={(e) =>
                     setFormData({ ...formData, tradeName: e.target.value })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1181,10 +1189,12 @@ export default function CompanyManagementTab() {
                 <input
                   type="text"
                   value={formData.cnpj}
+                  maxLength={18}
                   onChange={(e) =>
-                    setFormData({ ...formData, cnpj: e.target.value })
+                    setFormData({ ...formData, cnpj: formatCnpjMask(e.target.value) })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 font-mono focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  placeholder="00.000.000/0000-00"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 font-mono focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1199,7 +1209,7 @@ export default function CompanyManagementTab() {
                   onChange={(e) =>
                     setFormData({ ...formData, contactName: e.target.value })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1217,7 +1227,7 @@ export default function CompanyManagementTab() {
                       contactEmail: e.target.value,
                     })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1228,13 +1238,15 @@ export default function CompanyManagementTab() {
                 <input
                   type="text"
                   value={formData.contactPhone}
+                  maxLength={15}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      contactPhone: e.target.value,
+                      contactPhone: formatPhoneMask(e.target.value),
                     })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  placeholder="(11) 98765-4321"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1248,7 +1260,7 @@ export default function CompanyManagementTab() {
                   onChange={(e) =>
                     setFormData({ ...formData, segment: e.target.value })
                   }
-                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full h-10 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-colors"
                 />
               </div>
 
@@ -1262,7 +1274,7 @@ export default function CompanyManagementTab() {
                   onChange={(e) =>
                     setFormData({ ...formData, notes: e.target.value })
                   }
-                  className="w-full p-3 bg-white border border-slate-200/80 rounded-xl text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none resize-none transition-all"
+                  className="w-full p-3 bg-white border border-slate-200/80 rounded-xl text-xs text-slate-900 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none resize-none transition-colors"
                 />
               </div>
             </div>
