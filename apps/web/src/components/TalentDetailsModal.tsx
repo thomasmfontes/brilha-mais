@@ -207,129 +207,131 @@ export default function TalentDetailsModal({
         <PortalModal isOpen={isOpen} onClose={onClose} className="relative z-[100000] w-full max-w-2xl">
             <div className="bg-white rounded-2xl shadow-2xl border border-zinc-200/80 overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Header do Perfil */}
-                <div className="p-6 pb-4 border-b border-zinc-100 bg-white">
-                    <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-4 min-w-0">
+                <div className="p-4 sm:p-6 pb-3.5 sm:pb-4 border-b border-zinc-100 bg-white relative">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0 flex-1 pr-8 sm:pr-0">
                             {currentTalent.user?.avatarUrl ? (
                                 <img
                                     src={currentTalent.user.avatarUrl}
                                     alt={currentTalent.user.name}
-                                    className="w-14 h-14 rounded-full object-cover border border-zinc-200/80 shrink-0 shadow-2xs"
+                                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-zinc-200/80 shrink-0 shadow-2xs mt-0.5 sm:mt-0"
                                 />
                             ) : (
-                                <div className="w-14 h-14 rounded-full bg-amber-50 text-[#F19B0A] font-semibold text-xl flex items-center justify-center border border-amber-200/60 shrink-0 shadow-2xs">
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-amber-50 text-[#F19B0A] font-semibold text-lg sm:text-xl flex items-center justify-center border border-amber-200/60 shrink-0 shadow-2xs mt-0.5 sm:mt-0">
                                     {currentTalent.user?.name ? currentTalent.user.name.charAt(0).toUpperCase() : 'A'}
                                 </div>
                             )}
 
-                            <div className="min-w-0 space-y-1">
-                                <h3 className="text-xl font-bold text-zinc-900 tracking-tight leading-tight truncate">
-                                    {currentTalent.user?.name || 'Aluno'}
-                                </h3>
+                            <div className="min-w-0 flex-1 space-y-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <h3 className="text-lg sm:text-xl font-bold text-zinc-900 tracking-tight leading-snug">
+                                        {currentTalent.user?.name || 'Aluno'}
+                                    </h3>
+
+                                    <span
+                                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-semibold shrink-0 ${
+                                            currentTalent.isAvailable
+                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
+                                                : 'bg-zinc-100 text-zinc-600 border border-zinc-200'
+                                        }`}
+                                    >
+                                        <span className={`w-1.5 h-1.5 rounded-full ${currentTalent.isAvailable ? 'bg-emerald-500' : 'bg-zinc-400'}`} />
+                                        {currentTalent.isAvailable ? 'Disponível' : 'Pausado'}
+                                    </span>
+                                </div>
 
                                 {currentTalent.headline && (
-                                    <p className="text-sm font-medium text-zinc-700 truncate" title={currentTalent.headline}>
+                                    <p className="text-xs sm:text-sm font-medium text-zinc-700 leading-snug line-clamp-2" title={currentTalent.headline}>
                                         {currentTalent.headline}
                                     </p>
                                 )}
 
-                                <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 pt-0.5">
                                     {currentTalent.user?.email && (
-                                        <span>{currentTalent.user.email}</span>
+                                        <span className="break-all">{currentTalent.user.email}</span>
                                     )}
-                                    {currentTalent.phone && (
-                                        <>
-                                            <span className="text-zinc-300">•</span>
-                                            <span>{formatPhoneMask(currentTalent.phone)}</span>
-                                        </>
-                                    )}
-                                    {currentTalent.city && (
-                                        <>
-                                            <span className="text-zinc-300">•</span>
-                                            <span>{currentTalent.city}{currentTalent.state ? `/${currentTalent.state}` : ''}</span>
-                                        </>
+                                    {(currentTalent.phone || currentTalent.city) && (
+                                        <div className="flex items-center gap-1.5 shrink-0 text-zinc-500">
+                                            {currentTalent.user?.email && <span className="text-zinc-300 hidden sm:inline">•</span>}
+                                            {currentTalent.phone && <span>{formatPhoneMask(currentTalent.phone)}</span>}
+                                            {currentTalent.phone && currentTalent.city && <span className="text-zinc-300">•</span>}
+                                            {currentTalent.city && (
+                                                <span>{currentTalent.city}{currentTalent.state ? `/${currentTalent.state}` : ''}</span>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2.5 shrink-0">
-                            <span
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                    currentTalent.isAvailable
-                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
-                                        : 'bg-zinc-100 text-zinc-600 border border-zinc-200'
-                                }`}
-                            >
-                                <span className={`w-1.5 h-1.5 rounded-full ${currentTalent.isAvailable ? 'bg-emerald-500' : 'bg-zinc-400'}`} />
-                                {currentTalent.isAvailable ? 'Disponível' : 'Pausado'}
-                            </span>
-
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
-                                title="Fechar"
-                            >
-                                <LucideX className="w-5 h-5" />
-                            </button>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer shrink-0 absolute top-3.5 right-3.5 sm:relative sm:top-auto sm:right-auto"
+                            title="Fechar"
+                        >
+                            <LucideX className="w-5 h-5" />
+                        </button>
                     </div>
 
                     {/* Barra de Ações Rápidas */}
-                    <div className="flex flex-wrap items-center gap-2 mt-4 pt-3.5 border-t border-zinc-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-4 pt-3.5 border-t border-zinc-100">
                         {currentTalent.resumeUrl ? (
                             <Tooltip content={currentTalent.resumeFileName ? `Arquivo: ${currentTalent.resumeFileName}` : 'Baixar Currículo'}>
                                 <a
                                     href={currentTalent.resumeUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="h-8 px-3.5 rounded-xl text-xs font-semibold bg-[#F19B0A] hover:bg-[#D98B08] text-white shadow-xs inline-flex items-center gap-2 transition-all cursor-pointer active:scale-[0.98]"
+                                    className="h-9 sm:h-8 px-4 rounded-xl text-xs font-semibold bg-[#F19B0A] hover:bg-[#D98B08] text-white shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.98] w-full sm:w-auto"
                                 >
-                                    <LucideDownload className="w-3.5 h-3.5" />
+                                    <LucideDownload className="w-3.5 h-3.5 shrink-0" />
                                     <span>Baixar Currículo</span>
                                 </a>
                             </Tooltip>
                         ) : (
-                            <span className="h-8 px-3.5 rounded-xl text-xs font-medium text-zinc-400 bg-zinc-50 border border-zinc-200/80 inline-flex items-center gap-2">
-                                <LucideFileText className="w-3.5 h-3.5 text-zinc-300" />
+                            <span className="h-9 sm:h-8 px-4 rounded-xl text-xs font-medium text-zinc-400 bg-zinc-50 border border-zinc-200/80 flex items-center justify-center gap-2 w-full sm:w-auto">
+                                <LucideFileText className="w-3.5 h-3.5 text-zinc-300 shrink-0" />
                                 <span>Sem currículo anexado</span>
                             </span>
                         )}
 
-                        {whatsappLink && (
-                            <Tooltip content={`Conversar com ${currentTalent.user?.name || 'aluno'} via WhatsApp`}>
-                                <a
-                                    href={whatsappLink}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="h-8 px-3.5 rounded-xl text-xs font-semibold bg-white hover:bg-emerald-50 text-zinc-800 hover:text-emerald-700 border border-zinc-200/80 hover:border-emerald-300 shadow-2xs inline-flex items-center gap-2 transition-all cursor-pointer"
-                                >
-                                    <LucidePhone className="w-3.5 h-3.5 text-emerald-600" />
-                                    <span>WhatsApp</span>
-                                </a>
-                            </Tooltip>
-                        )}
+                        {(whatsappLink || currentTalent.linkedinUrl) && (
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                {whatsappLink && (
+                                    <Tooltip content={`Conversar com ${currentTalent.user?.name || 'aluno'} via WhatsApp`}>
+                                        <a
+                                            href={whatsappLink}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="h-9 sm:h-8 px-3.5 rounded-xl text-xs font-semibold bg-white hover:bg-emerald-50 text-zinc-800 hover:text-emerald-700 border border-zinc-200/80 hover:border-emerald-300 shadow-2xs flex-1 sm:flex-none flex items-center justify-center gap-2 transition-all cursor-pointer"
+                                        >
+                                            <LucidePhone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                            <span>WhatsApp</span>
+                                        </a>
+                                    </Tooltip>
+                                )}
 
-                        {currentTalent.linkedinUrl && (
-                            <Tooltip content="Abrir perfil externo no LinkedIn">
-                                <a
-                                    href={currentTalent.linkedinUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="h-8 px-3.5 rounded-xl text-xs font-semibold bg-white hover:bg-blue-50 text-zinc-800 hover:text-blue-700 border border-zinc-200/80 hover:border-blue-300 shadow-2xs inline-flex items-center gap-2 transition-all cursor-pointer"
-                                >
-                                    <LucideLinkedin className="w-3.5 h-3.5 text-blue-600" />
-                                    <span>LinkedIn</span>
-                                    <LucideExternalLink className="w-3 h-3 text-zinc-400" />
-                                </a>
-                            </Tooltip>
+                                {currentTalent.linkedinUrl && (
+                                    <Tooltip content="Abrir perfil externo no LinkedIn">
+                                        <a
+                                            href={currentTalent.linkedinUrl}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="h-9 sm:h-8 px-3.5 rounded-xl text-xs font-semibold bg-white hover:bg-blue-50 text-zinc-800 hover:text-blue-700 border border-zinc-200/80 hover:border-blue-300 shadow-2xs flex-1 sm:flex-none flex items-center justify-center gap-2 transition-all cursor-pointer"
+                                        >
+                                            <LucideLinkedin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                            <span>LinkedIn</span>
+                                            <LucideExternalLink className="w-3 h-3 text-zinc-400 shrink-0 hidden sm:inline" />
+                                        </a>
+                                    </Tooltip>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>
 
                 {/* Conteúdo do Modal */}
-                <div className="p-6 overflow-y-auto space-y-5">
+                <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5">
                     {/* Validação e Liberação do Menor de Idade (Clean, Compacto e Editorial) */}
                     {currentTalent.isMinor && (
                         <div className="p-4 rounded-xl bg-zinc-50/70 border border-zinc-200/80 space-y-3">
@@ -559,20 +561,20 @@ export default function TalentDetailsModal({
 
                     {/* Conformidade LGPD & Termo */}
                     <div className="pt-2 border-t border-zinc-100">
-                        <div className="p-4 rounded-xl bg-zinc-50/60 border border-zinc-200/70 space-y-3">
-                            <div className="flex items-center justify-between">
+                        <div className="p-3.5 sm:p-4 rounded-xl bg-zinc-50/60 border border-zinc-200/70 space-y-2.5">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
-                                    <LucideShieldCheck className={`w-4 h-4 ${currentTalent.lgpdConsent ? 'text-emerald-600' : 'text-amber-500'}`} />
+                                    <LucideShieldCheck className={`w-4 h-4 shrink-0 ${currentTalent.lgpdConsent ? 'text-emerald-600' : 'text-amber-500'}`} />
                                     <span className="text-xs font-semibold text-zinc-900">Conformidade e Termo LGPD</span>
                                 </div>
                                 {currentTalent.lgpdConsent ? (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
-                                        <LucideCheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/60 w-fit">
+                                        <LucideCheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
                                         Autorizado {currentTalent.lgpdConsentAt ? `em ${new Date(currentTalent.lgpdConsentAt).toLocaleDateString('pt-BR')}` : ''}
                                     </span>
                                 ) : (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
-                                        <LucideAlertCircle className="w-3 h-3 text-amber-600" />
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200/60 w-fit">
+                                        <LucideAlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
                                         Pendente
                                     </span>
                                 )}
@@ -585,7 +587,7 @@ export default function TalentDetailsModal({
                                         {currentTalent.parentContact && ` • Contato: ${formatPhoneMask(currentTalent.parentContact)}`}
                                     </p>
                                     <p className="text-[11px] text-zinc-500 flex items-center gap-1 mt-1">
-                                        <LucideCheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                        <LucideCheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                                         {currentTalent.parentConsent ? 'Autorização dos pais confirmada e registrada pelo aluno' : 'Aguardando confirmação dos pais no cadastro'}
                                     </p>
                                 </div>
@@ -599,11 +601,11 @@ export default function TalentDetailsModal({
                 </div>
 
                 {/* Footer do Modal */}
-                <div className="flex items-center justify-end p-4 px-6 border-t border-zinc-100 bg-white">
+                <div className="flex items-center justify-end p-3.5 sm:p-4 px-4 sm:px-6 border-t border-zinc-100 bg-white">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="h-10 px-4 rounded-xl text-xs font-semibold bg-white border border-zinc-200/80 hover:bg-zinc-50 text-zinc-700 active:scale-[0.98] shadow-2xs transition-all cursor-pointer"
+                        className="w-full sm:w-auto h-10 px-5 rounded-xl text-xs font-semibold bg-white border border-zinc-200/80 hover:bg-zinc-50 text-zinc-700 active:scale-[0.98] shadow-2xs transition-all cursor-pointer flex items-center justify-center"
                     >
                         Fechar
                     </button>
