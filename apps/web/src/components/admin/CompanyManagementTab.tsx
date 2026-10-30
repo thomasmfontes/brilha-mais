@@ -90,7 +90,7 @@ const CompanyRowSkeleton = () => (
       </div>
     </td>
     <td className="px-5 py-3.5 text-center">
-      <Skeleton className="h-7 w-28 mx-auto" variant="rounded" />
+      <Skeleton className="h-8 w-8 mx-auto" variant="rounded" />
     </td>
     <td className="px-5 py-3.5 text-center">
       <div className="flex justify-center gap-1.5">
@@ -657,9 +657,9 @@ export default function CompanyManagementTab() {
             <thead>
               <tr className="border-b border-slate-200/80 text-xs font-semibold text-slate-600 bg-slate-50/75">
                 <th className="px-5 py-3 w-[28%]">Empresa</th>
-                <th className="px-5 py-3 w-[24%]">Contato RH</th>
-                <th className="px-5 py-3 w-[16%] text-center">Status / LGPD</th>
-                <th className="px-5 py-3 w-[18%] text-center">Funil de Talentos</th>
+                <th className="px-5 py-3 w-[26%]">Contato RH</th>
+                <th className="px-5 py-3 w-[12%] text-center">Status / LGPD</th>
+                <th className="px-5 py-3 w-[20%] text-center">Funil de Talentos</th>
                 <th className="px-5 py-3 w-[14%] text-right">Ações</th>
               </tr>
             </thead>
@@ -743,31 +743,76 @@ export default function CompanyManagementTab() {
                     <td className="px-5 py-3.5 text-center">
                       <div className="flex items-center justify-center">
                         {!c.isActive ? (
-                          <Tooltip content="Empresa temporariamente desativada no sistema">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 shadow-2xs">
-                              Inativa
-                            </span>
+                          <Tooltip
+                            content={
+                              <div className="space-y-0.5">
+                                <p className="font-semibold text-slate-300 text-xs flex items-center gap-1.5">
+                                  <AlertCircle className="w-3.5 h-3.5 text-slate-400" />
+                                  Empresa Inativa
+                                </p>
+                                <p className="text-[11px] text-slate-400 leading-snug">
+                                  O acesso desta empresa parceira está desativado no sistema.
+                                </p>
+                              </div>
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-slate-50 text-slate-400 border border-slate-200/80 flex items-center justify-center cursor-help transition-all hover:bg-slate-100 hover:border-slate-300 shadow-2xs">
+                              <AlertCircle className="w-4 h-4 text-slate-400" />
+                            </div>
                           </Tooltip>
                         ) : c.termsAccepted ? (
-                          <Tooltip content="Termo de Compromisso e Confidencialidade LGPD assinado digitalmente. Acesso liberado.">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-2xs">
-                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>Ativa (LGPD)</span>
-                            </span>
+                          <Tooltip
+                            content={
+                              <div className="space-y-0.5">
+                                <p className="font-semibold text-emerald-400 text-xs flex items-center gap-1.5">
+                                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                  Ativa (Termo LGPD Aceito)
+                                </p>
+                                <p className="text-[11px] text-slate-300 leading-snug">
+                                  Termo de Compromisso e Confidencialidade LGPD assinado digitalmente. Acesso liberado ao banco.
+                                </p>
+                              </div>
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/80 flex items-center justify-center cursor-help transition-all hover:bg-emerald-100 hover:border-emerald-300 shadow-2xs">
+                              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                            </div>
                           </Tooltip>
                         ) : c.isInviteExpired ? (
-                          <Tooltip content="O link de convite expirou após 7 dias. Clique em reemitir para gerar um novo convite.">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200/60 shadow-2xs">
-                              <AlertCircle className="w-3.5 h-3.5 text-red-600" />
-                              <span>Convite Expirado</span>
-                            </span>
+                          <Tooltip
+                            content={
+                              <div className="space-y-0.5">
+                                <p className="font-semibold text-red-400 text-xs flex items-center gap-1.5">
+                                  <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                                  Convite Expirado
+                                </p>
+                                <p className="text-[11px] text-slate-300 leading-snug">
+                                  O link de convite expirou (validade de 7 dias). Clique em reemitir para gerar um novo.
+                                </p>
+                              </div>
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-red-50 text-red-600 border border-red-200/80 flex items-center justify-center cursor-help transition-all hover:bg-red-100 hover:border-red-300 shadow-2xs">
+                              <AlertCircle className="w-4 h-4 text-red-600" />
+                            </div>
                           </Tooltip>
                         ) : (
-                          <Tooltip content="Convite emitido aguardando aceite da LGPD e definição de senha de acesso.">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/60 shadow-2xs">
-                              <Clock className="w-3.5 h-3.5 text-amber-600" />
-                              <span>Convite Pendente</span>
-                            </span>
+                          <Tooltip
+                            content={
+                              <div className="space-y-0.5">
+                                <p className="font-semibold text-amber-400 text-xs flex items-center gap-1.5">
+                                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                                  Convite Pendente
+                                </p>
+                                <p className="text-[11px] text-slate-300 leading-snug">
+                                  Aguardando primeiro acesso do recrutador para aceite do termo LGPD e criação de senha.
+                                </p>
+                              </div>
+                            }
+                          >
+                            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center cursor-help transition-all hover:bg-amber-100 hover:border-amber-300 shadow-2xs">
+                              <Clock className="w-4 h-4 text-amber-600" />
+                            </div>
                           </Tooltip>
                         )}
                       </div>
