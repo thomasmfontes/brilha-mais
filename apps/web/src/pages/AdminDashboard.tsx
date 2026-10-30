@@ -156,6 +156,29 @@ const UserCardSkeleton = () => (
     </div>
 );
 
+const TalentCardSkeleton = () => (
+    <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-4">
+        <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 flex-1">
+                <Skeleton className="h-11 w-11 shrink-0" variant="circle" />
+                <div className="space-y-1.5 flex-1">
+                    <Skeleton className="h-4 w-36" variant="rectangle" />
+                    <Skeleton className="h-3 w-48" variant="rectangle" />
+                </div>
+            </div>
+            <Skeleton className="h-6 w-20 shrink-0" variant="rounded" />
+        </div>
+        <div className="space-y-2.5 pt-3 border-t border-slate-100">
+            <Skeleton className="h-4 w-full" variant="rectangle" />
+            <Skeleton className="h-4 w-3/4" variant="rectangle" />
+        </div>
+        <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+            <Skeleton className="h-8 w-24" variant="rounded" />
+            <Skeleton className="h-8 w-24" variant="rounded" />
+        </div>
+    </div>
+);
+
 const CategorySkeleton = () => (
     <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs space-y-4">
         <div className="flex items-start justify-between">
@@ -1933,8 +1956,8 @@ export default function AdminDashboard() {
                         )}
                     </div>
 
-                    {/* Contêiner Unificado de Tabela com Filtros - Padrão exato da aba Usuários */}
-                    <div className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden relative z-20">
+                    {/* Desktop Table View */}
+                    <div className="hidden xl:block bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden relative z-20">
                         {/* Header Interno com Filtros */}
                         <div className="p-3.5 border-b border-slate-100 bg-slate-50/50">
                             <div className="flex flex-col md:flex-row gap-2.5 items-center justify-between">
@@ -2233,6 +2256,217 @@ export default function AdminDashboard() {
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
+                    {/* Mobile Card List */}
+                    <div className="xl:hidden space-y-4">
+                        <div className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs space-y-3">
+                            <div className="relative">
+                                <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nome, e-mail, cidade ou objetivo..."
+                                    value={talentSearchQuery}
+                                    onChange={(e) => setTalentSearchQuery(e.target.value)}
+                                    className="w-full h-9 bg-white border border-slate-200/80 rounded-lg pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none focus:outline-none focus-visible:outline-none transition-all"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <FilterSelect
+                                    icon={LucideUsers}
+                                    value={talentTurmaFilter}
+                                    onChange={setTalentTurmaFilter}
+                                    placeholder="Turma"
+                                    options={turmas.map(t => ({ id: t.id, name: t.name }))}
+                                />
+                                <div className="grid grid-cols-2 gap-2">
+                                    <FilterSelect
+                                        icon={LucideFileText}
+                                        value={talentResumeFilter}
+                                        onChange={setTalentResumeFilter}
+                                        placeholder="Currículo"
+                                        options={[
+                                            { id: 'WITH_RESUME', name: 'Com Currículo' },
+                                            { id: 'WITHOUT_RESUME', name: 'Sem Currículo' }
+                                        ]}
+                                    />
+                                    <FilterSelect
+                                        icon={LucideCheckCircle2}
+                                        value={talentStatusFilter}
+                                        onChange={setTalentStatusFilter}
+                                        placeholder="Status"
+                                        options={[
+                                            { id: 'AVAILABLE', name: 'Prontos' },
+                                            { id: 'MINOR_PENDING', name: 'Pendentes' },
+                                            { id: 'PAUSED', name: 'Pausados' }
+                                        ]}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {isLoadingTalents ? (
+                            <>
+                                <TalentCardSkeleton />
+                                <TalentCardSkeleton />
+                            </>
+                        ) : filteredTalents.length > 0 ? (
+                            filteredTalents.map((talent) => {
+                                const phoneDigits = talent.phone?.replace(/\D/g, '') || '';
+                                return (
+                                    <div key={talent.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-4">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                <div className="h-11 w-11 rounded-full flex items-center justify-center font-medium text-xs text-slate-600 border border-slate-200/80 bg-slate-100 shrink-0 overflow-hidden shadow-2xs">
+                                                    {talent.user?.avatarUrl ? (
+                                                        <img
+                                                            src={talent.user.avatarUrl.startsWith('http') ? talent.user.avatarUrl : `${API_URL}${talent.user.avatarUrl}`}
+                                                            alt={talent.user.name || ''}
+                                                            className="h-full w-full object-cover"
+                                                            referrerPolicy="no-referrer"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-sm font-semibold">{talent.user?.name?.charAt(0) || 'A'}</span>
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <h3 className="font-semibold text-sm text-slate-900 truncate leading-snug">
+                                                        {talent.user?.name || 'Aluno'}
+                                                    </h3>
+                                                    <p className="text-xs text-slate-400 truncate mt-0.5">
+                                                        {talent.user?.email}
+                                                        {talent.city && ` • ${talent.city}${talent.state ? `/${talent.state}` : ''}`}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Status Badge */}
+                                            <div className="shrink-0">
+                                                {talent.isMinor ? (
+                                                    talent.minorApproved ? (
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                                            <LucideShieldCheck className="w-3 h-3 text-emerald-600" />
+                                                            Liberado
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80">
+                                                            <LucideAlertTriangle className="w-3 h-3 text-amber-600" />
+                                                            Pendente
+                                                        </span>
+                                                    )
+                                                ) : talent.isAvailable ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                        Disponível
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                                                        Pausado
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2.5 pt-3 border-t border-slate-100 text-xs">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="text-slate-400 font-medium">Turma(s):</span>
+                                                <div className="flex flex-wrap items-center justify-end gap-1.5">
+                                                    {talent.user?.turmas && talent.user.turmas.length > 0 ? (
+                                                        talent.user.turmas.map((t: any, i: number) => (
+                                                            <span key={`mb-turma-${i}`} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium">
+                                                                {t.name}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-slate-400 italic">Sem turma vinculada</span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {talent.headline && (
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-slate-400 font-medium">Objetivo:</span>
+                                                    <p className="text-slate-800 font-medium leading-snug line-clamp-2">
+                                                        {talent.headline}
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-slate-400 font-medium">Áreas:</span>
+                                                    <div className="flex flex-wrap items-center justify-end gap-1">
+                                                        {talent.areasOfInterest.map((a: string, idx: number) => (
+                                                            <span key={`mb-area-${idx}`} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 text-[10px] font-medium border border-slate-200/60">
+                                                                {a}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center justify-between gap-2 pt-1">
+                                                <span className="text-slate-400 font-medium">Conformidade LGPD:</span>
+                                                {talent.lgpdConsent ? (
+                                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                                                        <LucideShieldCheck className="w-3 h-3 text-emerald-600" />
+                                                        Autorizado
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
+                                                        <LucideAlertTriangle className="w-3 h-3 text-amber-600" />
+                                                        Pendente
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                                            {talent.resumeUrl && (
+                                                <a
+                                                    href={talent.resumeUrl}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="h-8 px-3 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-[#D98B08] text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                                                >
+                                                    <LucideDownload className="h-3.5 w-3.5" /> Currículo
+                                                </a>
+                                            )}
+
+                                            {phoneDigits && (
+                                                <a
+                                                    href={`https://wa.me/55${phoneDigits}?text=${encodeURIComponent(`Olá ${talent.user?.name || ''}, tudo bem? Aqui é da coordenação do Projeto Brilha Mais sobre uma oportunidade de vaga.`)}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="h-8 px-3 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                                                >
+                                                    <LucidePhone className="h-3.5 w-3.5" /> WhatsApp
+                                                </a>
+                                            )}
+
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedTalent(talent);
+                                                    setIsTalentModalOpen(true);
+                                                }}
+                                                className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+                                            >
+                                                <LucideEye className="h-3.5 w-3.5" /> Detalhes
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-2xs">
+                                <LucideSearch className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                                <h3 className="text-sm font-semibold text-slate-900">Nenhum talento encontrado</h3>
+                                <p className="text-xs text-slate-400 mt-1">A busca atual não retornou resultados.</p>
+                            </div>
+                        )}
                     </div>
                 </motion.div>
             )}
