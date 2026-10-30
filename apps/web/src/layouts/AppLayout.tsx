@@ -50,7 +50,7 @@ export function AppLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-    const [userRole, setUserRole] = useState<'student' | 'instructor' | 'admin' | 'super_admin'>(() => {
+    const [userRole, setUserRole] = useState<'student' | 'instructor' | 'admin' | 'super_admin' | 'company'>(() => {
         try {
             const token = localStorage.getItem('auth_token');
             if (token) return (jwtDecode<any>(token).role || 'STUDENT').toLowerCase() as any;
@@ -83,6 +83,12 @@ export function AppLayout() {
     const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (userRole === 'company') {
+            navigate('/empresa', { replace: true });
+        }
+    }, [userRole, navigate]);
     const scrollRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const profileMenuRef = useRef<HTMLDivElement>(null);

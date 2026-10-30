@@ -9,6 +9,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ExplorePage from "./pages/ExplorePage";
 import CertificatesPage from "./pages/CertificatesPage";
 import StudentResumePage from "./pages/StudentResumePage";
+import CompanyActivationPage from "./pages/CompanyActivationPage";
+import CompanyPortalPage from "./pages/CompanyPortalPage";
 import InstructorSyllabus from "./pages/InstructorSyllabus";
 import InstructorCourseProgress from "./pages/InstructorCourseProgress";
 import InstructorSubmissions from "./pages/InstructorSubmissions";
@@ -66,6 +68,8 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/termos" element={<TermosPage />} />
                 <Route path="/privacidade" element={<PrivacidadePage />} />
+                <Route path="/empresa/ativar" element={<CompanyActivationPage />} />
+                <Route path="/empresa" element={<CompanyPortalPage />} />
                 <Route path="/instructor/meeting/:id/project" element={<MeetingProjection />} />
 
                 {/* Persistent Layout for Authenticated Routes */}

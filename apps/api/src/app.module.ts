@@ -19,6 +19,7 @@ import { MaterialDownloadModule } from './material-download/material-download.mo
 import { LocationModule } from './location/location.module';
 import { InPersonMeetingModule } from './in-person-meeting/in-person-meeting.module';
 import { TalentModule } from './talent/talent.module';
+import { CompanyModule } from './company/company.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { TalentModule } from './talent/talent.module';
     LocationModule,
     InPersonMeetingModule,
     TalentModule,
+    CompanyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

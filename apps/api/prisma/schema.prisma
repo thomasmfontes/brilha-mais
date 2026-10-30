@@ -36,6 +36,7 @@ model User {
   meetingAttendances  MeetingAttendance[]
   webAuthnCredentials WebAuthnCredential[]
   talentProfile       TalentProfile?
+  partnerCompany      PartnerCompany?
 }
 
 model StudentMaterial {
@@ -312,6 +313,14 @@ enum Role {
   INSTRUCTOR
   ADMIN
   SUPER_ADMIN
+  COMPANY
+}
+
+enum CandidateStage {
+  SAVED
+  INTERVIEW
+  HIRED
+  ARCHIVED
 }
 
 enum ContentType {
@@ -417,10 +426,67 @@ model TalentProfile {
   minorApprovedAt          DateTime?
   minorApprovedById        String?
 
+  // Interacoes com Empresas Conveniadas
+  companyInteractions CompanyCandidateInteraction[]
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   @@index([userId])
   @@index([isAvailable])
   @@index([lgpdConsent])
+}
+
+model PartnerCompany {
+  id              String    @id @default(uuid())
+  name            String    // Nome Fantasia / Como a empresa e conhecida
+  tradeName       String?   // Razao Social oficial
+  cnpj            String?   // CNPJ para validacao juridica
+  segment         String?   // Setor de atuacao (ex: Tecnologia, Juridico, Varejo)
+  contactName     String    // Nome do responsavel principal no RH
+  contactEmail    String    // E-mail corporativo principal
+  contactPhone    String?   // Telefone / WhatsApp de contato
+  notes           String?   // Anotacoes internas da coordenacao
+  isActive        Boolean   @default(true)
+
+  // Termo de Confidencialidade e LGPD da Empresa
+  termsAccepted   Boolean   @default(false)
+  termsAcceptedAt DateTime?
+  termsAcceptedBy String?
+
+  // Token de convite / primeiro acesso
+  inviteToken     String?   @unique
+  inviteExpiresAt DateTime?
+
+  // Vinculo com conta de usuario de login (Role: COMPANY)
+  userId          String?   @unique
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Funil de candidatos interagidos pela empresa
+  interactions    CompanyCandidateInteraction[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([isActive])
+}
+
+model CompanyCandidateInteraction {
+  id          String         @id @default(uuid())
+  companyId   String
+  company     PartnerCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  talentId    String
+  talent      TalentProfile  @relation(fields: [talentId], references: [id], onDelete: Cascade)
+  stage       CandidateStage @default(SAVED)
+  notes       String?        // Anotacoes internas da empresa
+  hiredAt     DateTime?      // Data em que foi efetivado
+  hiredRole   String?        // Cargo contratado (ex: Jovem Aprendiz Administrativo)
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@unique([companyId, talentId])
+  @@index([companyId])
+  @@index([talentId])
+  @@index([stage])
 }

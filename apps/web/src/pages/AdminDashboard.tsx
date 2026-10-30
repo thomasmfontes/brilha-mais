@@ -11,6 +11,7 @@ import { PortalModal } from "../components/PortalModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import UserMaterialsModal from "../components/UserMaterialsModal";
 import TalentDetailsModal from "../components/TalentDetailsModal";
+import CompanyManagementTab from "../components/admin/CompanyManagementTab";
 import Tooltip from "../components/Tooltip";
 import { formatPhoneMask } from "../utils/formatters";
 import { LucideBriefcase, LucideDownload, LucidePhone, LucideEye, LucideFileText, LucideCheckCircle2, LucideUserCheck } from "lucide-react";
@@ -238,7 +239,7 @@ const AuditSkeleton = () => (
 
 export default function AdminDashboard() {
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    const [activeTab, setActiveTab] = useState<'overview' | 'areas' | 'turmas' | 'users' | 'locations' | 'talents'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'areas' | 'turmas' | 'users' | 'locations' | 'talents' | 'companies'>('overview');
     const [users, setUsers] = useState<User[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [turmas, setTurmas] = useState<Turma[]>([]);
@@ -981,6 +982,12 @@ export default function AdminDashboard() {
                         className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap ${activeTab === 'talents' ? 'bg-white text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'}`}
                     >
                         Banco de Talentos
+                    </button>
+                    <button
+                        onClick={() => handleTabChange('companies')}
+                        className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap ${activeTab === 'companies' ? 'bg-white text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900 font-medium'}`}
+                    >
+                        Empresas
                     </button>
                     {isSuperAdminOrGlobal && (
                         <button
@@ -2471,6 +2478,16 @@ export default function AdminDashboard() {
                             </div>
                         )}
                     </div>
+                </motion.div>
+            )}
+
+            {activeTab === 'companies' && (
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    <CompanyManagementTab />
                 </motion.div>
             )}
 
