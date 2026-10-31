@@ -19,11 +19,37 @@ import {
   Award,
   ChevronDown,
   Info,
+  ShieldCheck,
 } from "lucide-react";
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
 import LoadingSpinner from "../LoadingSpinner";
 import { PortalModal } from "../PortalModal";
+
+// Helpers
+function formatAvailability(avail?: string | null) {
+  if (!avail) return "";
+  const map: Record<string, string> = {
+    MANHA: "Manhã",
+    TARDE: "Tarde",
+    NOITE: "Noite",
+    INTEGRAL: "Integral",
+    FLEXIVEL: "Flexível",
+  };
+  return map[avail.toUpperCase()] || avail;
+}
+
+function formatPhoneDisplay(phone?: string | null) {
+  if (!phone) return "";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 11) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  return phone;
+}
 
 export interface CompanyTalent {
   id: string;
@@ -221,8 +247,8 @@ export default function CompanyTalentModal({
                 )}
                 {talent.availability && (
                   <span className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    Turno: {talent.availability}
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    Turno: {formatAvailability(talent.availability)}
                   </span>
                 )}
               </div>
@@ -353,18 +379,18 @@ export default function CompanyTalentModal({
 
           {/* Formação & Turmas no Brilha Mais */}
           <div>
-            <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
               Formação Pedagógica no Brilha Mais
             </h3>
-            <div className="bg-amber-50/40 border border-amber-200/70 rounded-xl p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-5 h-5 text-amber-600" />
+            <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                <Sparkles className="w-5 h-5" />
               </div>
-              <div>
-                <span className="text-xs font-semibold text-amber-900 block">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-slate-900 block">
                   Aluno em Formação Cidadã e Habilidades para o Trabalho
                 </span>
-                <p className="text-xs text-zinc-600 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Turma: {talent.user.turmas && talent.user.turmas.length > 0 ? talent.user.turmas.map((t) => t.name).join(", ") : "Turma Regular Geral"}
                 </p>
               </div>
@@ -373,15 +399,15 @@ export default function CompanyTalentModal({
 
           {/* Contato Direto */}
           <div>
-            <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
               Canais de Contato com o Aluno
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <a
                 href={`mailto:${talent.user.email}`}
-                className="flex items-center gap-2 p-3 rounded-xl border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 transition-colors text-xs text-zinc-700"
+                className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-xs text-slate-700"
               >
-                <Mail className="w-4 h-4 text-zinc-400" />
+                <Mail className="w-4 h-4 text-slate-400" />
                 <span className="truncate">{talent.user.email}</span>
               </a>
 
@@ -390,14 +416,14 @@ export default function CompanyTalentModal({
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 p-3 rounded-xl border border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50 text-emerald-800 transition-colors text-xs font-medium"
+                  className="flex items-center gap-2 p-3 rounded-xl border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100/70 text-emerald-800 transition-colors text-xs font-medium"
                 >
-                  <MessageCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Conversar no WhatsApp ({talent.phone})</span>
+                  <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span className="truncate">Conversar no WhatsApp {cleanPhone ? `• ${formatPhoneDisplay(cleanPhone)}` : ""}</span>
                 </a>
               ) : (
-                <div className="flex items-center gap-2 p-3 rounded-xl border border-zinc-200 bg-zinc-50 text-xs text-zinc-400">
-                  <Phone className="w-4 h-4 text-zinc-400" />
+                <div className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-400">
+                  <Phone className="w-4 h-4 text-slate-400" />
                   <span>Telefone não informado</span>
                 </div>
               )}
@@ -418,17 +444,22 @@ export default function CompanyTalentModal({
 
           {/* Private Recruiter Notes */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                 Anotações Internas do seu RH (Privado)
               </h3>
               <button
                 type="button"
                 onClick={handleSaveNotes}
                 disabled={isUpdatingStage}
-                className="text-xs font-semibold text-amber-600 hover:text-amber-700 cursor-pointer"
+                className="h-7 px-3 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white rounded-lg text-xs font-medium transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
-                Salvar Anotação
+                {isUpdatingStage ? (
+                  <LoadingSpinner size="sm" variant="white" />
+                ) : (
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                )}
+                <span>Salvar Anotação</span>
               </button>
             </div>
             <textarea
@@ -436,15 +467,15 @@ export default function CompanyTalentModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Ex: Entrevista agendada para terça às 14h via Google Meet. Perfil com boa comunicação e domínio do Pacote Office..."
-              className="w-full p-3 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 resize-none"
+              className="w-full p-3 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors resize-none"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 rounded-b-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
-            <Info className="w-3.5 h-3.5" />
+        <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-100 rounded-b-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <ShieldCheck className="w-4 h-4 text-slate-400" />
             <span>Acesso auditado nominalmente em conformidade com a LGPD.</span>
           </div>
 
@@ -452,7 +483,7 @@ export default function CompanyTalentModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-zinc-200 bg-white text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
             >
               Fechar
             </button>
