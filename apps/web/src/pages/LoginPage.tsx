@@ -206,46 +206,36 @@ export default function LoginPage() {
 
                             {/* Biometrics (Optional) */}
                             {showBiometricButton && (
-                                <>
-                                    <div className="relative py-1 flex items-center">
-                                        <div className="flex-grow border-t border-zinc-100" />
-                                        <span className="flex-shrink mx-3 text-[11px] font-medium text-zinc-400">ou</span>
-                                        <div className="flex-grow border-t border-zinc-100" />
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        onClick={handleBiometricLogin}
-                                        disabled={!!isRedirecting}
-                                        className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-2.5 transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                                    >
-                                        {isRedirecting === 'biometric' ? (
-                                            <LoadingSpinner size="sm" />
-                                        ) : (
-                                            <Fingerprint className="w-4 h-4 text-amber-500" />
-                                        )}
-                                        <span>{isRedirecting === 'biometric' ? 'Aguardando biometria...' : 'Acessar com Biometria / Passkey'}</span>
-                                    </button>
-                                </>
+                                <button
+                                    type="button"
+                                    onClick={handleBiometricLogin}
+                                    disabled={!!isRedirecting}
+                                    className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-3 transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                    {isRedirecting === 'biometric' ? (
+                                        <LoadingSpinner size="sm" />
+                                    ) : (
+                                        <Fingerprint className="w-4 h-4 text-amber-500 shrink-0" />
+                                    )}
+                                    <span>{isRedirecting === 'biometric' ? 'Aguardando biometria...' : 'Acessar com Biometria / Passkey'}</span>
+                                </button>
                             )}
 
                             {/* Switch to Company Login */}
-                            <div className="pt-2">
-                                <div className="relative py-1.5 flex items-center">
-                                    <div className="flex-grow border-t border-zinc-100" />
-                                    <span className="flex-shrink mx-3 text-[11px] font-medium text-zinc-400">ou</span>
-                                    <div className="flex-grow border-t border-zinc-100" />
-                                </div>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCompanyLogin(true)}
-                                    className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 hover:border-amber-400/80 bg-zinc-50/70 hover:bg-amber-50/40 text-zinc-700 hover:text-amber-950 text-sm font-medium flex items-center justify-center gap-2.5 transition-colors shadow-2xs cursor-pointer group"
-                                >
-                                    <Building2 className="w-4 h-4 text-amber-600 group-hover:text-amber-700 shrink-0 transition-colors" />
-                                    <span>Entrar como Empresa Parceira</span>
-                                </button>
+                            <div className="relative py-1 flex items-center">
+                                <div className="flex-grow border-t border-zinc-100" />
+                                <span className="flex-shrink mx-3 text-[11px] font-medium text-zinc-400">ou</span>
+                                <div className="flex-grow border-t border-zinc-100" />
                             </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowCompanyLogin(true)}
+                                className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-3 transition-colors shadow-xs cursor-pointer"
+                            >
+                                <Building2 className="w-4 h-4 text-amber-500 shrink-0" />
+                                <span>Entrar como Empresa Parceira</span>
+                            </button>
                         </div>
                     ) : (
                         /* Dedicated Company Password Form */
