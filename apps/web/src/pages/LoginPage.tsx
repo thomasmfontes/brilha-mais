@@ -145,6 +145,12 @@ export default function LoginPage() {
                         <Link to="/" className="mb-4 inline-block focus:outline-none">
                             <img src={logo} alt="Brilha Mais" className="h-11 w-auto object-contain mx-auto" />
                         </Link>
+                        {showCompanyLogin && (
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200/80 mb-2">
+                                <Building2 className="w-3 h-3 text-amber-600" />
+                                <span>Portal Corporativo</span>
+                            </div>
+                        )}
                         <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
                             {showCompanyLogin ? "Acesso Empresa Parceira" : "Entrar na plataforma"}
                         </h1>
@@ -296,17 +302,23 @@ export default function LoginPage() {
                                         <span>Autenticando...</span>
                                     </>
                                 ) : (
-                                    <span>Acessar Portal da Empresa</span>
+                                    <>
+                                        <Building2 className="w-4 h-4 shrink-0" />
+                                        <span>Acessar Portal da Empresa</span>
+                                    </>
                                 )}
                             </button>
 
-                            <button
-                                type="button"
-                                onClick={() => setShowCompanyLogin(false)}
-                                className="w-full text-center text-xs text-zinc-500 hover:text-zinc-800 transition-colors pt-1 cursor-pointer"
-                            >
-                                ← Voltar para login institucional (Aluno / Instrutor)
-                            </button>
+                            <div className="pt-1.5 text-center">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCompanyLogin(false)}
+                                    className="inline-flex items-center justify-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-800 transition-colors py-1 cursor-pointer"
+                                >
+                                    <ArrowLeft className="w-3.5 h-3.5" />
+                                    <span>Voltar ao login institucional</span>
+                                </button>
+                            </div>
                         </form>
                     )}
 

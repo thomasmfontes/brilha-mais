@@ -188,3 +188,12 @@ textarea,
 select {
   transition-property: color, background-color, border-color !important;
 }
+
+/* Suppress Chrome autofill background blue color */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 50px white inset !important;
+  -webkit-text-fill-color: #18181b !important;
+}
