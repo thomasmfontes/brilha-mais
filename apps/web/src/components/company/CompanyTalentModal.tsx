@@ -112,11 +112,12 @@ export default function CompanyTalentModal({
   onClose,
   onStageChange,
 }: CompanyTalentModalProps) {
-  const [stage, setStage] = useState<string>(talent.currentStage || "SAVED");
+  const [stage, setStage] = useState<string | null>(talent.currentStage || null);
+  const [pendingStage, setPendingStage] = useState<string | null>(null);
   const [notes, setNotes] = useState<string>(talent.interactionNotes || "");
   const [hiredRole, setHiredRole] = useState<string>(talent.hiredRole || "");
   const [showHiredDialog, setShowHiredDialog] = useState(false);
-  const [isUpdatingStage, setIsUpdatingStage] = useState(false);
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const cleanPhone = talent.phone ? talent.phone.replace(/\D/g, "") : "";
@@ -127,24 +128,36 @@ export default function CompanyTalentModal({
     : null;
 
   const handleStageSelect = async (newStage: string) => {
+    if (newStage === stage) return;
+
     if (newStage === "HIRED") {
       setShowHiredDialog(true);
       return;
     }
 
-    setIsUpdatingStage(true);
+    const previousStage = stage;
+    setPendingStage(newStage);
+    // Optimistic UI update: instantly reflect selection and update parent lists/counts
+    setStage(newStage);
+    onStageChange(talent.id, newStage, notes);
+
     try {
       await api.put(`/company/talents/${talent.id}/stage`, {
         stage: newStage,
         notes,
       });
-      setStage(newStage);
-      onStageChange(talent.id, newStage, notes);
-      toast.success(`Candidato movido para ${STAGE_CONFIG[newStage as keyof typeof STAGE_CONFIG]?.label || newStage}!`);
+      toast.success(
+        `Candidato movido para ${STAGE_CONFIG[newStage as keyof typeof STAGE_CONFIG]?.label || newStage}!`,
+      );
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao atualizar etapa do candidato.");
+      // Revert upon error
+      setStage(previousStage);
+      onStageChange(talent.id, previousStage || "", notes);
+      toast.error(
+        err.response?.data?.message || "Erro ao atualizar etapa do candidato.",
+      );
     } finally {
-      setIsUpdatingStage(false);
+      setPendingStage(null);
     }
   };
 
@@ -154,38 +167,44 @@ export default function CompanyTalentModal({
       return;
     }
 
-    setIsUpdatingStage(true);
+    const previousStage = stage;
+    setPendingStage("HIRED");
+    setStage("HIRED");
+    setShowHiredDialog(false);
+    onStageChange(talent.id, "HIRED", notes, hiredRole.trim());
+
     try {
       await api.put(`/company/talents/${talent.id}/stage`, {
         stage: "HIRED",
         hiredRole: hiredRole.trim(),
         notes,
       });
-      setStage("HIRED");
-      setShowHiredDialog(false);
-      onStageChange(talent.id, "HIRED", notes, hiredRole.trim());
       toast.success("Parabéns pela contratação! Evento registrado com sucesso.");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Erro ao confirmar contratação.");
+      setStage(previousStage);
+      onStageChange(talent.id, previousStage || "", notes);
+      toast.error(
+        err.response?.data?.message || "Erro ao confirmar contratação.",
+      );
     } finally {
-      setIsUpdatingStage(false);
+      setPendingStage(null);
     }
   };
 
   const handleSaveNotes = async () => {
-    setIsUpdatingStage(true);
+    setIsSavingNotes(true);
     try {
       await api.put(`/company/talents/${talent.id}/stage`, {
-        stage,
+        stage: stage || undefined,
         notes,
         hiredRole: stage === "HIRED" ? hiredRole : undefined,
       });
-      onStageChange(talent.id, stage, notes, hiredRole);
+      onStageChange(talent.id, stage || "", notes, hiredRole);
       toast.success("Anotações da empresa salvas.");
     } catch (err: any) {
       toast.error("Erro ao salvar anotações.");
     } finally {
-      setIsUpdatingStage(false);
+      setIsSavingNotes(false);
     }
   };
 
@@ -267,30 +286,35 @@ export default function CompanyTalentModal({
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 text-sm">
           
           {/* Funnel Stage Selector Bar */}
-          <div className="bg-zinc-50 border border-zinc-200/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
                 Etapa do Processo Seletivo
               </span>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs font-medium text-zinc-700">Mover para:</span>
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="text-xs font-medium text-slate-600">Mover para:</span>
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {(["SAVED", "INTERVIEW", "HIRED", "ARCHIVED"] as const).map((s) => {
                     const cfg = STAGE_CONFIG[s];
                     const isSelected = stage === s;
+                    const isPending = pendingStage === s;
                     return (
                       <button
                         key={s}
                         type="button"
                         onClick={() => handleStageSelect(s)}
-                        disabled={isUpdatingStage}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                        disabled={pendingStage !== null}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer flex items-center gap-1.5 active:scale-[0.98] ${
                           isSelected
-                            ? `${cfg.bg} ring-2 ring-amber-500/20 shadow-xs font-bold`
-                            : "bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-100 hover:text-zinc-900"
-                        }`}
+                            ? `${cfg.bg} shadow-2xs font-semibold ring-1 ring-amber-500/30`
+                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                        } ${pendingStage !== null && !isPending ? "opacity-60 cursor-not-allowed" : ""}`}
                       >
-                        <cfg.icon className="w-3.5 h-3.5" />
+                        {isPending ? (
+                          <LoadingSpinner size="xs" variant="current" />
+                        ) : (
+                          <cfg.icon className="w-3.5 h-3.5" />
+                        )}
                         <span>{cfg.label}</span>
                       </button>
                     );
@@ -299,9 +323,9 @@ export default function CompanyTalentModal({
               </div>
             </div>
 
-            {stage === "HIRED" && talent.hiredRole && (
+            {stage === "HIRED" && (talent.hiredRole || hiredRole) && (
               <div className="bg-emerald-100/70 border border-emerald-300 rounded-lg px-3 py-1.5 text-xs text-emerald-900 font-medium">
-                Cargo: <strong>{talent.hiredRole}</strong>
+                Cargo: <strong>{hiredRole || talent.hiredRole}</strong>
               </div>
             )}
           </div>
@@ -335,10 +359,10 @@ export default function CompanyTalentModal({
                   <button
                     type="button"
                     onClick={handleConfirmHired}
-                    disabled={isUpdatingStage}
+                    disabled={pendingStage === "HIRED"}
                     className="flex-1 sm:flex-initial h-10 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    {isUpdatingStage ? <LoadingSpinner size="sm" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                    {pendingStage === "HIRED" ? <LoadingSpinner size="sm" variant="white" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                     <span>Confirmar Contratação</span>
                   </button>
                 </div>
@@ -451,10 +475,10 @@ export default function CompanyTalentModal({
               <button
                 type="button"
                 onClick={handleSaveNotes}
-                disabled={isUpdatingStage}
+                disabled={isSavingNotes}
                 className="h-7 px-3 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white rounded-lg text-xs font-medium transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
-                {isUpdatingStage ? (
+                {isSavingNotes ? (
                   <LoadingSpinner size="sm" variant="white" />
                 ) : (
                   <CheckCircle2 className="w-3.5 h-3.5" />

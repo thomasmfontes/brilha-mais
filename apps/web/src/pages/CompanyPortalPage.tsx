@@ -227,6 +227,7 @@ export default function CompanyPortalPage() {
   const [selectedTalent, setSelectedTalent] = useState<CompanyTalent | null>(
     null,
   );
+  const [movingTalent, setMovingTalent] = useState<{ id: string; stage: string } | null>(null);
 
   const fetchCompanyData = async () => {
     try {
@@ -349,16 +350,22 @@ export default function CompanyPortalPage() {
     talentId: string,
     newStage: "SAVED" | "INTERVIEW",
   ) => {
+    setMovingTalent({ id: talentId, stage: newStage });
+    // Optimistic UI update: candidate card reflects the new stage immediately
+    handleStageChange(talentId, newStage);
+
     try {
       await api.put(`/company/talents/${talentId}/stage`, { stage: newStage });
-      handleStageChange(talentId, newStage);
       toast.success(
         newStage === "SAVED"
           ? "Candidato salvo no seu radar!"
           : "Candidato movido para etapa de entrevista!",
       );
     } catch (err: any) {
+      handleStageChange(talentId, "");
       toast.error(err.response?.data?.message || "Erro ao atualizar etapa.");
+    } finally {
+      setMovingTalent(null);
     }
   };
 
@@ -733,17 +740,27 @@ export default function CompanyPortalPage() {
                             <button
                               type="button"
                               onClick={() => handleQuickMove(talent.id, "SAVED")}
-                              className="flex-1 h-7.5 px-2 rounded-lg border border-slate-200/80 bg-slate-50/70 hover:bg-blue-50 hover:border-blue-200 text-[11px] font-medium text-slate-600 hover:text-blue-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                              disabled={movingTalent?.id === talent.id}
+                              className="flex-1 h-7.5 px-2 rounded-lg border border-slate-200/80 bg-slate-50/70 hover:bg-blue-50 hover:border-blue-200 text-[11px] font-medium text-slate-600 hover:text-blue-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
-                              <Bookmark className="w-3 h-3 text-slate-400" />
+                              {movingTalent?.id === talent.id && movingTalent.stage === "SAVED" ? (
+                                <LoadingSpinner size="xs" variant="current" />
+                              ) : (
+                                <Bookmark className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                              )}
                               <span>Salvar no Radar</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => handleQuickMove(talent.id, "INTERVIEW")}
-                              className="flex-1 h-7.5 px-2 rounded-lg border border-slate-200/80 bg-slate-50/70 hover:bg-amber-50 hover:border-amber-200 text-[11px] font-medium text-slate-600 hover:text-amber-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                              disabled={movingTalent?.id === talent.id}
+                              className="flex-1 h-7.5 px-2 rounded-lg border border-slate-200/80 bg-slate-50/70 hover:bg-amber-50 hover:border-amber-200 text-[11px] font-medium text-slate-600 hover:text-amber-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
-                              <Users className="w-3 h-3 text-slate-400" />
+                              {movingTalent?.id === talent.id && movingTalent.stage === "INTERVIEW" ? (
+                                <LoadingSpinner size="xs" variant="current" />
+                              ) : (
+                                <Users className="w-3 h-3 text-slate-400 group-hover:text-amber-600" />
+                              )}
                               <span>Chamar p/ Entrevista</span>
                             </button>
                           </div>
