@@ -138,11 +138,11 @@ export default function LoginPage() {
 
             {/* Central Minimalist Card */}
             <main className="flex-1 flex items-center justify-center px-4 py-8">
-                <div className="w-full max-w-[400px] bg-white border border-zinc-200/80 rounded-2xl p-7 sm:p-9 shadow-sm">
+                <div className="w-full max-w-[420px] bg-white border border-zinc-200/80 rounded-2xl p-6 sm:p-8 shadow-sm">
                     
                     {/* Header: Logo & Title */}
-                    <div className="flex flex-col items-center text-center mb-7">
-                        <Link to="/" className="mb-5 inline-block focus:outline-none">
+                    <div className="flex flex-col items-center text-center mb-6">
+                        <Link to="/" className="mb-4 inline-block focus:outline-none">
                             <img src={logo} alt="Brilha Mais" className="h-11 w-auto object-contain mx-auto" />
                         </Link>
                         <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
@@ -163,7 +163,7 @@ export default function LoginPage() {
                                 type="button"
                                 onClick={() => handleSocialLogin('google')}
                                 disabled={!!isRedirecting}
-                                className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-3 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-3 transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 {isRedirecting === 'google' ? (
                                     <LoadingSpinner size="sm" />
@@ -183,7 +183,7 @@ export default function LoginPage() {
                                 type="button"
                                 onClick={() => handleSocialLogin('microsoft')}
                                 disabled={!!isRedirecting}
-                                className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-3 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-3 transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 {isRedirecting === 'microsoft' ? (
                                     <LoadingSpinner size="sm" />
@@ -211,7 +211,7 @@ export default function LoginPage() {
                                         type="button"
                                         onClick={handleBiometricLogin}
                                         disabled={!!isRedirecting}
-                                        className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-2.5 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                        className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 hover:text-zinc-900 text-sm font-medium flex items-center justify-center gap-2.5 transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                     >
                                         {isRedirecting === 'biometric' ? (
                                             <LoadingSpinner size="sm" />
@@ -225,13 +225,19 @@ export default function LoginPage() {
 
                             {/* Switch to Company Login */}
                             <div className="pt-2">
+                                <div className="relative py-1.5 flex items-center">
+                                    <div className="flex-grow border-t border-zinc-100" />
+                                    <span className="flex-shrink mx-3 text-[11px] font-medium text-zinc-400">ou</span>
+                                    <div className="flex-grow border-t border-zinc-100" />
+                                </div>
+
                                 <button
                                     type="button"
                                     onClick={() => setShowCompanyLogin(true)}
-                                    className="w-full py-2.5 px-3 rounded-xl border border-dashed border-zinc-200 hover:border-amber-400 hover:bg-amber-50/50 text-xs font-semibold text-zinc-600 hover:text-amber-900 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                                    className="w-full h-11 px-4 rounded-xl border border-zinc-200/90 hover:border-amber-400/80 bg-zinc-50/70 hover:bg-amber-50/40 text-zinc-700 hover:text-amber-950 text-sm font-medium flex items-center justify-center gap-2.5 transition-colors shadow-2xs cursor-pointer group"
                                 >
-                                    <Building2 className="w-3.5 h-3.5 text-amber-600" />
-                                    <span>É uma empresa parceira? Entre com sua senha</span>
+                                    <Building2 className="w-4 h-4 text-amber-600 group-hover:text-amber-700 shrink-0 transition-colors" />
+                                    <span>Entrar como Empresa Parceira</span>
                                 </button>
                             </div>
                         </div>
@@ -250,7 +256,7 @@ export default function LoginPage() {
                                         value={companyEmail}
                                         onChange={(e) => setCompanyEmail(e.target.value)}
                                         placeholder="rh@empresa.com.br"
-                                        className="w-full h-11 pl-9 pr-3 rounded-xl border border-zinc-200 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                                        className="w-full h-11 pl-9 pr-3 rounded-xl border border-zinc-200 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors"
                                     />
                                 </div>
                             </div>
@@ -267,7 +273,7 @@ export default function LoginPage() {
                                         value={companyPassword}
                                         onChange={(e) => setCompanyPassword(e.target.value)}
                                         placeholder="Sua senha corporativa"
-                                        className="w-full h-11 pl-9 pr-10 rounded-xl border border-zinc-200 text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                                        className="w-full h-11 pl-9 pr-10 rounded-xl border border-zinc-200 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors"
                                     />
                                     <button
                                         type="button"
@@ -282,11 +288,11 @@ export default function LoginPage() {
                             <button
                                 type="submit"
                                 disabled={isCompanySubmitting}
-                                className="w-full h-11 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-zinc-900 font-semibold text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                className="w-full h-11 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-medium text-sm transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                             >
                                 {isCompanySubmitting ? (
                                     <>
-                                        <LoadingSpinner size="sm" />
+                                        <LoadingSpinner size="sm" variant="white" />
                                         <span>Autenticando...</span>
                                     </>
                                 ) : (
@@ -305,9 +311,9 @@ export default function LoginPage() {
                     )}
 
                     {/* Security Subnote */}
-                    <div className="mt-8 pt-6 border-t border-zinc-100 flex items-center justify-center gap-1.5 text-zinc-400 text-xs">
-                        <Lock className="w-3.5 h-3.5 text-zinc-400" />
-                        <span>Autenticação criptografada e em conformidade LGPD</span>
+                    <div className="mt-7 pt-5 border-t border-zinc-100 flex items-center justify-center gap-2 text-zinc-400 text-[11.5px] sm:text-xs">
+                        <Lock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        <span className="text-center">Ambiente seguro e em conformidade com a LGPD</span>
                     </div>
                 </div>
             </main>
