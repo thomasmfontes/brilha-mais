@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
+  ArrowLeft,
   Eye,
   EyeOff,
   FileText,
@@ -158,115 +159,123 @@ export default function CompanyActivationPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF9] text-zinc-900 flex flex-col justify-between selection:bg-amber-100 selection:text-amber-900">
-      {/* Header */}
-      <header className="w-full max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
-        <Link to="/" className="focus:outline-none">
-          <img src={logo} alt="Brilha Mais" className="h-10 w-auto object-contain" />
+      {/* Header aligned with content container */}
+      <header className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 flex items-center justify-between">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-200/80 bg-white text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-colors shadow-xs"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Voltar ao início</span>
         </Link>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/80">
-          <Building2 className="w-3.5 h-3.5" />
-          Portal de Empresas Parceiras
-        </span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/80">
+          <Building2 className="w-3.5 h-3.5 text-amber-600" />
+          <span>Portal Corporativo</span>
+        </div>
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 flex items-center justify-center px-4 py-8">
+      <main className="flex-1 flex items-center justify-center px-4 py-4 sm:py-8">
         <div className="w-full max-w-2xl bg-white border border-zinc-200/80 rounded-2xl p-6 sm:p-9 shadow-sm">
-          {/* Top Title */}
-          <div className="border-b border-zinc-100 pb-5 mb-6">
-            <span className="text-xs font-semibold text-amber-600 uppercase tracking-wider">
+          {/* Header with Centered Logo & Title */}
+          <div className="flex flex-col items-center text-center mb-7 pb-6 border-b border-zinc-100">
+            <Link to="/" className="mb-4 inline-block focus:outline-none">
+              <img src={logo} alt="Brilha Mais" className="h-11 w-auto object-contain mx-auto" />
+            </Link>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
               Ativação de Convênio Corporativo
-            </span>
-            <h1 className="text-2xl font-bold text-zinc-900 mt-1">
-              Bem-vindo(a) à Rede de Oportunidades Brilha Mais
             </h1>
-            <p className="text-sm text-zinc-600 mt-1">
-              Complete seu cadastro corporativo e defina sua senha para acessar os currículos e o banco de talentos de nossos alunos.
+            <p className="text-xs sm:text-sm text-zinc-500 mt-1 max-w-md">
+              Complete seu credenciamento e defina sua senha para acessar o Banco de Talentos da Rede Brilha Mais.
             </p>
           </div>
 
-          {/* Company Details Badge Box */}
-          <div className="bg-zinc-50 border border-zinc-200/70 rounded-xl p-4 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div>
-              <span className="text-zinc-500 font-medium block">Empresa Conveniada:</span>
-              <span className="text-zinc-900 font-semibold text-sm">
-                {invitation.name}
-              </span>
-              {invitation.tradeName && (
-                <span className="text-zinc-500 block truncate">{invitation.tradeName}</span>
+          {/* Company Details Box */}
+          <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-4 sm:p-5 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+              <div>
+                <span className="text-[11px] font-semibold text-amber-700 uppercase tracking-wider block">
+                  Empresa Conveniada
+                </span>
+                <h3 className="text-base font-semibold text-zinc-900 mt-0.5">
+                  {invitation.name}
+                </h3>
+                {invitation.tradeName && (
+                  <p className="text-xs text-zinc-500">{invitation.tradeName}</p>
+                )}
+              </div>
+              {invitation.cnpj && (
+                <div className="self-start">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-white border border-zinc-200/80 text-xs font-mono font-medium text-zinc-700 shadow-2xs">
+                    CNPJ: {invitation.cnpj}
+                  </span>
+                </div>
               )}
             </div>
-            {invitation.cnpj && (
-              <div>
-                <span className="text-zinc-500 font-medium block">CNPJ Cadastrado:</span>
-                <span className="text-zinc-900 font-medium font-mono">
-                  {invitation.cnpj}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-3.5 border-t border-zinc-200/60 text-xs">
+              <div className="flex items-center gap-2 text-zinc-600">
+                <UserCheck className="w-4 h-4 text-zinc-400 shrink-0" />
+                <span className="truncate">
+                  <strong className="text-zinc-800 font-medium">Responsável RH:</strong> {invitation.contactName}
                 </span>
               </div>
-            )}
-            <div>
-              <span className="text-zinc-500 font-medium block">Responsável RH:</span>
-              <span className="text-zinc-900 font-medium flex items-center gap-1">
-                <UserCheck className="w-3.5 h-3.5 text-zinc-500" />
-                {invitation.contactName}
-              </span>
-            </div>
-            <div>
-              <span className="text-zinc-500 font-medium block">E-mail de Acesso:</span>
-              <span className="text-zinc-900 font-medium flex items-center gap-1 truncate">
-                <Mail className="w-3.5 h-3.5 text-zinc-500" />
-                {invitation.contactEmail}
-              </span>
+              <div className="flex items-center gap-2 text-zinc-600">
+                <Mail className="w-4 h-4 text-zinc-400 shrink-0" />
+                <span className="truncate">
+                  <strong className="text-zinc-800 font-medium">E-mail:</strong> {invitation.contactEmail}
+                </span>
+              </div>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* LGPD / DPA Legal Agreement Box */}
-            <div className="border border-amber-200 bg-amber-50/40 rounded-xl p-4 sm:p-5">
-              <div className="flex items-center gap-2 text-amber-900 font-semibold text-sm mb-2">
-                <ShieldCheck className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <div className="bg-white border border-zinc-200/80 rounded-xl p-4 sm:p-5 shadow-2xs">
+              <div className="flex items-center gap-2 text-zinc-900 font-semibold text-sm mb-3">
+                <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
                 <span>Termo de Compromisso e Confidencialidade LGPD (DPA)</span>
               </div>
 
-              <div className="text-xs text-zinc-700 space-y-2 max-h-40 overflow-y-auto pr-2 bg-white/70 p-3 rounded-lg border border-amber-200/60 leading-relaxed font-sans mb-3">
+              <div className="text-xs text-zinc-600 space-y-2.5 max-h-36 overflow-y-auto pr-3 bg-zinc-50/80 p-3.5 rounded-lg border border-zinc-200/60 leading-relaxed font-sans custom-scrollbar mb-3.5">
                 <p>
-                  <strong>1. Finalidade Estrita:</strong> A empresa conveniada declara que os dados pessoais e currículos disponibilizados na plataforma Brilha Mais serão utilizados única e exclusivamente para fins de processos de recrutamento e seleção de jovens alunos e aprendizes.
+                  <strong className="text-zinc-800">1. Finalidade Estrita:</strong> A empresa conveniada declara que os dados pessoais e currículos disponibilizados na plataforma Brilha Mais serão utilizados única e exclusivamente para fins de processos de recrutamento e seleção de jovens alunos e aprendizes.
                 </p>
                 <p>
-                  <strong>2. Sigilo e Confidencialidade:</strong> É expressamente vedado transferir, ceder, alugar, sublicenciar ou compartilhar dados pessoais com quaisquer terceiros alheios ao processo seletivo institucional.
+                  <strong className="text-zinc-800">2. Sigilo e Confidencialidade:</strong> É expressamente vedado transferir, ceder, alugar, sublicenciar ou compartilhar dados pessoais com quaisquer terceiros alheios ao processo seletivo institucional.
                 </p>
                 <p>
-                  <strong>3. Proteção aos Alunos e Menores:</strong> Em estrito cumprimento ao Estatuto da Criança e do Adolescente (ECA) e à LGPD (Lei nº 13.709/2018), os perfis de alunos menores de idade são submetidos a consentimento prévio dos responsáveis legais e curadoria pedagógica.
+                  <strong className="text-zinc-800">3. Proteção aos Alunos e Menores:</strong> Em estrito cumprimento ao Estatuto da Criança e do Adolescente (ECA) e à LGPD (Lei nº 13.709/2018), os perfis de alunos menores de idade são submetidos a consentimento prévio dos responsáveis legais e curadoria pedagógica.
                 </p>
                 <p>
-                  <strong>4. Rastreabilidade e Auditoria:</strong> A empresa está ciente de que toda visualização e download de currículo é nominalmente registrada em log de auditoria técnica para salvaguarda dos direitos dos titulares de dados.
+                  <strong className="text-zinc-800">4. Rastreabilidade e Auditoria:</strong> A empresa está ciente de que toda visualização e download de currículo é nominalmente registrada em log de auditoria técnica para salvaguarda dos direitos dos titulares de dados.
                 </p>
               </div>
 
-              <label className="flex items-start gap-3 cursor-pointer select-none">
+              <label className="flex items-start gap-3 cursor-pointer select-none group">
                 <input
                   type="checkbox"
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+                  className="mt-0.5 h-4 w-4 rounded-md border-zinc-300 text-amber-500 focus:ring-1 focus:ring-amber-500 cursor-pointer shrink-0 accent-amber-500"
                   required
                 />
-                <span className="text-xs font-medium text-zinc-800 leading-snug">
-                  Li, compreendi e concordo integralmente com os Termos de Compromisso, Confidencialidade e LGPD da Rede Brilha Mais em nome da empresa parceira.
+                <span className="text-xs font-medium text-zinc-700 group-hover:text-zinc-900 transition-colors leading-relaxed">
+                  Declaro que li e concordo integralmente com os <strong>Termos de Compromisso, Confidencialidade e LGPD</strong> em nome da empresa parceira.
                 </span>
               </label>
             </div>
 
             {/* Password Setup */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <h3 className="text-sm font-semibold text-zinc-900 flex items-center gap-2">
-                <Lock className="w-4 h-4 text-zinc-600" />
+                <Lock className="w-4 h-4 text-zinc-500" />
                 Definição de Senha de Acesso Corporativo
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">
+                  <label className="block text-xs font-medium text-zinc-700 mb-1.5">
                     Nova Senha
                   </label>
                   <div className="relative">
@@ -277,7 +286,7 @@ export default function CompanyActivationPage() {
                       placeholder="Mínimo 6 caracteres"
                       minLength={6}
                       required
-                      className="w-full h-11 px-3 pr-10 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                      className="w-full h-11 px-3.5 pr-10 rounded-xl border border-zinc-200/90 bg-white text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors shadow-2xs"
                     />
                     <button
                       type="button"
@@ -290,7 +299,7 @@ export default function CompanyActivationPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">
+                  <label className="block text-xs font-medium text-zinc-700 mb-1.5">
                     Confirmação de Senha
                   </label>
                   <input
@@ -300,18 +309,18 @@ export default function CompanyActivationPage() {
                     placeholder="Repita a senha"
                     minLength={6}
                     required
-                    className="w-full h-11 px-3 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                    className="w-full h-11 px-3.5 rounded-xl border border-zinc-200/90 bg-white text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors shadow-2xs"
                   />
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="pt-4 border-t border-zinc-100 flex items-center justify-end gap-3">
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={isSubmitting || !termsAccepted}
-                className="w-full sm:w-auto h-11 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-medium text-sm transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full h-11 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-medium text-sm transition-colors shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -331,7 +340,7 @@ export default function CompanyActivationPage() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full max-w-5xl mx-auto px-6 py-6 text-center text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <footer className="w-full max-w-2xl mx-auto px-4 py-6 text-center text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-3">
         <p>&copy; 2026 Instituto Brilha Mais. Proteção de Dados e Governança LGPD.</p>
         <div className="flex items-center gap-4">
           <Link to="/termos" className="hover:text-zinc-600 transition-colors">Termos de Uso</Link>
