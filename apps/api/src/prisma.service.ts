@@ -14,14 +14,31 @@ export class PrismaService
   private readonly logger = new Logger(PrismaService.name);
 
   async onModuleInit() {
-    // Conexão assíncrona para não bloquear a subida da API HTTP na porta 3000 caso o banco esteja hibernando
-    this.$connect()
-      .then(() => {
-        this.logger.log('📥 Database connected successfully');
-      })
-      .catch((error) => {
-        this.logger.error('❌ Failed to connect to database (verifique se o Supabase está ativo/hibernado):', error.message || error);
-      });
+    // Conexão assíncrona resiliente com retry automático para absorver instabilidades transitórias do pooler / cold start
+    this.connectWithRetry();
+  }
+
+  private async connectWithRetry(retries = 3, delayMs = 2500) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        await this.$connect();
+        await this.$queryRaw`SELECT 1`;
+        this.logger.log(`📥 Database connected successfully (attempt ${attempt}/${retries})`);
+        return;
+      } catch (error: any) {
+        if (attempt < retries) {
+          this.logger.warn(
+            `⚠️ Database connection attempt ${attempt}/${retries} failed (${error.message || error}). Retrying in ${delayMs / 1000}s...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        } else {
+          this.logger.error(
+            '❌ Failed to connect to database (verifique se o Supabase está ativo/hibernado):',
+            error.message || error,
+          );
+        }
+      }
+    }
   }
 
   async onModuleDestroy() {
