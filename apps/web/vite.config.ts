@@ -10,6 +10,9 @@ export default defineConfig({
         VitePWA({
             registerType: 'prompt',
             includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+            workbox: {
+                navigateFallbackDenylist: [/^\/repositorio/, /^\/api/],
+            },
             manifest: {
                 name: 'Brilha Mais - Portal de Aprendizagem',
                 short_name: 'Brilha Mais',

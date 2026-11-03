@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
@@ -30,6 +30,33 @@ import logo from "./assets/logo.png";
 // Clean Minimal Home Page
 function Home() {
     return <LandingPage />;
+}
+
+// Fallback for external redirected routes caught by stale service worker
+function RepositorioRedirect() {
+    useEffect(() => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then((registrations) => {
+                const unregisterPromises = registrations.map((r) => r.unregister());
+                Promise.all(unregisterPromises).finally(() => {
+                    window.location.reload();
+                });
+            }).catch(() => {
+                window.location.reload();
+            });
+        } else {
+            window.location.reload();
+        }
+    }, []);
+
+    return (
+        <div className="flex h-screen w-screen items-center justify-center bg-zinc-50">
+            <div className="flex flex-col items-center gap-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                <p className="text-sm font-medium text-zinc-600">Redirecionando para o repositório...</p>
+            </div>
+        </div>
+    );
 }
 
 function App() {
@@ -91,6 +118,12 @@ function App() {
                     <Route path="/resources" element={<ResourcesPage />} />
                     <Route path="/curriculo" element={<StudentResumePage />} />
                 </Route>
+
+                {/* Repositório fallback for stale service workers */}
+                <Route path="/repositorio/*" element={<RepositorioRedirect />} />
+
+                {/* Catch-all fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
     )
