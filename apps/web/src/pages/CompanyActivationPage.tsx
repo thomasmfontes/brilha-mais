@@ -2,18 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import {
   ShieldCheck,
-  Building2,
   Lock,
   CheckCircle2,
   AlertCircle,
   ArrowRight,
-  ArrowLeft,
   Eye,
   EyeOff,
-  FileText,
   UserCheck,
   Mail,
-  Phone,
   Check,
 } from "lucide-react";
 import api from "../utils/api";
@@ -160,23 +156,8 @@ export default function CompanyActivationPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF9] text-zinc-900 flex flex-col justify-between selection:bg-amber-100 selection:text-amber-900">
-      {/* Header aligned with content container */}
-      <header className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 flex items-center justify-between">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-200/80 bg-white text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-colors shadow-xs"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Voltar ao início</span>
-        </Link>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/80">
-          <Building2 className="w-3.5 h-3.5 text-amber-600" />
-          <span>Portal Corporativo</span>
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="flex-1 flex items-center justify-center px-4 py-4 sm:py-8">
+      {/* Main Container - Focused onboarding layout */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
         <div className="w-full max-w-2xl bg-white border border-zinc-200/80 rounded-2xl p-6 sm:p-9 shadow-sm">
           {/* Header with Centered Logo & Title */}
           <div className="flex flex-col items-center text-center mb-7 pb-6 border-b border-zinc-100">
@@ -355,7 +336,7 @@ export default function CompanyActivationPage() {
 
       {/* Footer */}
       <footer className="w-full max-w-2xl mx-auto px-4 py-6 text-center text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p>&copy; 2026 Instituto Brilha Mais. Proteção de Dados e Governança LGPD.</p>
+        <p>&copy; 2026 Instituto Brilha Mais. Todos os direitos reservados.</p>
         <div className="flex items-center gap-4">
           <Link to="/termos" className="hover:text-zinc-600 transition-colors">Termos de Uso</Link>
           <span>·</span>
