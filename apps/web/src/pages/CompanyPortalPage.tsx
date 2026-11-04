@@ -1483,14 +1483,12 @@ export default function CompanyPortalPage() {
                             <div
                               ref={provided.innerRef}
                               {...provided.droppableProps}
-                              className={`space-y-2.5 flex-1 min-h-[220px] rounded-lg transition-colors p-1 ${
-                                snapshot.isDraggingOver
-                                  ? "bg-amber-100/40 ring-2 ring-dashed ring-amber-400"
-                                  : ""
+                              className={`flex flex-col flex-1 min-h-[220px] rounded-lg transition-colors p-1 ${
+                                snapshot.isDraggingOver ? "bg-slate-200/40" : ""
                               }`}
                             >
-                              {filteredCandidates.length === 0 ? (
-                                <div className="h-28 rounded-lg border border-dashed border-slate-200 bg-white/40 flex flex-col items-center justify-center text-center p-3 text-slate-400 pointer-events-none">
+                              {filteredCandidates.length === 0 && !snapshot.isDraggingOver ? (
+                                <div className="h-28 rounded-lg border border-dashed border-slate-200 bg-white/40 flex flex-col items-center justify-center text-center p-3 text-slate-400 pointer-events-none mb-3">
                                   <Users className="w-5 h-5 text-slate-300 mb-1" />
                                   <p className="text-xs font-medium text-slate-500">Nenhum candidato</p>
                                   <p className="text-[10px] text-slate-400 mt-0.5">Arraste cards para esta etapa</p>
@@ -1521,10 +1519,10 @@ export default function CompanyPortalPage() {
                                             ...dragProvided.draggableProps.style,
                                           }}
                                           className={`
-                                            bg-white rounded-lg border p-3.5 space-y-2.5 select-none transition-shadow cursor-grab active:cursor-grabbing group
+                                            bg-white rounded-lg border p-3.5 space-y-2.5 select-none transition-shadow cursor-grab active:cursor-grabbing group mb-3
                                             ${
                                               dragSnapshot.isDragging
-                                                ? "border-amber-400 shadow-2xl ring-2 ring-amber-400/80 rotate-1 scale-[1.02] z-50 bg-white"
+                                                ? "shadow-2xl border border-slate-300 rotate-1 scale-[1.02] z-50 bg-white ring-1 ring-slate-900/10"
                                                 : "border-slate-200/90 shadow-2xs hover:shadow-md hover:border-slate-300"
                                             }
                                           `}
