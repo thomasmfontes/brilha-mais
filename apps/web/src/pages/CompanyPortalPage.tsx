@@ -53,8 +53,8 @@ function AdminStat({
   icon,
   label,
   value,
-  color = "text-amber-600",
-  bg = "bg-amber-50 border-amber-200/60",
+  color = "text-zinc-700",
+  bg = "bg-zinc-50 border-zinc-200/70",
   subtitle,
 }: {
   icon: React.ReactNode;
@@ -65,16 +65,16 @@ function AdminStat({
   subtitle?: string;
 }) {
   return (
-    <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 transition-colors shadow-2xs flex items-center justify-between">
+    <div className="p-4 sm:p-5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 transition-colors shadow-2xs flex items-center justify-between">
       <div className="space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
           {label}
         </p>
-        <p className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 leading-tight">
+        <p className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 leading-tight">
           {value}
         </p>
         {subtitle && (
-          <p className="text-[11px] text-slate-400 font-medium">{subtitle}</p>
+          <p className="text-[11px] text-zinc-500 font-medium">{subtitle}</p>
         )}
       </div>
       <div
@@ -405,12 +405,12 @@ export default function CompanyPortalPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/empresa" className="flex items-center gap-3 focus:outline-none">
-              <img src={logo} alt="Brilha Mais" className="h-9 w-auto object-contain" />
+              <img src={logo} alt="Brilha Mais" className="h-8 sm:h-9 w-auto object-contain" />
               <div className="hidden sm:block border-l border-zinc-200 pl-3">
-                <span className="text-xs font-bold text-amber-600 tracking-wide uppercase block">
+                <span className="text-[10px] font-bold text-amber-700 tracking-wider uppercase bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">
                   Portal Corporativo
                 </span>
-                <span className="text-sm font-semibold text-zinc-900 leading-none">
+                <span className="text-sm font-semibold text-zinc-900 leading-snug block mt-0.5">
                   {companyProfile?.name || "Empresa Conveniada"}
                 </span>
               </div>
@@ -419,14 +419,16 @@ export default function CompanyPortalPage() {
 
           <div className="flex items-center gap-3">
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-50 border border-zinc-200/80 text-xs">
-              <Building2 className="w-3.5 h-3.5 text-amber-600" />
-              <span className="text-zinc-600">RH:</span>
-              <strong className="text-zinc-900">{companyProfile?.contactName}</strong>
+              <div className="w-5 h-5 rounded-md bg-zinc-200/80 text-zinc-700 flex items-center justify-center text-[10px] font-bold">
+                RH
+              </div>
+              <span className="text-zinc-500 font-normal">Contato:</span>
+              <strong className="text-zinc-800 font-semibold">{companyProfile?.contactName || "Gestor de RH"}</strong>
             </div>
 
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-600 hover:text-red-600 hover:bg-red-50 border border-zinc-200/80 hover:border-red-200 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium text-zinc-600 hover:text-red-600 hover:bg-red-50 border border-zinc-200/80 hover:border-red-200 transition-colors cursor-pointer"
               title="Encerrar sessão corporativa"
             >
               <LogOut className="w-3.5 h-3.5" />
@@ -436,24 +438,24 @@ export default function CompanyPortalPage() {
         </div>
 
         {/* Navigation Tabs Bar */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4 border-t border-slate-100">
-          <div className="inline-flex p-1 bg-slate-100/90 rounded-xl border border-slate-200/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4 border-t border-zinc-100">
+          <div className="inline-flex p-1 bg-zinc-100/90 rounded-xl border border-zinc-200/70">
             <button
               type="button"
               onClick={() => setActiveTab("catalog")}
               className={`px-3.5 py-1.5 rounded-lg text-xs transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === "catalog"
-                  ? "bg-white text-slate-900 font-semibold shadow-2xs"
-                  : "text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50"
+                  ? "bg-white text-zinc-900 font-semibold shadow-2xs"
+                  : "text-zinc-600 hover:text-zinc-900 font-medium hover:bg-zinc-200/50"
               }`}
             >
               <Users className="w-3.5 h-3.5" />
               <span>Banco de Talentos</span>
               <span
-                className={`px-1.5 py-0.2 rounded-md text-[10px] font-bold ${
+                className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
                   activeTab === "catalog"
-                    ? "bg-amber-100 text-amber-800"
-                    : "bg-slate-200/70 text-slate-600"
+                    ? "bg-amber-100 text-amber-900"
+                    : "bg-zinc-200/70 text-zinc-600"
                 }`}
               >
                 {talents.length}
@@ -465,14 +467,14 @@ export default function CompanyPortalPage() {
               onClick={() => setActiveTab("pipeline")}
               className={`px-3.5 py-1.5 rounded-lg text-xs transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === "pipeline"
-                  ? "bg-white text-slate-900 font-semibold shadow-2xs"
-                  : "text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-200/50"
+                  ? "bg-white text-zinc-900 font-semibold shadow-2xs"
+                  : "text-zinc-600 hover:text-zinc-900 font-medium hover:bg-zinc-200/50"
               }`}
             >
               <Briefcase className="w-3.5 h-3.5" />
-              <span>Nossos Processos (Funil)</span>
+              <span>Nossos Processos</span>
               {pipelineData?.counts?.total > 0 && (
-                <span className="px-1.5 py-0.2 rounded-md bg-amber-500 text-white text-[10px] font-bold">
+                <span className="px-1.5 py-0.5 rounded-md bg-zinc-900 text-white text-[10px] font-bold">
                   {pipelineData.counts.total}
                 </span>
               )}
@@ -485,48 +487,50 @@ export default function CompanyPortalPage() {
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
         {activeTab === "catalog" ? (
           <div className="space-y-6">
-            {/* Banner / Intro */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-7 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            {/* Executive Page Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200/60">
               <div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 mb-3">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Alunos Aptos e Auditados LGPD</span>
+                <div className="flex items-center gap-2.5">
+                  <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">
+                    Banco de Talentos
+                  </h1>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    Auditado LGPD
+                  </span>
                 </div>
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                  Encontre os melhores jovens talentos para sua empresa
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-500 mt-1.5 max-w-2xl leading-relaxed">
-                  Todos os alunos abaixo autorizaram formalmente o compartilhamento de currículo para oportunidades de Jovem Aprendiz, Estágio e Primeiro Emprego.
+                <p className="text-xs sm:text-sm text-zinc-500 mt-1 max-w-2xl leading-relaxed">
+                  Alunos capacitados e certificados pelo Instituto Brilha Mais com autorização formal para recrutamento corporativo.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/80 px-4 py-3 rounded-xl shrink-0">
-                <div className="w-10 h-10 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600">
-                  <Users className="w-5 h-5" />
+              <div className="inline-flex items-center gap-2.5 self-start sm:self-auto px-3.5 py-2 rounded-xl bg-white border border-zinc-200/80 shadow-2xs">
+                <div className="w-7 h-7 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-700">
+                  <Users className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 block leading-tight">
                     Disponíveis
                   </span>
-                  <span className="text-xl font-bold text-slate-900 leading-tight">
-                    {talents.length}
+                  <span className="text-sm font-bold text-zinc-900 leading-tight">
+                    {talents.length} {talents.length === 1 ? "candidato" : "candidatos"}
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs space-y-3">
+            <div className="bg-white border border-zinc-200/80 rounded-2xl p-3.5 shadow-2xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {/* Search */}
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Buscar por nome, cargo, cidade..."
-                    className="w-full h-9 pl-9 pr-3 rounded-lg border border-slate-200/80 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                    className="w-full h-9 pl-9 pr-3 rounded-lg border border-zinc-200/80 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors"
                   />
                 </div>
 
@@ -568,7 +572,7 @@ export default function CompanyPortalPage() {
                       setSelectedAvailability("");
                       setSelectedCity("");
                     }}
-                    className="h-9 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-medium text-slate-600 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="h-9 px-3 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-xs font-medium text-zinc-600 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                     <span>Limpar Filtros</span>
@@ -579,12 +583,12 @@ export default function CompanyPortalPage() {
 
             {/* Talent Grid */}
             {filteredTalents.length === 0 ? (
-              <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-2xs">
-                <Users className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                <h3 className="text-sm font-semibold text-slate-900">
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-12 text-center shadow-2xs">
+                <Users className="w-10 h-10 text-zinc-300 mx-auto mb-3" />
+                <h3 className="text-sm font-semibold text-zinc-900">
                   Nenhum aluno encontrado com esses filtros
                 </h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
                   Tente ajustar a busca por nome ou limpar os filtros de área e turno.
                 </p>
               </div>
@@ -603,28 +607,28 @@ export default function CompanyPortalPage() {
                   return (
                     <div
                       key={talent.id}
-                      className="bg-white border border-slate-200/80 hover:border-amber-300 rounded-2xl p-5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group"
+                      className="bg-white border border-zinc-200/80 hover:border-zinc-300 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between group"
                     >
                       <div>
-                        {/* Header: Avatar, Name & Stage Badge */}
+                        {/* Header: Circular Avatar, Name & Stage Badge */}
                         <div className="flex items-start justify-between gap-3 mb-3">
                           <div className="flex items-center gap-3 min-w-0">
                             {talent.user.avatarUrl ? (
                               <img
                                 src={talent.user.avatarUrl}
                                 alt={talent.user.name}
-                                className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-2xs flex-shrink-0"
+                                className="w-12 h-12 rounded-full object-cover border border-zinc-200 shadow-2xs shrink-0"
                               />
                             ) : (
-                              <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-800 font-bold text-base flex items-center justify-center border border-amber-200 shadow-2xs flex-shrink-0">
+                              <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-800 font-bold text-base flex items-center justify-center border border-amber-200/80 shadow-2xs shrink-0">
                                 {talent.user.name?.charAt(0) || "A"}
                               </div>
                             )}
                             <div className="min-w-0">
-                              <h3 className="text-sm font-bold text-slate-900 truncate group-hover:text-amber-700 transition-colors">
+                              <h3 className="text-sm font-bold text-zinc-900 truncate group-hover:text-amber-700 transition-colors">
                                 {talent.user.name}
                               </h3>
-                              <p className="text-xs font-medium text-slate-600 truncate mt-0.5">
+                              <p className="text-xs font-medium text-zinc-500 truncate mt-0.5">
                                 {talent.headline || "Jovem Aprendiz / Aluno"}
                               </p>
                             </div>
@@ -633,14 +637,14 @@ export default function CompanyPortalPage() {
                           {/* Stage Pill */}
                           {talent.currentStage && (
                             <span
-                              className={`px-2.5 py-0.5 rounded-md text-[10px] font-semibold border flex-shrink-0 whitespace-nowrap ${
+                              className={`px-2.5 py-0.5 rounded-md text-[10px] font-semibold border shrink-0 whitespace-nowrap ${
                                 talent.currentStage === "HIRED"
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                   : talent.currentStage === "INTERVIEW"
                                     ? "bg-amber-50 text-amber-800 border-amber-200"
                                     : talent.currentStage === "SAVED"
                                       ? "bg-blue-50 text-blue-700 border-blue-200"
-                                      : "bg-slate-100 text-slate-600 border-slate-200"
+                                      : "bg-zinc-100 text-zinc-600 border-zinc-200"
                               }`}
                             >
                               {talent.currentStage === "HIRED"
@@ -655,17 +659,17 @@ export default function CompanyPortalPage() {
                         </div>
 
                         {/* Location & Turno */}
-                        <div className="flex items-center gap-3 text-xs text-slate-500 mb-3 flex-wrap">
+                        <div className="flex items-center gap-3 text-xs text-zinc-500 mb-3 flex-wrap">
                           {talent.city && (
                             <span className="flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                              <MapPin className="w-3.5 h-3.5 text-zinc-400" />
                               {talent.city}
                               {talent.state ? `/${talent.state}` : ""}
                             </span>
                           )}
                           {talent.availability && (
                             <span className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-slate-400" />
+                              <Clock className="w-3.5 h-3.5 text-zinc-400" />
                               {formatAvailability(talent.availability)}
                             </span>
                           )}
@@ -673,7 +677,7 @@ export default function CompanyPortalPage() {
 
                         {/* Bio snippet */}
                         {talent.bio && (
-                          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
+                          <p className="text-xs text-zinc-600 line-clamp-2 leading-relaxed mb-3">
                             {talent.bio}
                           </p>
                         )}
@@ -685,13 +689,13 @@ export default function CompanyPortalPage() {
                               {talent.areasOfInterest.slice(0, 3).map((area, idx) => (
                                 <span
                                   key={idx}
-                                  className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200/80"
+                                  className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-zinc-50 text-zinc-600 border border-zinc-200/80"
                                 >
                                   {area}
                                 </span>
                               ))}
                               {talent.areasOfInterest.length > 3 && (
-                                <span className="px-1.5 py-0.5 rounded-md text-[10px] text-slate-400">
+                                <span className="px-1.5 py-0.5 rounded-md text-[10px] text-zinc-400">
                                   +{talent.areasOfInterest.length - 3}
                                 </span>
                               )}
@@ -700,12 +704,12 @@ export default function CompanyPortalPage() {
                       </div>
 
                       {/* Card Actions */}
-                      <div className="pt-3 border-t border-slate-100 space-y-2">
+                      <div className="pt-3 border-t border-zinc-100 space-y-2">
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => setSelectedTalent(talent)}
-                            className="flex-1 h-9 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-medium text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                            className="flex-1 h-9 px-3.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white font-medium text-xs shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                           >
                             <span>Ver Perfil Completo</span>
                           </button>
@@ -714,7 +718,7 @@ export default function CompanyPortalPage() {
                             <button
                               type="button"
                               onClick={() => handleDownloadResume(talent)}
-                              className="h-9 px-2.5 rounded-xl border border-slate-200/80 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 text-slate-600 transition-colors flex items-center justify-center cursor-pointer"
+                              className="h-9 px-2.5 rounded-xl border border-zinc-200/80 hover:bg-zinc-100 hover:border-zinc-300 text-zinc-700 transition-colors flex items-center justify-center cursor-pointer"
                               title="Baixar Currículo PDF"
                             >
                               <Download className="w-4 h-4" />
@@ -726,7 +730,7 @@ export default function CompanyPortalPage() {
                               href={whatsappUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="h-9 px-2.5 rounded-xl border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-700 transition-colors flex items-center justify-center cursor-pointer"
+                              className="h-9 px-2.5 rounded-xl border border-emerald-200/80 bg-emerald-50/60 hover:bg-emerald-100/80 text-emerald-700 transition-colors flex items-center justify-center cursor-pointer"
                               title="Contato via WhatsApp"
                             >
                               <MessageCircle className="w-4 h-4" />
@@ -741,12 +745,12 @@ export default function CompanyPortalPage() {
                               type="button"
                               onClick={() => handleQuickMove(talent.id, "SAVED")}
                               disabled={movingTalent?.id === talent.id}
-                              className="flex-1 h-7.5 px-2 rounded-lg border border-slate-200/80 bg-slate-50/70 hover:bg-blue-50 hover:border-blue-200 text-[11px] font-medium text-slate-600 hover:text-blue-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                              className="flex-1 h-7.5 px-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 hover:bg-zinc-100 text-[11px] font-medium text-zinc-600 hover:text-zinc-900 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
                               {movingTalent?.id === talent.id && movingTalent.stage === "SAVED" ? (
                                 <LoadingSpinner size="xs" variant="current" />
                               ) : (
-                                <Bookmark className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                                <Bookmark className="w-3 h-3 text-zinc-400 group-hover:text-blue-600" />
                               )}
                               <span>Salvar no Radar</span>
                             </button>
@@ -754,12 +758,12 @@ export default function CompanyPortalPage() {
                               type="button"
                               onClick={() => handleQuickMove(talent.id, "INTERVIEW")}
                               disabled={movingTalent?.id === talent.id}
-                              className="flex-1 h-7.5 px-2 rounded-lg border border-slate-200/80 bg-slate-50/70 hover:bg-amber-50 hover:border-amber-200 text-[11px] font-medium text-slate-600 hover:text-amber-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                              className="flex-1 h-7.5 px-2 rounded-lg border border-zinc-200/80 bg-zinc-50/70 hover:bg-amber-50 hover:border-amber-200 text-[11px] font-medium text-zinc-600 hover:text-amber-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
                               {movingTalent?.id === talent.id && movingTalent.stage === "INTERVIEW" ? (
                                 <LoadingSpinner size="xs" variant="current" />
                               ) : (
-                                <Users className="w-3 h-3 text-slate-400 group-hover:text-amber-600" />
+                                <Users className="w-3 h-3 text-zinc-400 group-hover:text-amber-600" />
                               )}
                               <span>Chamar p/ Entrevista</span>
                             </button>
@@ -781,8 +785,8 @@ export default function CompanyPortalPage() {
                 icon={<Bookmark className="w-5 h-5" />}
                 label="Salvos no Radar"
                 value={pipelineData?.counts?.saved || 0}
-                color="text-blue-600"
-                bg="bg-blue-50 border-blue-200/60"
+                color="text-zinc-800"
+                bg="bg-zinc-100 border-zinc-200/80"
                 subtitle="Candidatos sob análise"
               />
 
@@ -790,8 +794,8 @@ export default function CompanyPortalPage() {
                 icon={<Users className="w-5 h-5" />}
                 label="Em Entrevista"
                 value={pipelineData?.counts?.interview || 0}
-                color="text-amber-600"
-                bg="bg-amber-50 border-amber-200/60"
+                color="text-amber-800"
+                bg="bg-amber-50 border-amber-200/80"
                 subtitle="Contato agendado"
               />
 
@@ -799,8 +803,8 @@ export default function CompanyPortalPage() {
                 icon={<Award className="w-5 h-5" />}
                 label="Contratados"
                 value={pipelineData?.counts?.hired || 0}
-                color="text-emerald-600"
-                bg="bg-emerald-50 border-emerald-200/60"
+                color="text-emerald-800"
+                bg="bg-emerald-50 border-emerald-200/80"
                 subtitle="Efetivações celebradas"
               />
 
@@ -808,14 +812,14 @@ export default function CompanyPortalPage() {
                 icon={<Archive className="w-5 h-5" />}
                 label="Arquivados"
                 value={pipelineData?.counts?.archived || 0}
-                color="text-slate-500"
-                bg="bg-slate-100 border-slate-200/80"
+                color="text-zinc-600"
+                bg="bg-zinc-100 border-zinc-200/80"
                 subtitle="Banco de reserva"
               />
             </div>
 
             {/* Funnel Stage Filter Bar */}
-            <div className="inline-flex p-1 bg-slate-100/90 rounded-xl border border-slate-200/60 overflow-x-auto max-w-full">
+            <div className="inline-flex p-1 bg-zinc-100/90 rounded-xl border border-zinc-200/70 overflow-x-auto max-w-full">
               {[
                 { key: "ALL", label: `Todos (${pipelineData?.counts?.total || 0})` },
                 {
@@ -841,8 +845,8 @@ export default function CompanyPortalPage() {
                   onClick={() => setPipelineFilter(item.key as any)}
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
                     pipelineFilter === item.key
-                      ? "bg-white text-slate-900 font-semibold shadow-2xs"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                      ? "bg-white text-zinc-900 font-semibold shadow-2xs"
+                      : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/50"
                   }`}
                 >
                   {item.label}
@@ -852,18 +856,18 @@ export default function CompanyPortalPage() {
 
             {/* Pipeline Candidate List */}
             {pipelineCandidates.length === 0 ? (
-              <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-2xs">
-                <Briefcase className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                <h3 className="text-sm font-semibold text-slate-900">
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-12 text-center shadow-2xs">
+                <Briefcase className="w-10 h-10 text-zinc-300 mx-auto mb-3" />
+                <h3 className="text-sm font-semibold text-zinc-900">
                   Nenhum candidato nesta etapa
                 </h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
                   Navegue pelo Banco de Talentos para salvar alunos no radar ou agendar entrevistas.
                 </p>
                 <button
                   type="button"
                   onClick={() => setActiveTab("catalog")}
-                  className="mt-4 h-9 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-medium text-xs shadow-xs transition-all cursor-pointer inline-flex items-center gap-2"
+                  className="mt-4 h-9 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white font-medium text-xs shadow-2xs transition-all cursor-pointer inline-flex items-center gap-2"
                 >
                   <Users className="w-3.5 h-3.5" />
                   <span>Explorar Banco de Talentos</span>
@@ -885,7 +889,7 @@ export default function CompanyPortalPage() {
                   return (
                     <div
                       key={item.interactionId}
-                      className="bg-white border border-slate-200/80 hover:border-slate-300 rounded-2xl p-5 shadow-2xs transition-all flex flex-col justify-between"
+                      className="bg-white border border-zinc-200/80 hover:border-zinc-300 rounded-2xl p-5 shadow-2xs transition-all flex flex-col justify-between"
                     >
                       <div>
                         {/* Top: Header */}
@@ -895,32 +899,32 @@ export default function CompanyPortalPage() {
                               <img
                                 src={talent.user.avatarUrl}
                                 alt={talent.user.name}
-                                className="w-11 h-11 rounded-xl object-cover border border-slate-200 shadow-2xs flex-shrink-0"
+                                className="w-11 h-11 rounded-full object-cover border border-zinc-200 shadow-2xs shrink-0"
                               />
                             ) : (
-                              <div className="w-11 h-11 rounded-xl bg-amber-100 text-amber-800 font-bold text-sm flex items-center justify-center border border-amber-200 shadow-2xs flex-shrink-0">
+                              <div className="w-11 h-11 rounded-full bg-amber-50 text-amber-800 font-bold text-sm flex items-center justify-center border border-amber-200/80 shadow-2xs shrink-0">
                                 {talent.user.name?.charAt(0) || "A"}
                               </div>
                             )}
                             <div className="min-w-0">
-                              <h4 className="text-sm font-bold text-slate-900 truncate">
+                              <h4 className="text-sm font-bold text-zinc-900 truncate">
                                 {talent.user.name}
                               </h4>
-                              <p className="text-xs text-slate-500 truncate">
+                              <p className="text-xs text-zinc-500 truncate">
                                 {talent.headline || "Jovem Aprendiz"}
                               </p>
                             </div>
                           </div>
 
                           <span
-                            className={`px-2.5 py-0.5 rounded-md text-[10px] font-semibold border flex-shrink-0 whitespace-nowrap ${
+                            className={`px-2.5 py-0.5 rounded-md text-[10px] font-semibold border shrink-0 whitespace-nowrap ${
                               item.stage === "HIRED"
                                 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                 : item.stage === "INTERVIEW"
                                   ? "bg-amber-50 text-amber-800 border-amber-200"
                                   : item.stage === "SAVED"
                                     ? "bg-blue-50 text-blue-700 border-blue-200"
-                                    : "bg-slate-100 text-slate-600 border-slate-200"
+                                    : "bg-zinc-100 text-zinc-600 border-zinc-200"
                             }`}
                           >
                             {item.stage === "HIRED"
@@ -936,7 +940,7 @@ export default function CompanyPortalPage() {
                         {/* Hired role badge */}
                         {item.stage === "HIRED" && item.hiredRole && (
                           <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-2.5 mb-3 text-xs text-emerald-900 flex items-center gap-2">
-                            <Award className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                            <Award className="w-4 h-4 text-emerald-600 shrink-0" />
                             <span>
                               Cargo: <strong>{item.hiredRole}</strong>
                             </span>
@@ -945,24 +949,24 @@ export default function CompanyPortalPage() {
 
                         {/* Recruiter Notes */}
                         {item.notes ? (
-                          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/70 text-xs text-slate-700 mb-3 leading-relaxed">
-                            <span className="font-semibold text-slate-500 block mb-0.5 text-[11px] uppercase tracking-wider">
+                          <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-200/70 text-xs text-zinc-700 mb-3 leading-relaxed">
+                            <span className="font-semibold text-zinc-500 block mb-0.5 text-[11px] uppercase tracking-wider">
                               Anotação Interna:
                             </span>
                             {item.notes}
                           </div>
                         ) : null}
 
-                        <div className="flex items-center gap-3 text-xs text-slate-500 mb-3 flex-wrap">
+                        <div className="flex items-center gap-3 text-xs text-zinc-500 mb-3 flex-wrap">
                           {talent.city && (
                             <span className="flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                              <MapPin className="w-3.5 h-3.5 text-zinc-400" />
                               {talent.city}
                             </span>
                           )}
                           {talent.availability && (
                             <span className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-slate-400" />
+                              <Clock className="w-3.5 h-3.5 text-zinc-400" />
                               {formatAvailability(talent.availability)}
                             </span>
                           )}
@@ -970,7 +974,7 @@ export default function CompanyPortalPage() {
                       </div>
 
                       {/* Actions */}
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                      <div className="pt-3 border-t border-zinc-100 flex items-center justify-between gap-2">
                         <button
                           type="button"
                           onClick={() => {
@@ -987,7 +991,7 @@ export default function CompanyPortalPage() {
                               });
                             }
                           }}
-                          className="flex-1 h-9 px-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-medium text-xs shadow-xs transition-all flex items-center justify-center cursor-pointer"
+                          className="flex-1 h-9 px-3.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:scale-[0.98] text-white font-medium text-xs shadow-2xs transition-all flex items-center justify-center cursor-pointer"
                         >
                           Gerenciar Candidato
                         </button>
@@ -996,7 +1000,7 @@ export default function CompanyPortalPage() {
                           <button
                             type="button"
                             onClick={() => handleDownloadResume(talent)}
-                            className="h-9 px-2.5 rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer"
+                            className="h-9 px-2.5 rounded-xl border border-zinc-200/80 hover:bg-zinc-100 text-zinc-700 transition-colors flex items-center justify-center cursor-pointer"
                             title="Baixar Currículo"
                           >
                             <Download className="w-4 h-4" />
@@ -1008,7 +1012,7 @@ export default function CompanyPortalPage() {
                             href={whatsappUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="h-9 px-2.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer"
+                            className="h-9 px-2.5 rounded-xl border border-emerald-200/80 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer"
                             title="Conversar no WhatsApp"
                           >
                             <MessageCircle className="w-4 h-4" />
@@ -1023,6 +1027,24 @@ export default function CompanyPortalPage() {
           </div>
         )}
       </main>
+
+      {/* Institutional Corporate Footer */}
+      <footer className="w-full border-t border-zinc-200/70 bg-white/70 backdrop-blur-xs mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500">
+          <div>
+            &copy; 2026 Brilha Mais. Todos os direitos reservados.
+          </div>
+          <div className="flex items-center gap-4 text-zinc-500">
+            <span className="hover:text-zinc-700 transition-colors cursor-pointer">
+              Termos de Uso
+            </span>
+            <span>&middot;</span>
+            <span className="hover:text-zinc-700 transition-colors cursor-pointer">
+              Privacidade
+            </span>
+          </div>
+        </div>
+      </footer>
 
       {/* Talent Full Details Modal */}
       {selectedTalent && (
