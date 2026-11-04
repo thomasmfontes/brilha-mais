@@ -320,13 +320,15 @@ export default function LoginPage() {
                 </div>
             </main>
 
-            {/* Clean, Muted Footer */}
-            <footer className="w-full max-w-5xl mx-auto px-6 py-6 text-center text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <p>&copy; 2026 Brilha Mais. Todos os direitos reservados.</p>
-                <div className="flex items-center gap-4">
-                    <Link to="/termos" className="hover:text-zinc-600 transition-colors">Termos de Uso</Link>
-                    <span>·</span>
-                    <Link to="/privacidade" className="hover:text-zinc-600 transition-colors">Privacidade</Link>
+            {/* Professional Anchored Footer Bar */}
+            <footer className="w-full border-t border-zinc-200/70 bg-white/70 backdrop-blur-xs mt-auto">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400">
+                    <p>&copy; 2026 Brilha Mais. Todos os direitos reservados.</p>
+                    <div className="flex items-center gap-4">
+                        <Link to="/termos" className="hover:text-zinc-600 transition-colors">Termos de Uso</Link>
+                        <span>·</span>
+                        <Link to="/privacidade" className="hover:text-zinc-600 transition-colors">Privacidade</Link>
+                    </div>
                 </div>
             </footer>
         </div>
