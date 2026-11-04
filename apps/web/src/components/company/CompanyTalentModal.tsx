@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   X,
   Mail,
@@ -16,8 +16,10 @@ import {
   ShieldCheck,
   GraduationCap,
   StickyNote,
-  Flag,
+  ChevronDown,
   FileText,
+  Briefcase,
+  Archive,
 } from "lucide-react";
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
@@ -106,29 +108,33 @@ const CLICKUP_STAGES = [
     key: "SAVED",
     label: "TRIAGEM / RADAR",
     icon: Bookmark,
-    pillClass: "bg-sky-500 text-white hover:bg-sky-600",
-    activeClass: "bg-sky-500 text-white shadow-xs ring-2 ring-sky-300",
+    bg: "bg-sky-500",
+    dot: "bg-sky-400",
+    text: "text-white",
   },
   {
     key: "INTERVIEW",
     label: "EM ENTREVISTA",
     icon: Clock,
-    pillClass: "bg-amber-500 text-white hover:bg-amber-600",
-    activeClass: "bg-amber-500 text-white shadow-xs ring-2 ring-amber-300",
+    bg: "bg-amber-500",
+    dot: "bg-amber-400",
+    text: "text-white",
   },
   {
     key: "HIRED",
     label: "CONTRATADO",
     icon: CheckCircle2,
-    pillClass: "bg-emerald-600 text-white hover:bg-emerald-700",
-    activeClass: "bg-emerald-600 text-white shadow-xs ring-2 ring-emerald-300",
+    bg: "bg-emerald-600",
+    dot: "bg-emerald-400",
+    text: "text-white",
   },
   {
     key: "ARCHIVED",
     label: "BANCO DE RESERVA",
-    icon: Bookmark,
-    pillClass: "bg-slate-600 text-white hover:bg-slate-700",
-    activeClass: "bg-slate-600 text-white shadow-xs ring-2 ring-slate-400",
+    icon: Archive,
+    bg: "bg-slate-600",
+    dot: "bg-slate-400",
+    text: "text-white",
   },
 ] as const;
 
@@ -137,13 +143,30 @@ export default function CompanyTalentModal({
   onClose,
   onStageChange,
 }: CompanyTalentModalProps) {
-  const [stage, setStage] = useState<string | null>(talent.currentStage || null);
+  const [stage, setStage] = useState<string>(talent.currentStage || "SAVED");
   const [pendingStage, setPendingStage] = useState<string | null>(null);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [notes, setNotes] = useState<string>(talent.interactionNotes || "");
   const [hiredRole, setHiredRole] = useState<string>(talent.hiredRole || "");
   const [showHiredDialog, setShowHiredDialog] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close status dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        statusDropdownRef.current &&
+        !statusDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsStatusOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const cleanPhone = talent.phone ? talent.phone.replace(/\D/g, "") : "";
   const whatsappUrl = cleanPhone
@@ -152,7 +175,11 @@ export default function CompanyTalentModal({
       )}!%20Vi%20seu%20perfil%20no%20Banco%20de%20Talentos%20do%20Brilha%20Mais.`
     : null;
 
+  const currentStageConfig =
+    CLICKUP_STAGES.find((s) => s.key === stage) || CLICKUP_STAGES[0];
+
   const handleStageSelect = async (newStage: string) => {
+    setIsStatusOpen(false);
     if (newStage === stage) return;
 
     if (newStage === "HIRED") {
@@ -176,7 +203,7 @@ export default function CompanyTalentModal({
       );
     } catch (err: any) {
       setStage(previousStage);
-      onStageChange(talent.id, previousStage || "", notes);
+      onStageChange(talent.id, previousStage, notes);
       toast.error(
         err.response?.data?.message || "Erro ao atualizar etapa do candidato.",
       );
@@ -206,7 +233,7 @@ export default function CompanyTalentModal({
       toast.success("Parabéns pela contratação! Evento registrado com sucesso.");
     } catch (err: any) {
       setStage(previousStage);
-      onStageChange(talent.id, previousStage || "", notes);
+      onStageChange(talent.id, previousStage, notes);
       toast.error(
         err.response?.data?.message || "Erro ao confirmar contratação.",
       );
@@ -223,7 +250,7 @@ export default function CompanyTalentModal({
         notes,
         hiredRole: stage === "HIRED" ? hiredRole : undefined,
       });
-      onStageChange(talent.id, stage || "", notes, hiredRole);
+      onStageChange(talent.id, stage, notes, hiredRole);
       toast.success("Anotações salvas com sucesso.");
     } catch (err: any) {
       toast.error("Erro ao salvar anotações.");
@@ -257,192 +284,68 @@ export default function CompanyTalentModal({
       : "Turma Geral Institucional";
 
   return (
-    <PortalModal isOpen={true} onClose={onClose} className="relative z-[100000] w-full max-w-2xl">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] text-left">
-        {/* ClickUp-Style Header */}
-        <div className="p-5 sm:p-6 pb-4 border-b border-slate-100 bg-white">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
-              {talent.user?.avatarUrl ? (
-                <img
-                  src={talent.user.avatarUrl}
-                  alt={talent.user.name}
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-slate-200 shrink-0 shadow-2xs"
-                />
-              ) : (
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-100 text-slate-700 font-bold text-lg sm:text-xl flex items-center justify-center border border-slate-200 shrink-0 shadow-2xs">
-                  {talent.user?.name ? talent.user.name.charAt(0).toUpperCase() : "A"}
-                </div>
-              )}
-
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-snug truncate">
-                    {talent.user?.name || "Aluno"}
-                  </h3>
-
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Disponível
-                  </span>
-                </div>
-
-                {talent.headline && (
-                  <p
-                    className="text-xs sm:text-sm font-medium text-slate-600 leading-snug line-clamp-2 mt-0.5"
-                    title={talent.headline}
-                  >
-                    {talent.headline}
-                  </p>
-                )}
-
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400 pt-1">
-                  {talent.user?.email && (
-                    <span className="text-slate-500 font-normal">{talent.user.email}</span>
-                  )}
-                  {talent.phone && (
-                    <>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-slate-500">{formatPhoneDisplay(talent.phone)}</span>
-                    </>
-                  )}
-                  {talent.city && (
-                    <>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-slate-500">
-                        {talent.city}
-                        {talent.state ? `/${talent.state}` : ""}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
-              title="Fechar"
-            >
-              <X className="w-5 h-5" />
-            </button>
+    <PortalModal isOpen={true} onClose={onClose} className="relative z-[100000] w-full max-w-4xl">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] text-left">
+        {/* ClickUp Task Top Bar */}
+        <div className="px-6 py-3.5 border-b border-slate-100 flex items-center justify-between bg-white">
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <span className="font-semibold text-slate-600">Portal Corporativo</span>
+            <span>/</span>
+            <span>Funil de Contratação</span>
+            <span>/</span>
+            <span className="text-slate-900 font-medium truncate max-w-[180px]">
+              {talent.user?.name || "Candidato"}
+            </span>
           </div>
 
-          {/* Quick Contact & CV Actions */}
-          <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100 flex-wrap">
-            {talent.resumeUrl ? (
-              <button
-                type="button"
-                onClick={handleDownloadResume}
-                disabled={isDownloading}
-                className="h-8 px-3.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-              >
-                {isDownloading ? (
-                  <LoadingSpinner size="sm" variant="white" />
-                ) : (
-                  <Download className="w-3.5 h-3.5" />
-                )}
-                <span>Baixar Currículo PDF</span>
-              </button>
-            ) : (
-              <span className="h-8 px-3 rounded-lg text-xs font-medium text-slate-400 bg-slate-50 border border-slate-200 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-slate-300" />
-                <span>Sem currículo anexado</span>
-              </span>
-            )}
-
-            {whatsappUrl && (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="h-8 px-3 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <Phone className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Conversar no WhatsApp</span>
-              </a>
-            )}
-
+          <div className="flex items-center gap-2">
             {talent.linkedinUrl && (
               <a
                 href={talent.linkedinUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="h-8 px-3 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="h-7 px-2.5 rounded-md border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 text-slate-600 hover:text-blue-700 text-xs font-medium flex items-center gap-1.5 transition-colors"
+                title="Abrir perfil no LinkedIn"
               >
-                <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
-                <span>Perfil LinkedIn</span>
+                <ExternalLink className="w-3 h-3 text-blue-600" />
+                <span className="hidden sm:inline">LinkedIn</span>
               </a>
             )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Fechar (Esc)"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
-        {/* ClickUp-Style Status Bar */}
-        <div className="px-5 py-3.5 bg-slate-50/80 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Status no Processo:
-            </span>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {CLICKUP_STAGES.map((s) => {
-                const isSelected = stage === s.key;
-                const isPending = pendingStage === s.key;
-                return (
-                  <button
-                    key={s.key}
-                    type="button"
-                    onClick={() => handleStageSelect(s.key)}
-                    disabled={pendingStage !== null}
-                    className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wider uppercase inline-flex items-center gap-1.5 transition-all cursor-pointer ${
-                      isSelected
-                        ? s.activeClass
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900"
-                    } ${pendingStage !== null && !isPending ? "opacity-60 cursor-not-allowed" : ""}`}
-                  >
-                    {isPending ? (
-                      <LoadingSpinner size="xs" variant="current" />
-                    ) : (
-                      <s.icon className="w-3 h-3" />
-                    )}
-                    <span>{s.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {stage === "HIRED" && (talent.hiredRole || hiredRole) && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-md px-2.5 py-1 text-xs text-emerald-800 font-medium shrink-0 flex items-center gap-1.5">
-              <Award className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Cargo: <strong>{hiredRole || talent.hiredRole}</strong></span>
-            </div>
-          )}
-        </div>
-
-        {/* Dialog for Hiring details */}
+        {/* Dialog for Hiring details (Modal overlay or header callout) */}
         {showHiredDialog && (
-          <div className="p-4 sm:p-5 bg-amber-50/80 border-b border-amber-200 space-y-3">
-            <div className="flex items-center gap-2 text-amber-900 font-semibold text-xs sm:text-sm">
-              <Award className="w-4 h-4 text-amber-600" />
-              <span>Registrar Contratação Efetivada</span>
+          <div className="p-4 sm:p-5 bg-emerald-50 border-b border-emerald-200 space-y-3">
+            <div className="flex items-center gap-2 text-emerald-900 font-semibold text-sm">
+              <Award className="w-4 h-4 text-emerald-600" />
+              <span>Confirmar Efetivação / Contratação</span>
             </div>
-            <p className="text-xs text-amber-800">
-              Ao celebrar a contratação, informe o cargo acertado com o aluno para fins estatísticos e acompanhamento da coordenação.
+            <p className="text-xs text-emerald-800">
+              Parabéns pela contratação! Informe o cargo acertado com o aluno para arquivamento no histórico de efetivação.
             </p>
-            <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center gap-2.5">
               <input
                 type="text"
                 value={hiredRole}
                 onChange={(e) => setHiredRole(e.target.value)}
                 placeholder="Ex: Jovem Aprendiz Administrativo, Estagiário de RH..."
-                className="w-full sm:flex-1 h-9 px-3 rounded-lg border border-amber-300 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full sm:flex-1 h-9 px-3 rounded-lg border border-emerald-300 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setShowHiredDialog(false)}
-                  className="flex-1 sm:flex-initial h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="flex-1 sm:flex-initial h-9 px-3 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -457,175 +360,353 @@ export default function CompanyTalentModal({
                   ) : (
                     <CheckCircle2 className="w-3.5 h-3.5" />
                   )}
-                  <span>Confirmar Contratação</span>
+                  <span>Celebrar Contratação</span>
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Modal Scrollable Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 custom-scrollbar">
-          {/* ClickUp-Style Clean Attributes Table / Grid */}
-          <div className="bg-slate-50/70 border border-slate-200/80 rounded-xl divide-y divide-slate-200/70">
-            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/70">
-              <div className="p-3.5 flex items-start gap-3">
-                <div className="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
-                  <GraduationCap className="w-4 h-4 text-slate-600" />
+        {/* 2-Column ClickUp Task Layout */}
+        <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-100 custom-scrollbar">
+          {/* LEFT COLUMN: Main Candidate Narrative (7 cols ~60%) */}
+          <div className="lg:col-span-7 p-6 sm:p-7 space-y-6">
+            {/* Candidate Title Section */}
+            <div className="flex items-start gap-4">
+              {talent.user?.avatarUrl ? (
+                <img
+                  src={talent.user.avatarUrl}
+                  alt={talent.user.name}
+                  className="w-14 h-14 rounded-full object-cover border border-slate-200 shrink-0 shadow-2xs"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-700 font-bold text-xl flex items-center justify-center border border-slate-200 shrink-0 shadow-2xs">
+                  {talent.user?.name ? talent.user.name.charAt(0).toUpperCase() : "A"}
                 </div>
-                <div className="min-w-0">
-                  <span className="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">
-                    Turma / Formação
-                  </span>
-                  <p className="text-xs font-medium text-slate-800 mt-0.5 truncate" title={turmasText}>
-                    {turmasText}
-                  </p>
-                </div>
-              </div>
+              )}
 
-              <div className="p-3.5 flex items-start gap-3">
-                <div className="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
-                  <MapPin className="w-4 h-4 text-slate-600" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">
-                    Localidade
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">
+                    {talent.user?.name || "Aluno"}
+                  </h2>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Disponível
                   </span>
-                  <p className="text-xs font-medium text-slate-800 mt-0.5 truncate">
-                    {talent.city ? `${talent.city}${talent.state ? ` - ${talent.state}` : ""}` : "Não informado"}
-                  </p>
                 </div>
+
+                <p className="text-sm font-medium text-slate-600 leading-snug">
+                  {talent.headline || "Jovem Aprendiz / Primeiro Emprego"}
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/70">
-              <div className="p-3.5 flex items-start gap-3">
-                <div className="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
-                  <Clock className="w-4 h-4 text-slate-600" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">
-                    Disponibilidade / Turno
-                  </span>
-                  <p className="text-xs font-medium text-slate-800 mt-0.5 truncate">
-                    {formatAvailability(talent.availability) || "Não informado"}
-                  </p>
+            {/* ClickUp Tags / Áreas de Interesse */}
+            {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Tags & Competências
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {talent.areasOfInterest.map((tag, idx) => {
+                    const bgColors = [
+                      "bg-indigo-600 text-white",
+                      "bg-blue-600 text-white",
+                      "bg-violet-600 text-white",
+                      "bg-sky-600 text-white",
+                    ];
+                    return (
+                      <span
+                        key={idx}
+                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide shadow-2xs ${
+                          bgColors[idx % bgColors.length]
+                        }`}
+                      >
+                        {tag}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
+            )}
 
-              <div className="p-3.5 flex items-start gap-3">
-                <div className="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
-                  <Calendar className="w-4 h-4 text-slate-600" />
+            {/* Sobre o Aluno (Description) */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                Sobre o Aluno / Apresentação
+              </span>
+              {talent.bio ? (
+                <div className="bg-slate-50/70 border border-slate-200/80 rounded-xl p-4 text-xs text-slate-700 leading-relaxed whitespace-pre-line">
+                  {talent.bio}
                 </div>
-                <div className="min-w-0">
-                  <span className="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">
-                    Idade / Nascimento
+              ) : (
+                <p className="text-xs text-slate-400 italic">
+                  O aluno ainda não preencheu o resumo de apresentação pessoal.
+                </p>
+              )}
+            </div>
+
+            {/* Anotações do Recrutador (ClickUp Notes Card) */}
+            <div className="space-y-2.5 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <StickyNote className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                    Anotações Internas da Empresa
                   </span>
-                  <p className="text-xs font-medium text-slate-800 mt-0.5 truncate">
+                </div>
+                <span className="text-[10px] text-slate-400">Privado do seu RH</span>
+              </div>
+
+              <div className="relative">
+                <textarea
+                  rows={4}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Escreva impressões de entrevista, alinhamentos salariais, disponibilidade ou observações confidenciais..."
+                  className="w-full p-3.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-colors resize-none shadow-2xs"
+                />
+                <div className="flex justify-end mt-2">
+                  <button
+                    type="button"
+                    onClick={handleSaveNotes}
+                    disabled={isSavingNotes}
+                    className="h-8 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSavingNotes ? (
+                      <LoadingSpinner size="sm" variant="white" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    )}
+                    <span>Salvar Anotações</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT SIDEBAR: ClickUp Status, Direct Actions & Properties (5 cols ~40%) */}
+          <div className="lg:col-span-5 bg-slate-50/50 p-6 sm:p-7 space-y-6">
+            {/* Status Selector (Single ClickUp Pill with Dropdown) */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                Status no Processo
+              </span>
+
+              <div className="relative" ref={statusDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusOpen(!isStatusOpen)}
+                  className={`w-full px-3.5 py-2 rounded-lg text-xs font-bold tracking-wider uppercase flex items-center justify-between transition-all cursor-pointer shadow-2xs ${currentStageConfig.bg} ${currentStageConfig.text}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <currentStageConfig.icon className="w-3.5 h-3.5" />
+                    <span>{currentStageConfig.label}</span>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      isStatusOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* ClickUp Dropdown Menu */}
+                {isStatusOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl border border-slate-200 shadow-xl p-1.5 z-50 space-y-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                    {CLICKUP_STAGES.map((s) => {
+                      const isSelected = stage === s.key;
+                      return (
+                        <button
+                          key={s.key}
+                          type="button"
+                          onClick={() => handleStageSelect(s.key)}
+                          className={`w-full px-3 py-2 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-slate-100 text-slate-900 font-bold"
+                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className={`w-2.5 h-2.5 rounded-full ${s.bg}`} />
+                            <span className="text-[11px] uppercase tracking-wider">
+                              {s.label}
+                            </span>
+                          </div>
+                          {isSelected && (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-slate-700" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {stage === "HIRED" && (talent.hiredRole || hiredRole) && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-xs text-emerald-800 font-medium flex items-center gap-2">
+                  <Award className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span className="truncate">
+                    Cargo: <strong>{hiredRole || talent.hiredRole}</strong>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Direct Contact Actions */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                Ações Rápidas
+              </span>
+
+              <div className="space-y-2">
+                {talent.resumeUrl ? (
+                  <button
+                    type="button"
+                    onClick={handleDownloadResume}
+                    disabled={isDownloading}
+                    className="w-full h-9 px-3.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 shadow-2xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isDownloading ? (
+                      <LoadingSpinner size="sm" variant="current" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5 text-slate-700" />
+                    )}
+                    <span>Baixar Currículo PDF</span>
+                  </button>
+                ) : (
+                  <div className="w-full h-9 px-3.5 rounded-lg text-xs font-medium text-slate-400 bg-white border border-slate-200 flex items-center justify-center gap-2">
+                    <FileText className="w-3.5 h-3.5 text-slate-300" />
+                    <span>Currículo não anexado</span>
+                  </div>
+                )}
+
+                {whatsappUrl && (
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full h-9 px-3.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Conversar no WhatsApp</span>
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* ClickUp Properties Table (Compact Meta List) */}
+            <div className="space-y-2 pt-2 border-t border-slate-200/80">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                Propriedades do Candidato
+              </span>
+
+              <div className="space-y-2.5 text-xs">
+                {/* Localidade */}
+                <div className="flex items-start justify-between gap-2 py-1 border-b border-slate-100">
+                  <div className="flex items-center gap-2 text-slate-400 shrink-0">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>Localidade</span>
+                  </div>
+                  <span className="font-semibold text-slate-800 text-right truncate">
+                    {talent.city
+                      ? `${talent.city}${talent.state ? `/${talent.state}` : ""}`
+                      : "Não informado"}
+                  </span>
+                </div>
+
+                {/* Disponibilidade */}
+                <div className="flex items-start justify-between gap-2 py-1 border-b border-slate-100">
+                  <div className="flex items-center gap-2 text-slate-400 shrink-0">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Disponibilidade</span>
+                  </div>
+                  <span className="font-semibold text-slate-800 text-right">
+                    {formatAvailability(talent.availability) || "Não informado"}
+                  </span>
+                </div>
+
+                {/* Idade */}
+                <div className="flex items-start justify-between gap-2 py-1 border-b border-slate-100">
+                  <div className="flex items-center gap-2 text-slate-400 shrink-0">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>Idade / Nasc.</span>
+                  </div>
+                  <span className="font-semibold text-slate-800 text-right">
                     {talent.birthDate ? (
                       <>
                         {age !== null ? `${age} anos` : ""}
-                        <span className="text-slate-400 ml-1">
+                        <span className="text-slate-400 font-normal ml-1">
                           ({new Date(talent.birthDate).toLocaleDateString("pt-BR")})
                         </span>
                       </>
                     ) : (
                       "Não informado"
                     )}
-                  </p>
+                  </span>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* ClickUp Style Tags (Áreas de Interesse) */}
-          {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
-            <div className="space-y-2">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                Áreas de Interesse / Competências
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {talent.areasOfInterest.map((tag, idx) => {
-                  const bgColors = [
-                    "bg-indigo-600 text-white",
-                    "bg-blue-600 text-white",
-                    "bg-violet-600 text-white",
-                    "bg-sky-600 text-white",
-                  ];
-                  return (
+                {/* Turma / Formação */}
+                <div className="flex items-start justify-between gap-2 py-1 border-b border-slate-100">
+                  <div className="flex items-center gap-2 text-slate-400 shrink-0">
+                    <GraduationCap className="w-3.5 h-3.5" />
+                    <span>Turma / Trilha</span>
+                  </div>
+                  <span
+                    className="font-semibold text-slate-800 text-right truncate max-w-[170px]"
+                    title={turmasText}
+                  >
+                    {turmasText}
+                  </span>
+                </div>
+
+                {/* E-mail */}
+                {talent.user?.email && (
+                  <div className="flex items-start justify-between gap-2 py-1 border-b border-slate-100">
+                    <div className="flex items-center gap-2 text-slate-400 shrink-0">
+                      <Mail className="w-3.5 h-3.5" />
+                      <span>E-mail</span>
+                    </div>
                     <span
-                      key={idx}
-                      className={`px-2.5 py-1 rounded-full text-xs font-semibold shadow-2xs ${
-                        bgColors[idx % bgColors.length]
-                      }`}
+                      className="font-medium text-slate-800 text-right truncate max-w-[170px]"
+                      title={talent.user.email}
                     >
-                      {tag}
+                      {talent.user.email}
                     </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Sobre o Aluno (Bio) */}
-          {talent.bio && (
-            <div className="space-y-2">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                Sobre o Aluno / Apresentação
-              </span>
-              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 text-xs text-slate-700 leading-relaxed whitespace-pre-line">
-                {talent.bio}
-              </div>
-            </div>
-          )}
-
-          {/* Recruiter Internal Notes (ClickUp Task Notes) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <StickyNote className="w-3.5 h-3.5 text-amber-500" />
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  Anotações da sua Equipe (Privado da Empresa)
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={handleSaveNotes}
-                disabled={isSavingNotes}
-                className="h-7 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-xs font-medium transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-              >
-                {isSavingNotes ? (
-                  <LoadingSpinner size="sm" variant="white" />
-                ) : (
-                  <CheckCircle2 className="w-3 h-3" />
+                  </div>
                 )}
-                <span>Salvar Anotações</span>
-              </button>
-            </div>
-            <textarea
-              rows={3}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Ex: Entrevista agendada para quarta às 14h. Demonstrou ótima desenvoltura e interesse..."
-              className="w-full p-3 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-colors resize-none shadow-2xs"
-            />
-          </div>
 
-          {/* LGPD Compliance Footer Box */}
-          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center gap-2 text-xs text-slate-500">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>
-              Acesso corporativo auditado nominalmente com autorização formal sob as diretrizes da LGPD.
-            </span>
+                {/* Telefone */}
+                {talent.phone && (
+                  <div className="flex items-start justify-between gap-2 py-1 border-b border-slate-100">
+                    <div className="flex items-center gap-2 text-slate-400 shrink-0">
+                      <Phone className="w-3.5 h-3.5" />
+                      <span>Telefone</span>
+                    </div>
+                    <span className="font-semibold text-slate-800 text-right">
+                      {formatPhoneDisplay(talent.phone)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* LGPD Audit Badge */}
+            <div className="p-3 rounded-xl bg-white border border-slate-200/90 flex items-start gap-2.5 text-[11px] text-slate-500 shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <p className="leading-snug">
+                Currículo compartilhado sob consentimento expresso LGPD com auditoria nominal de acesso.
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Modal Footer */}
-        <div className="flex items-center justify-end p-4 px-6 border-t border-slate-100 bg-white">
+        {/* Modal Bottom Footer */}
+        <div className="flex items-center justify-end px-6 py-3 border-t border-slate-100 bg-white">
           <button
             type="button"
             onClick={onClose}
-            className="h-9 px-5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all cursor-pointer shadow-2xs"
+            className="h-8.5 px-5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all cursor-pointer shadow-2xs"
           >
             Fechar
           </button>
