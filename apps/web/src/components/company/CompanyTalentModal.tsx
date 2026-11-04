@@ -328,10 +328,11 @@ export default function CompanyTalentModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="h-8 px-2.5 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1.5 cursor-pointer text-xs font-semibold shadow-2xs"
               title="Fechar (Esc)"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 text-slate-500" />
+              <span>Fechar</span>
             </button>
           </div>
         </div>
@@ -715,13 +716,21 @@ export default function CompanyTalentModal({
         </div>
 
         {/* Modal Bottom Footer */}
-        <div className="flex items-center justify-end px-6 py-3 border-t border-slate-100 bg-white">
+        <div className="flex items-center justify-between px-6 py-3 border-t border-slate-100 bg-white">
+          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+            <span>Dica: Pressione</span>
+            <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded">
+              ESC
+            </kbd>
+            <span>para fechar</span>
+          </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="h-8.5 px-5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all cursor-pointer shadow-2xs"
+            className="h-8 px-4 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white transition-all cursor-pointer shadow-2xs flex items-center gap-1.5"
           >
-            Fechar
+            <span>Fechar Detalhes</span>
           </button>
         </div>
       </div>
