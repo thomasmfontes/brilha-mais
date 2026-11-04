@@ -1447,94 +1447,41 @@ export default function CompanyPortalPage() {
                                             </div>
                                           )}
 
-                                          {/* ClickUp-Style Bottom Action Strip */}
-                                          <div
-                                            className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5"
-                                            onClick={(e) => e.stopPropagation()}
-                                            onMouseDown={(e) => e.stopPropagation()}
-                                          >
-                                            {item.stage === "SAVED" && (
-                                              <button
-                                                type="button"
-                                                onClick={() => handleQuickMove(talent.id, "INTERVIEW")}
-                                                disabled={movingTalent?.id === talent.id}
-                                                className="flex-1 h-7 px-2.5 rounded-md bg-amber-50 hover:bg-amber-100 border border-amber-200 text-[11px] font-medium text-amber-900 transition-colors flex items-center justify-between cursor-pointer disabled:opacity-50"
-                                                title="Avançar para entrevista"
-                                              >
-                                                <span>Chamar p/ Entrevista</span>
-                                                <ArrowRight className="w-3 h-3 text-amber-700" />
-                                              </button>
-                                            )}
+                                          {/* ClickUp-Style Action Strip (Quick CV & WhatsApp) */}
+                                          {(talent.resumeUrl || whatsappUrl) && (
+                                            <div
+                                              className="pt-2 border-t border-slate-100 flex items-center justify-end gap-1.5"
+                                              onClick={(e) => e.stopPropagation()}
+                                              onMouseDown={(e) => e.stopPropagation()}
+                                            >
+                                              {/* CV Download */}
+                                              {talent.resumeUrl && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleDownloadResume(talent)}
+                                                  className="h-7 px-2 rounded-md border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors flex items-center gap-1 text-[11px] font-medium cursor-pointer shrink-0"
+                                                  title="Baixar Currículo PDF"
+                                                >
+                                                  <Download className="w-3 h-3" />
+                                                  <span>Currículo</span>
+                                                </button>
+                                              )}
 
-                                            {item.stage === "INTERVIEW" && (
-                                              <button
-                                                type="button"
-                                                onClick={() => handleQuickMove(talent.id, "HIRED")}
-                                                disabled={movingTalent?.id === talent.id}
-                                                className="flex-1 h-7 px-2.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[11px] font-medium text-emerald-900 transition-colors flex items-center justify-between cursor-pointer disabled:opacity-50"
-                                                title="Efetivar contratação"
-                                              >
-                                                <span>Efetivar Contratação</span>
-                                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                              </button>
-                                            )}
-
-                                            {item.stage === "ARCHIVED" && (
-                                              <button
-                                                type="button"
-                                                onClick={() => handleQuickMove(talent.id, "SAVED")}
-                                                disabled={movingTalent?.id === talent.id}
-                                                className="flex-1 h-7 px-2.5 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[11px] font-medium text-slate-700 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
-                                              >
-                                                <RotateCcw className="w-3 h-3 text-slate-500" />
-                                                <span>Reativar no Radar</span>
-                                              </button>
-                                            )}
-
-                                            {item.stage === "HIRED" && (
-                                              <span className="flex-1 text-[11px] font-medium text-emerald-700 flex items-center gap-1">
-                                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                                <span>Contratação Realizada</span>
-                                              </span>
-                                            )}
-
-                                            {/* Quick archive */}
-                                            {(item.stage === "SAVED" || item.stage === "INTERVIEW") && (
-                                              <button
-                                                type="button"
-                                                onClick={() => handleQuickMove(talent.id, "ARCHIVED")}
-                                                className="h-7 w-7 rounded-md border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                                title="Arquivar no Banco de Reserva"
-                                              >
-                                                <Archive className="w-3 h-3" />
-                                              </button>
-                                            )}
-
-                                            {/* CV Download */}
-                                            {talent.resumeUrl && (
-                                              <button
-                                                type="button"
-                                                onClick={() => handleDownloadResume(talent)}
-                                                className="h-7 w-7 rounded-md border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                                title="Baixar Currículo PDF"
-                                              >
-                                                <Download className="w-3 h-3" />
-                                              </button>
-                                            )}
-
-                                            {/* WhatsApp */}
-                                            {whatsappUrl && (
-                                              <a
-                                                href={whatsappUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="h-7 w-7 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                                title="WhatsApp Direto"
-                                              >
-                                                <MessageCircle className="w-3 h-3" />
-                                              </a>
-                                            )}
-                                          </div>
+                                              {/* WhatsApp */}
+                                              {whatsappUrl && (
+                                                <a
+                                                  href={whatsappUrl}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="h-7 px-2 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center gap-1 text-[11px] font-medium cursor-pointer shrink-0"
+                                                  title="WhatsApp Direto"
+                                                >
+                                                  <MessageCircle className="w-3 h-3" />
+                                                  <span>WhatsApp</span>
+                                                </a>
+                                              )}
+                                            </div>
+                                          )}
                                         </div>
                                       )}
                                     </Draggable>
