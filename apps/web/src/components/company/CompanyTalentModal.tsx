@@ -154,6 +154,19 @@ export default function CompanyTalentModal({
 
   const statusDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Synchronize state whenever a talent is opened or changed
+  useEffect(() => {
+    if (talent.currentStage) {
+      setStage(talent.currentStage);
+    }
+    if (talent.interactionNotes !== undefined) {
+      setNotes(talent.interactionNotes || "");
+    }
+    if (talent.hiredRole !== undefined) {
+      setHiredRole(talent.hiredRole || "");
+    }
+  }, [talent.id, talent.currentStage, talent.interactionNotes, talent.hiredRole]);
+
   // Close status dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

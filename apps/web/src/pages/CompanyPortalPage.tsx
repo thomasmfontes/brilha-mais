@@ -503,30 +503,62 @@ export default function CompanyPortalPage() {
       toast.success(stageMessages[newStage] || "Etapa atualizada com sucesso!");
 
       // 3. ONLY after backend PUT succeeds, sync pipeline state from server
-      const res = await api.get("/company/pipeline");
-      if (res.data) setPipelineData(applyOrderToPipeline(res.data));
+      const [pipeRes, talentsRes] = await Promise.all([
+        api.get("/company/pipeline"),
+        api.get("/company/talents"),
+      ]);
+      if (pipeRes.data) setPipelineData(applyOrderToPipeline(pipeRes.data));
+      if (talentsRes.data) setTalents(talentsRes.data);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao atualizar etapa.");
       // Rollback to server state on error
-      const res = await api.get("/company/pipeline").catch(() => null);
-      if (res?.data) setPipelineData(applyOrderToPipeline(res.data));
+      const [pipeRes, talentsRes] = await Promise.all([
+        api.get("/company/pipeline").catch(() => null),
+        api.get("/company/talents").catch(() => null),
+      ]);
+      if (pipeRes?.data) setPipelineData(applyOrderToPipeline(pipeRes.data));
+      if (talentsRes?.data) setTalents(talentsRes.data);
     } finally {
       setMovingTalent(null);
     }
   };
 
   const openTalent = (talent: CompanyTalent, interaction?: any) => {
-    const full = talents.find((t) => t.id === talent.id);
-    if (full) {
-      setSelectedTalent(full);
-    } else {
-      setSelectedTalent({
-        ...talent,
-        currentStage: interaction?.stage || talent.currentStage,
-        interactionNotes: interaction?.notes || talent.interactionNotes,
-        hiredRole: interaction?.hiredRole || talent.hiredRole,
-      });
+    const full = talents.find((t) => t.id === talent.id) || talent;
+
+    // Determine the true active stage:
+    // 1. interaction?.stage (direct from column if clicked in kanban or list)
+    // 2. lookup in pipelineData.pipeline columns
+    // 3. full.currentStage
+    let activeStage: any = interaction?.stage || null;
+    if (!activeStage && pipelineData?.pipeline) {
+      for (const [stageKey, list] of Object.entries(pipelineData.pipeline)) {
+        if (
+          (list as any[]).some(
+            (item: any) => (item.talent?.id || item.talentId) === talent.id,
+          )
+        ) {
+          activeStage = stageKey;
+          break;
+        }
+      }
     }
+    if (!activeStage) {
+      activeStage = full.currentStage || null;
+    }
+
+    setSelectedTalent({
+      ...full,
+      currentStage: activeStage,
+      interactionNotes:
+        interaction?.notes !== undefined
+          ? interaction.notes
+          : full.interactionNotes,
+      hiredRole:
+        interaction?.hiredRole !== undefined
+          ? interaction.hiredRole
+          : full.hiredRole,
+    });
   };
 
   // Pipeline flat list according to filter & search
@@ -652,9 +684,9 @@ export default function CompanyPortalPage() {
       };
     });
 
-    // Update talents in memory so catalog syncs
+    // Update talents in memory so catalog (Banco de Talentos) syncs IMMEDIATELY
     setTalents((prev) =>
-      prev.map((t) => (t.id === draggableId ? { ...t, companyStage: destCol } : t)),
+      prev.map((t) => (t.id === draggableId ? { ...t, currentStage: destCol } : t)),
     );
 
     // Persist to backend database
@@ -668,6 +700,14 @@ export default function CompanyPortalPage() {
           ARCHIVED: "Candidato arquivado no Banco de Reserva.",
         };
         toast.success(stageMessages[destCol] || "Etapa atualizada com sucesso!");
+
+        // Also sync talents in background to guarantee full consistency across views
+        api
+          .get("/company/talents")
+          .then((res) => {
+            if (res.data) setTalents(res.data);
+          })
+          .catch(() => {});
       })
       .catch((err) => {
         console.error("Failed to persist stage change:", err);
@@ -1855,9 +1895,15 @@ export default function CompanyPortalPage() {
           talent={selectedTalent}
           onClose={() => {
             setSelectedTalent(null);
-            api
-              .get("/company/pipeline")
-              .then((res) => setPipelineData(applyOrderToPipeline(res.data)))
+            Promise.all([
+              api.get("/company/pipeline"),
+              api.get("/company/talents"),
+            ])
+              .then(([pipeRes, talentsRes]) => {
+                if (pipeRes.data)
+                  setPipelineData(applyOrderToPipeline(pipeRes.data));
+                if (talentsRes.data) setTalents(talentsRes.data);
+              })
               .catch(() => {});
           }}
           onStageChange={handleStageChange}
