@@ -40,6 +40,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import api from "../utils/api";
 import { toast } from "react-hot-toast";
 import logo from "../assets/logo.png";
@@ -499,6 +500,27 @@ export default function CompanyPortalPage() {
       );
     });
   }, [pipelineData, pipelineFilter, pipelineSearch]);
+
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination, draggableId } = result;
+    if (!destination) return;
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
+      return;
+    }
+
+    const newStage = destination.droppableId as
+      | "SAVED"
+      | "INTERVIEW"
+      | "HIRED"
+      | "ARCHIVED";
+
+    if (source.droppableId !== destination.droppableId) {
+      handleQuickMove(draggableId, newStage);
+    }
+  };
 
   if (loading) {
     return (
@@ -1183,8 +1205,8 @@ export default function CompanyPortalPage() {
 
             {/* Kanban or List View */}
             {pipelineView === "kanban" ? (
-              /* CLICKUP STYLE KANBAN WITH SMOOTH SPRING DRAG & DROP */
-              <LayoutGroup id="clickup-pipeline-board">
+              /* CLICKUP STYLE KANBAN WITH AUTHENTIC @hello-pangea/dnd */
+              <DragDropContext onDragEnd={handleDragEnd}>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
                   {[
                     {
@@ -1232,41 +1254,10 @@ export default function CompanyPortalPage() {
                       );
                     });
 
-                    const isOver = dragOverColumn === column.key;
-
                     return (
                       <div
                         key={column.key}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.dataTransfer.dropEffect = "move";
-                          if (dragOverColumn !== column.key) {
-                            setDragOverColumn(column.key);
-                          }
-                        }}
-                        onDragLeave={(e) => {
-                          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                            setDragOverColumn(null);
-                          }
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          const talentId = e.dataTransfer.getData("text/plain") || draggedTalentId;
-                          setDragOverColumn(null);
-                          setDraggedTalentId(null);
-                          if (talentId) {
-                            const currentItem = column.candidates.find(
-                              (c: any) => c.talent?.id === talentId || c.talentId === talentId,
-                            );
-                            if (!currentItem) {
-                              handleQuickMove(talentId, column.key as any);
-                            }
-                          }
-                        }}
-                        className={`
-                          bg-slate-100/60 border border-slate-200/70 rounded-xl p-2.5 flex flex-col min-h-[640px] transition-all duration-200
-                          ${isOver ? "ring-2 ring-amber-400 bg-amber-50/50 border-amber-300 shadow-md" : "shadow-2xs"}
-                        `}
+                        className="bg-slate-100/70 border border-slate-200/80 rounded-xl p-2.5 flex flex-col min-h-[640px] shadow-2xs"
                       >
                         {/* ClickUp Column Header */}
                         <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-200/60 px-1">
@@ -1292,265 +1283,268 @@ export default function CompanyPortalPage() {
                           </button>
                         </div>
 
-                        {/* Lane Cards Container with Smooth Layout Transitions */}
-                        <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[720px] p-0.5 custom-scrollbar">
-                          {/* Animated Drop Target */}
-                          <AnimatePresence>
-                            {isOver && draggedTalentId && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, height: 60, scale: 1 }}
-                                exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                                transition={{ duration: 0.15 }}
-                                className="rounded-lg border-2 border-dashed border-amber-400 bg-amber-100/60 flex items-center justify-center text-xs font-semibold text-amber-900 shadow-2xs"
-                              >
-                                Soltar aqui
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                        {/* Droppable Column Body */}
+                        <Droppable droppableId={column.key}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.droppableProps}
+                              className={`space-y-2.5 flex-1 min-h-[220px] rounded-lg transition-colors p-1 ${
+                                snapshot.isDraggingOver
+                                  ? "bg-amber-100/40 ring-2 ring-dashed ring-amber-400"
+                                  : ""
+                              }`}
+                            >
+                              {filteredCandidates.length === 0 ? (
+                                <div className="h-28 rounded-lg border border-dashed border-slate-200 bg-white/40 flex flex-col items-center justify-center text-center p-3 text-slate-400 pointer-events-none">
+                                  <Users className="w-5 h-5 text-slate-300 mb-1" />
+                                  <p className="text-xs font-medium text-slate-500">Nenhum candidato</p>
+                                  <p className="text-[10px] text-slate-400 mt-0.5">Arraste cards para esta etapa</p>
+                                </div>
+                              ) : (
+                                filteredCandidates.map((item: any, index: number) => {
+                                  const talent = item.talent;
+                                  const cleanPhone = talent.phone ? talent.phone.replace(/\D/g, "") : "";
+                                  const whatsappUrl = cleanPhone
+                                    ? `https://wa.me/55${cleanPhone}?text=Ol%C3%A1%20${encodeURIComponent(
+                                        talent.user.name || "Aluno",
+                                      )}!%20Vi%20seu%20perfil%20no%20Banco%20de%20Talentos%20do%20Brilha%20Mais.`
+                                    : null;
 
-                          {filteredCandidates.length === 0 && (!isOver || !draggedTalentId) ? (
-                            <div className="h-28 rounded-lg border border-dashed border-slate-200 bg-white/40 flex flex-col items-center justify-center text-center p-3 text-slate-400">
-                              <Users className="w-5 h-5 text-slate-300 mb-1" />
-                              <p className="text-xs font-medium text-slate-500">Nenhum candidato</p>
-                              <p className="text-[10px] text-slate-400 mt-0.5">Arraste ou adicione cards aqui</p>
-                            </div>
-                          ) : (
-                            filteredCandidates.map((item: any) => {
-                              const talent = item.talent;
-                              const cleanPhone = talent.phone ? talent.phone.replace(/\D/g, "") : "";
-                              const whatsappUrl = cleanPhone
-                                ? `https://wa.me/55${cleanPhone}?text=Ol%C3%A1%20${encodeURIComponent(
-                                    talent.user.name || "Aluno",
-                                  )}!%20Vi%20seu%20perfil%20no%20Banco%20de%20Talentos%20do%20Brilha%20Mais.`
-                                : null;
-                              const isBeingDragged = draggedTalentId === talent.id;
-
-                              return (
-                                <motion.div
-                                  key={item.interactionId || talent.id}
-                                  layout
-                                  layoutId={item.interactionId || talent.id}
-                                  transition={{ type: "spring", stiffness: 450, damping: 32 }}
-                                  whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                                  draggable={true}
-                                  onDragStart={(e: any) => {
-                                    e.dataTransfer?.setData("text/plain", talent.id);
-                                    if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
-                                    setDraggedTalentId(talent.id);
-                                  }}
-                                  onDragEnd={() => {
-                                    setDraggedTalentId(null);
-                                    setDragOverColumn(null);
-                                  }}
-                                  onClick={() => openTalent(talent, item)}
-                                  className={`
-                                    bg-white rounded-lg border border-slate-200/90 shadow-2xs hover:shadow-md transition-shadow p-3.5 space-y-2.5 cursor-grab active:cursor-grabbing select-none group
-                                    ${isBeingDragged ? "opacity-30 scale-95 border-dashed border-amber-400 ring-2 ring-amber-300" : ""}
-                                  `}
-                                >
-                                  {/* ClickUp Card Title & Grip */}
-                                  <div className="flex items-start gap-2">
-                                    <div
-                                      className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0 mt-0.5 cursor-grab active:cursor-grabbing"
-                                      title="Arraste para mover de etapa"
+                                  return (
+                                    <Draggable
+                                      key={talent.id}
+                                      draggableId={talent.id}
+                                      index={index}
                                     >
-                                      <GripVertical className="w-3.5 h-3.5" />
-                                    </div>
-                                    {talent.user.avatarUrl ? (
-                                      <img
-                                        src={talent.user.avatarUrl}
-                                        alt={talent.user.name}
-                                        className="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0 mt-0.5"
-                                      />
-                                    ) : (
-                                      <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200 shrink-0 mt-0.5">
-                                        {talent.user.name?.charAt(0) || "A"}
-                                      </div>
-                                    )}
-                                    <div className="min-w-0 flex-1">
-                                      <h4 className="text-sm font-semibold text-slate-900 group-hover:text-amber-600 transition-colors truncate">
-                                        {talent.user.name}
-                                      </h4>
-                                      <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
-                                        {talent.headline || "Jovem Aprendiz"}
-                                      </p>
-                                    </div>
-                                  </div>
+                                      {(dragProvided, dragSnapshot) => (
+                                        <div
+                                          ref={dragProvided.innerRef}
+                                          {...dragProvided.draggableProps}
+                                          {...dragProvided.dragHandleProps}
+                                          onClick={() => openTalent(talent, item)}
+                                          style={{
+                                            ...dragProvided.draggableProps.style,
+                                          }}
+                                          className={`
+                                            bg-white rounded-lg border p-3.5 space-y-2.5 select-none transition-shadow cursor-grab active:cursor-grabbing group
+                                            ${
+                                              dragSnapshot.isDragging
+                                                ? "border-amber-400 shadow-2xl ring-2 ring-amber-400/80 rotate-1 scale-[1.02] z-50 bg-white"
+                                                : "border-slate-200/90 shadow-2xs hover:shadow-md hover:border-slate-300"
+                                            }
+                                          `}
+                                        >
+                                          {/* ClickUp Card Title & Grip */}
+                                          <div className="flex items-start gap-2">
+                                            <div
+                                              className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0 mt-0.5"
+                                              title="Arraste para mover de etapa"
+                                            >
+                                              <GripVertical className="w-3.5 h-3.5" />
+                                            </div>
+                                            {talent.user.avatarUrl ? (
+                                              <img
+                                                src={talent.user.avatarUrl}
+                                                alt={talent.user.name}
+                                                className="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0 mt-0.5"
+                                              />
+                                            ) : (
+                                              <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200 shrink-0 mt-0.5">
+                                                {talent.user.name?.charAt(0) || "A"}
+                                              </div>
+                                            )}
+                                            <div className="min-w-0 flex-1">
+                                              <h4 className="text-sm font-semibold text-slate-900 group-hover:text-amber-600 transition-colors truncate">
+                                                {talent.user.name}
+                                              </h4>
+                                              <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                                                {talent.headline || "Jovem Aprendiz"}
+                                              </p>
+                                            </div>
+                                          </div>
 
-                                  {/* ClickUp Micro-Metadata Row (Priority Flag + Location + Turno) */}
-                                  <div className="flex items-center gap-2.5 text-[11px] text-slate-500 flex-wrap">
-                                    {/* Priority Flag */}
-                                    {item.stage === "INTERVIEW" ? (
-                                      <span className="inline-flex items-center gap-1 font-medium text-amber-700">
-                                        <Flag className="w-3 h-3 text-amber-500 fill-amber-500" />
-                                        <span>Entrevista</span>
-                                      </span>
-                                    ) : item.stage === "HIRED" ? (
-                                      <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
-                                        <Flag className="w-3 h-3 text-emerald-600 fill-emerald-600" />
-                                        <span>Contratado</span>
-                                      </span>
-                                    ) : (
-                                      <span className="inline-flex items-center gap-1 text-slate-500">
-                                        <Flag className="w-3 h-3 text-sky-500 fill-sky-500" />
-                                        <span>Radar</span>
-                                      </span>
-                                    )}
+                                          {/* ClickUp Micro-Metadata Row (Priority Flag + Location + Turno) */}
+                                          <div className="flex items-center gap-2.5 text-[11px] text-slate-500 flex-wrap">
+                                            {/* Priority Flag */}
+                                            {item.stage === "INTERVIEW" ? (
+                                              <span className="inline-flex items-center gap-1 font-medium text-amber-700">
+                                                <Flag className="w-3 h-3 text-amber-500 fill-amber-500" />
+                                                <span>Entrevista</span>
+                                              </span>
+                                            ) : item.stage === "HIRED" ? (
+                                              <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
+                                                <Flag className="w-3 h-3 text-emerald-600 fill-emerald-600" />
+                                                <span>Contratado</span>
+                                              </span>
+                                            ) : (
+                                              <span className="inline-flex items-center gap-1 text-slate-500">
+                                                <Flag className="w-3 h-3 text-sky-500 fill-sky-500" />
+                                                <span>Radar</span>
+                                              </span>
+                                            )}
 
-                                    {talent.city && (
-                                      <span className="inline-flex items-center gap-1">
-                                        <MapPin className="w-3 h-3 text-slate-400" />
-                                        <span className="truncate max-w-[105px]">{talent.city}{talent.state ? `/${talent.state}` : ""}</span>
-                                      </span>
-                                    )}
+                                            {talent.city && (
+                                              <span className="inline-flex items-center gap-1">
+                                                <MapPin className="w-3 h-3 text-slate-400" />
+                                                <span className="truncate max-w-[105px]">
+                                                  {talent.city}
+                                                  {talent.state ? `/${talent.state}` : ""}
+                                                </span>
+                                              </span>
+                                            )}
 
-                                    {talent.availability && (
-                                      <span className="inline-flex items-center gap-1">
-                                        <Clock className="w-3 h-3 text-slate-400" />
-                                        <span>{formatAvailability(talent.availability)}</span>
-                                      </span>
-                                    )}
-                                  </div>
+                                            {talent.availability && (
+                                              <span className="inline-flex items-center gap-1">
+                                                <Clock className="w-3 h-3 text-slate-400" />
+                                                <span>{formatAvailability(talent.availability)}</span>
+                                              </span>
+                                            )}
+                                          </div>
 
-                                  {/* ClickUp Style Tags (Solid Colored Chips) */}
-                                  {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
-                                    <div className="flex flex-wrap gap-1.5 pt-0.5">
-                                      {talent.areasOfInterest.slice(0, 2).map((area: string, idx: number) => {
-                                        const bgColors = [
-                                          "bg-indigo-600 text-white",
-                                          "bg-blue-600 text-white",
-                                          "bg-violet-600 text-white",
-                                          "bg-sky-600 text-white",
-                                        ];
-                                        return (
-                                          <span
-                                            key={idx}
-                                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide shadow-2xs ${
-                                              bgColors[idx % bgColors.length]
-                                            }`}
+                                          {/* ClickUp Style Tags (Solid Colored Chips) */}
+                                          {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
+                                            <div className="flex flex-wrap gap-1.5 pt-0.5">
+                                              {talent.areasOfInterest.slice(0, 2).map((area: string, idx: number) => {
+                                                const bgColors = [
+                                                  "bg-indigo-600 text-white",
+                                                  "bg-blue-600 text-white",
+                                                  "bg-violet-600 text-white",
+                                                  "bg-sky-600 text-white",
+                                                ];
+                                                return (
+                                                  <span
+                                                    key={idx}
+                                                    className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide shadow-2xs ${
+                                                      bgColors[idx % bgColors.length]
+                                                    }`}
+                                                  >
+                                                    {area}
+                                                  </span>
+                                                );
+                                              })}
+                                              {talent.areasOfInterest.length > 2 && (
+                                                <span className="text-[10px] text-slate-400 px-1 py-0.5">
+                                                  +{talent.areasOfInterest.length - 2}
+                                                </span>
+                                              )}
+                                            </div>
+                                          )}
+
+                                          {/* Recruiter Notes (ClickUp description snippet) */}
+                                          {item.notes && (
+                                            <div className="bg-amber-50/70 border border-amber-200/70 rounded-md p-2 text-[11px] text-amber-900/90 flex items-start gap-1.5">
+                                              <StickyNote className="w-3 h-3 text-amber-600 shrink-0 mt-0.5" />
+                                              <p className="line-clamp-2 italic">{item.notes}</p>
+                                            </div>
+                                          )}
+
+                                          {/* Hired role celebration badge */}
+                                          {item.stage === "HIRED" && item.hiredRole && (
+                                            <div className="bg-emerald-50 border border-emerald-200 rounded-md p-1.5 text-[11px] text-emerald-900 flex items-center gap-1.5 font-medium">
+                                              <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                              <span className="truncate">Cargo: {item.hiredRole}</span>
+                                            </div>
+                                          )}
+
+                                          {/* ClickUp-Style Bottom Action Strip */}
+                                          <div
+                                            className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5"
+                                            onClick={(e) => e.stopPropagation()}
+                                            onMouseDown={(e) => e.stopPropagation()}
                                           >
-                                            {area}
-                                          </span>
-                                        );
-                                      })}
-                                      {talent.areasOfInterest.length > 2 && (
-                                        <span className="text-[10px] text-slate-400 px-1 py-0.5">
-                                          +{talent.areasOfInterest.length - 2}
-                                        </span>
+                                            {item.stage === "SAVED" && (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleQuickMove(talent.id, "INTERVIEW")}
+                                                disabled={movingTalent?.id === talent.id}
+                                                className="flex-1 h-7 px-2.5 rounded-md bg-amber-50 hover:bg-amber-100 border border-amber-200 text-[11px] font-medium text-amber-900 transition-colors flex items-center justify-between cursor-pointer disabled:opacity-50"
+                                                title="Avançar para entrevista"
+                                              >
+                                                <span>Chamar p/ Entrevista</span>
+                                                <ArrowRight className="w-3 h-3 text-amber-700" />
+                                              </button>
+                                            )}
+
+                                            {item.stage === "INTERVIEW" && (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleQuickMove(talent.id, "HIRED")}
+                                                disabled={movingTalent?.id === talent.id}
+                                                className="flex-1 h-7 px-2.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[11px] font-medium text-emerald-900 transition-colors flex items-center justify-between cursor-pointer disabled:opacity-50"
+                                                title="Efetivar contratação"
+                                              >
+                                                <span>Efetivar Contratação</span>
+                                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                              </button>
+                                            )}
+
+                                            {item.stage === "ARCHIVED" && (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleQuickMove(talent.id, "SAVED")}
+                                                disabled={movingTalent?.id === talent.id}
+                                                className="flex-1 h-7 px-2.5 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[11px] font-medium text-slate-700 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                                              >
+                                                <RotateCcw className="w-3 h-3 text-slate-500" />
+                                                <span>Reativar no Radar</span>
+                                              </button>
+                                            )}
+
+                                            {item.stage === "HIRED" && (
+                                              <span className="flex-1 text-[11px] font-medium text-emerald-700 flex items-center gap-1">
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                <span>Contratação Realizada</span>
+                                              </span>
+                                            )}
+
+                                            {/* Quick archive */}
+                                            {(item.stage === "SAVED" || item.stage === "INTERVIEW") && (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleQuickMove(talent.id, "ARCHIVED")}
+                                                className="h-7 w-7 rounded-md border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0"
+                                                title="Arquivar no Banco de Reserva"
+                                              >
+                                                <Archive className="w-3 h-3" />
+                                              </button>
+                                            )}
+
+                                            {/* CV Download */}
+                                            {talent.resumeUrl && (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleDownloadResume(talent)}
+                                                className="h-7 w-7 rounded-md border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0"
+                                                title="Baixar Currículo PDF"
+                                              >
+                                                <Download className="w-3 h-3" />
+                                              </button>
+                                            )}
+
+                                            {/* WhatsApp */}
+                                            {whatsappUrl && (
+                                              <a
+                                                href={whatsappUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="h-7 w-7 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer shrink-0"
+                                                title="WhatsApp Direto"
+                                              >
+                                                <MessageCircle className="w-3 h-3" />
+                                              </a>
+                                            )}
+                                          </div>
+                                        </div>
                                       )}
-                                    </div>
-                                  )}
-
-                                  {/* Recruiter Notes (ClickUp description snippet) */}
-                                  {item.notes && (
-                                    <div className="bg-amber-50/70 border border-amber-200/70 rounded-md p-2 text-[11px] text-amber-900/90 flex items-start gap-1.5">
-                                      <StickyNote className="w-3 h-3 text-amber-600 shrink-0 mt-0.5" />
-                                      <p className="line-clamp-2 italic">{item.notes}</p>
-                                    </div>
-                                  )}
-
-                                  {/* Hired role celebration badge */}
-                                  {item.stage === "HIRED" && item.hiredRole && (
-                                    <div className="bg-emerald-50 border border-emerald-200 rounded-md p-1.5 text-[11px] text-emerald-900 flex items-center gap-1.5 font-medium">
-                                      <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                      <span className="truncate">Cargo: {item.hiredRole}</span>
-                                    </div>
-                                  )}
-
-                                  {/* ClickUp-Style Bottom Action Strip */}
-                                  <div
-                                    className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5"
-                                    onClick={(e) => e.stopPropagation()}
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                  >
-                                    {item.stage === "SAVED" && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleQuickMove(talent.id, "INTERVIEW")}
-                                        disabled={movingTalent?.id === talent.id}
-                                        className="flex-1 h-7 px-2.5 rounded-md bg-amber-50 hover:bg-amber-100 border border-amber-200 text-[11px] font-medium text-amber-900 transition-colors flex items-center justify-between cursor-pointer disabled:opacity-50"
-                                        title="Avançar para entrevista"
-                                      >
-                                        <span>Chamar p/ Entrevista</span>
-                                        <ArrowRight className="w-3 h-3 text-amber-700" />
-                                      </button>
-                                    )}
-
-                                    {item.stage === "INTERVIEW" && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleQuickMove(talent.id, "HIRED")}
-                                        disabled={movingTalent?.id === talent.id}
-                                        className="flex-1 h-7 px-2.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[11px] font-medium text-emerald-900 transition-colors flex items-center justify-between cursor-pointer disabled:opacity-50"
-                                        title="Efetivar contratação"
-                                      >
-                                        <span>Efetivar Contratação</span>
-                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                      </button>
-                                    )}
-
-                                    {item.stage === "ARCHIVED" && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleQuickMove(talent.id, "SAVED")}
-                                        disabled={movingTalent?.id === talent.id}
-                                        className="flex-1 h-7 px-2.5 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[11px] font-medium text-slate-700 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
-                                      >
-                                        <RotateCcw className="w-3 h-3 text-slate-500" />
-                                        <span>Reativar no Radar</span>
-                                      </button>
-                                    )}
-
-                                    {item.stage === "HIRED" && (
-                                      <span className="flex-1 text-[11px] font-medium text-emerald-700 flex items-center gap-1">
-                                        <CheckCircle2 className="w-3.5 h-3.5" />
-                                        <span>Contratação Realizada</span>
-                                      </span>
-                                    )}
-
-                                    {/* Quick archive */}
-                                    {(item.stage === "SAVED" || item.stage === "INTERVIEW") && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleQuickMove(talent.id, "ARCHIVED")}
-                                        className="h-7 w-7 rounded-md border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                        title="Arquivar no Banco de Reserva"
-                                      >
-                                        <Archive className="w-3 h-3" />
-                                      </button>
-                                    )}
-
-                                    {/* CV Download */}
-                                    {talent.resumeUrl && (
-                                      <button
-                                        type="button"
-                                        onClick={() => handleDownloadResume(talent)}
-                                        className="h-7 w-7 rounded-md border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                        title="Baixar Currículo PDF"
-                                      >
-                                        <Download className="w-3 h-3" />
-                                      </button>
-                                    )}
-
-                                    {/* WhatsApp */}
-                                    {whatsappUrl && (
-                                      <a
-                                        href={whatsappUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="h-7 w-7 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                        title="WhatsApp Direto"
-                                      >
-                                        <MessageCircle className="w-3 h-3" />
-                                      </a>
-                                    )}
-                                  </div>
-                                </motion.div>
-                              );
-                            })
+                                    </Draggable>
+                                  );
+                                })
+                              )}
+                              {provided.placeholder}
+                            </div>
                           )}
-                        </div>
+                        </Droppable>
 
                         {/* ClickUp "+ Adicionar Candidato" Button */}
                         <button
@@ -1565,7 +1559,7 @@ export default function CompanyPortalPage() {
                     );
                   })}
                 </div>
-              </LayoutGroup>
+              </DragDropContext>
             ) : (
               /* LIST VIEW MODE BY STAGE */
               <div className="space-y-4">
