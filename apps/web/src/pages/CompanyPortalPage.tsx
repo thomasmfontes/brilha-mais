@@ -1455,24 +1455,6 @@ export default function CompanyPortalPage() {
         )}
       </main>
 
-      {/* Institutional Corporate Footer */}
-      <footer className="w-full border-t border-slate-200 bg-white mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <div>
-            &copy; 2026 Brilha Mais. Todos os direitos reservados.
-          </div>
-          <div className="flex items-center gap-4 text-slate-500">
-            <span className="hover:text-slate-700 transition-colors cursor-pointer">
-              Termos de Uso
-            </span>
-            <span>&middot;</span>
-            <span className="hover:text-slate-700 transition-colors cursor-pointer">
-              Privacidade
-            </span>
-          </div>
-        </div>
-      </footer>
-
       {/* Talent Full Details Modal */}
       {selectedTalent && (
         <CompanyTalentModal
