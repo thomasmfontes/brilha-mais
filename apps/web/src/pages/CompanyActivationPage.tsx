@@ -14,6 +14,7 @@ import {
   UserCheck,
   Mail,
   Phone,
+  Check,
 } from "lucide-react";
 import api from "../utils/api";
 import { toast } from "react-hot-toast";
@@ -253,13 +254,26 @@ export default function CompanyActivationPage() {
               </div>
 
               <label className="flex items-start gap-3 cursor-pointer select-none group">
-                <input
-                  type="checkbox"
-                  checked={termsAccepted}
-                  onChange={(e) => setTermsAccepted(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded-md border-zinc-300 text-amber-500 focus:ring-1 focus:ring-amber-500 cursor-pointer shrink-0 accent-amber-500"
-                  required
-                />
+                <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="sr-only peer"
+                    required
+                  />
+                  <div
+                    className={`w-4 h-4 rounded-md border transition-all flex items-center justify-center ${
+                      termsAccepted
+                        ? "bg-amber-500 border-amber-500 text-white"
+                        : "bg-white border-zinc-300 group-hover:border-zinc-400"
+                    } peer-focus-visible:ring-2 peer-focus-visible:ring-amber-500/30`}
+                  >
+                    {termsAccepted && (
+                      <Check className="w-3 h-3 text-white stroke-[3]" />
+                    )}
+                  </div>
+                </div>
                 <span className="text-xs font-medium text-zinc-700 group-hover:text-zinc-900 transition-colors leading-relaxed">
                   Declaro que li e concordo integralmente com os <strong>Termos de Compromisso, Confidencialidade e LGPD</strong> em nome da empresa parceira.
                 </span>
