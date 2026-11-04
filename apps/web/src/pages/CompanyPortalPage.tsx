@@ -254,6 +254,61 @@ function getDraggableCardStyle(style: any, snapshot: any) {
   };
 }
 
+// ClickUp-grade Solid Status Badge Pill
+function renderStagePill(stage?: string | null) {
+  if (!stage) {
+    return (
+      <span className="px-2.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+        Disponível
+      </span>
+    );
+  }
+  const config: Record<string, { label: string; bg: string }> = {
+    SAVED: { label: "TRIAGEM / RADAR", bg: "bg-sky-500 text-white" },
+    INTERVIEW: { label: "EM ENTREVISTA", bg: "bg-amber-500 text-white" },
+    HIRED: { label: "CONTRATADO", bg: "bg-emerald-600 text-white" },
+    ARCHIVED: { label: "BANCO DE RESERVA", bg: "bg-slate-600 text-white" },
+  };
+  const c = config[stage] || { label: stage, bg: "bg-slate-600 text-white" };
+  return (
+    <span
+      className={`px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase shadow-2xs inline-block whitespace-nowrap ${c.bg}`}
+    >
+      {c.label}
+    </span>
+  );
+}
+
+// ClickUp-grade Solid Color Tag Chips
+function renderInterestTags(tags?: string[], limit: number = 3) {
+  if (!tags || tags.length === 0) return null;
+  const bgColors = [
+    "bg-indigo-600 text-white",
+    "bg-blue-600 text-white",
+    "bg-violet-600 text-white",
+    "bg-sky-600 text-white",
+  ];
+  return (
+    <div className="flex flex-wrap gap-1">
+      {tags.slice(0, limit).map((tag, idx) => (
+        <span
+          key={idx}
+          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide shadow-2xs ${
+            bgColors[idx % bgColors.length]
+          }`}
+        >
+          {tag}
+        </span>
+      ))}
+      {tags.length > limit && (
+        <span className="text-[10px] text-slate-400 px-1 py-0.5 font-medium">
+          +{tags.length - limit}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function CompanyPortalPage() {
   const navigate = useNavigate();
 
@@ -1075,49 +1130,17 @@ export default function CompanyPortalPage() {
                               </div>
                             </td>
                             <td className="py-3 px-4">
-                              <div className="flex flex-wrap gap-1 max-w-xs">
-                                {talent.areasOfInterest?.slice(0, 2).map((area, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200/60"
-                                  >
-                                    {area}
-                                  </span>
-                                ))}
-                                {talent.areasOfInterest && talent.areasOfInterest.length > 2 && (
-                                  <span className="text-[10px] text-slate-400 px-1 py-0.5">
-                                    +{talent.areasOfInterest.length - 2}
-                                  </span>
-                                )}
-                              </div>
+                              {renderInterestTags(talent.areasOfInterest, 2)}
                             </td>
                             <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                               {talent.currentStage ? (
-                                <span
-                                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border inline-block whitespace-nowrap ${
-                                    talent.currentStage === "HIRED"
-                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                      : talent.currentStage === "INTERVIEW"
-                                        ? "bg-amber-50 text-amber-800 border-amber-200"
-                                        : talent.currentStage === "SAVED"
-                                          ? "bg-blue-50 text-blue-700 border-blue-200"
-                                          : "bg-slate-100 text-slate-600 border-slate-200"
-                                  }`}
-                                >
-                                  {talent.currentStage === "HIRED"
-                                    ? "Contratado"
-                                    : talent.currentStage === "INTERVIEW"
-                                      ? "Em Entrevista"
-                                      : talent.currentStage === "SAVED"
-                                        ? "Salvo no Radar"
-                                        : "Banco de Reserva"}
-                                </span>
+                                renderStagePill(talent.currentStage)
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => handleQuickMove(talent.id, "SAVED")}
                                   disabled={movingTalent?.id === talent.id}
-                                  className="h-6.5 px-2.5 rounded border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-[11px] font-medium text-slate-600 hover:text-blue-700 transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                                  className="h-7 px-2.5 rounded-lg border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-[11px] font-medium text-slate-600 hover:text-sky-700 transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50 shadow-2xs"
                                 >
                                   <Bookmark className="w-3 h-3 text-slate-400" />
                                   <span>Salvar no Radar</span>
@@ -1129,19 +1152,20 @@ export default function CompanyPortalPage() {
                                 <button
                                   type="button"
                                   onClick={() => setSelectedTalent(talent)}
-                                  className="h-7 px-2.5 rounded bg-slate-900 hover:bg-slate-800 text-white font-medium text-[11px] transition-colors cursor-pointer"
+                                  className="h-7.5 px-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                                 >
-                                  Ver Perfil
+                                  <Eye className="w-3.5 h-3.5 text-slate-400" />
+                                  <span>Ver Perfil</span>
                                 </button>
 
                                 {talent.resumeUrl && (
                                   <button
                                     type="button"
                                     onClick={() => handleDownloadResume(talent)}
-                                    className="h-7 px-2 rounded border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+                                    className="h-7.5 px-2.5 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
                                     title="Baixar Currículo PDF"
                                   >
-                                    <Download className="w-3.5 h-3.5" />
+                                    <Download className="w-3.5 h-3.5 text-slate-500" />
                                   </button>
                                 )}
 
@@ -1150,10 +1174,10 @@ export default function CompanyPortalPage() {
                                     href={whatsappUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="h-7 px-2 rounded border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer"
+                                    className="h-7.5 px-2.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
                                     title="WhatsApp Direto"
                                   >
-                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
                                   </a>
                                 )}
                               </div>
@@ -1210,27 +1234,7 @@ export default function CompanyPortalPage() {
                           </div>
 
                           {/* Stage Pill */}
-                          {talent.currentStage && (
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 whitespace-nowrap ${
-                                talent.currentStage === "HIRED"
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  : talent.currentStage === "INTERVIEW"
-                                    ? "bg-amber-50 text-amber-800 border-amber-200"
-                                    : talent.currentStage === "SAVED"
-                                      ? "bg-blue-50 text-blue-700 border-blue-200"
-                                      : "bg-slate-100 text-slate-600 border-slate-200"
-                              }`}
-                            >
-                              {talent.currentStage === "HIRED"
-                                ? "Contratado"
-                                : talent.currentStage === "INTERVIEW"
-                                  ? "Em Entrevista"
-                                  : talent.currentStage === "SAVED"
-                                    ? "Salvo no Radar"
-                                    : "Banco de Reserva"}
-                            </span>
-                          )}
+                          {talent.currentStage && renderStagePill(talent.currentStage)}
                         </div>
 
                         {/* Location & Turno */}
@@ -1259,32 +1263,21 @@ export default function CompanyPortalPage() {
 
                         {/* Areas tags */}
                         {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {talent.areasOfInterest.slice(0, 3).map((area, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200/60"
-                              >
-                                {area}
-                              </span>
-                            ))}
-                            {talent.areasOfInterest.length > 3 && (
-                              <span className="px-1.5 py-0.5 text-[10px] text-slate-400">
-                                +{talent.areasOfInterest.length - 3}
-                              </span>
-                            )}
+                          <div className="mb-3">
+                            {renderInterestTags(talent.areasOfInterest, 3)}
                           </div>
                         )}
                       </div>
 
                       {/* Card Actions */}
-                      <div className="pt-2.5 border-t border-slate-100 space-y-2" onClick={(e) => e.stopPropagation()}>
+                      <div className="pt-3 border-t border-slate-100 space-y-2" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
                             onClick={() => setSelectedTalent(talent)}
-                            className="flex-1 h-8 px-3 rounded-md bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs transition-colors flex items-center justify-center cursor-pointer"
+                            className="flex-1 h-8 px-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                           >
+                            <Eye className="w-3.5 h-3.5 text-slate-400" />
                             <span>Ver Perfil</span>
                           </button>
 
@@ -1292,10 +1285,10 @@ export default function CompanyPortalPage() {
                             <button
                               type="button"
                               onClick={() => handleDownloadResume(talent)}
-                              className="h-8 px-2 rounded-md border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors flex items-center justify-center cursor-pointer"
+                              className="h-8 px-2.5 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
                               title="Baixar Currículo PDF"
                             >
-                              <Download className="w-3.5 h-3.5" />
+                              <Download className="w-3.5 h-3.5 text-slate-500" />
                             </button>
                           )}
 
@@ -1304,10 +1297,10 @@ export default function CompanyPortalPage() {
                               href={whatsappUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="h-8 px-2 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer"
+                              className="h-8 px-2.5 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
                               title="Contato via WhatsApp"
                             >
-                              <MessageCircle className="w-3.5 h-3.5" />
+                              <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
                             </a>
                           )}
                         </div>
@@ -1319,7 +1312,7 @@ export default function CompanyPortalPage() {
                               type="button"
                               onClick={() => handleQuickMove(talent.id, "SAVED")}
                               disabled={movingTalent?.id === talent.id}
-                              className="flex-1 h-7 px-2 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[11px] font-medium text-slate-600 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                              className="flex-1 h-7.5 px-2 rounded-lg border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-[11px] font-medium text-slate-600 hover:text-sky-700 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50 shadow-2xs"
                             >
                               {movingTalent?.id === talent.id && movingTalent.stage === "SAVED" ? (
                                 <LoadingSpinner size="xs" variant="current" />
@@ -1332,7 +1325,7 @@ export default function CompanyPortalPage() {
                               type="button"
                               onClick={() => handleQuickMove(talent.id, "INTERVIEW")}
                               disabled={movingTalent?.id === talent.id}
-                              className="flex-1 h-7 px-2 rounded border border-amber-200 bg-amber-50/50 hover:bg-amber-100 text-[11px] font-medium text-amber-900 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                              className="flex-1 h-7.5 px-2 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-[11px] font-semibold text-amber-800 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50 shadow-2xs"
                             >
                               {movingTalent?.id === talent.id && movingTalent.stage === "INTERVIEW" ? (
                                 <LoadingSpinner size="xs" variant="current" />
@@ -1750,39 +1743,53 @@ export default function CompanyPortalPage() {
               /* LIST VIEW MODE BY STAGE */
               <div className="space-y-4">
                 {/* Stage Filter Tabs */}
-                <div className="flex border-b border-slate-200 space-x-6">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
                   {[
-                    { key: "ALL", label: `Todos (${pipelineData?.counts?.total || 0})` },
+                    { key: "ALL", label: "Todos", count: pipelineData?.counts?.total || 0 },
                     {
                       key: "SAVED",
-                      label: `Triagem / Radar (${pipelineData?.counts?.saved || 0})`,
+                      label: "Triagem / Radar",
+                      count: pipelineData?.counts?.saved || 0,
                     },
                     {
                       key: "INTERVIEW",
-                      label: `Em Entrevista (${pipelineData?.counts?.interview || 0})`,
+                      label: "Em Entrevista",
+                      count: pipelineData?.counts?.interview || 0,
                     },
                     {
                       key: "HIRED",
-                      label: `Contratados (${pipelineData?.counts?.hired || 0})`,
+                      label: "Contratados",
+                      count: pipelineData?.counts?.hired || 0,
                     },
                     {
                       key: "ARCHIVED",
-                      label: `Banco de Reserva (${pipelineData?.counts?.archived || 0})`,
+                      label: "Banco de Reserva",
+                      count: pipelineData?.counts?.archived || 0,
                     },
-                  ].map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setPipelineFilter(item.key as any)}
-                      className={`pb-2.5 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
-                        pipelineFilter === item.key
-                          ? "border-amber-600 text-slate-900 font-semibold"
-                          : "border-transparent text-slate-500 hover:text-slate-800"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
+                  ].map((item) => {
+                    const active = pipelineFilter === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => setPipelineFilter(item.key as any)}
+                        className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
+                          active
+                            ? "bg-slate-900 text-white"
+                            : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span>{item.label}</span>
+                        <span
+                          className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {item.count}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Candidate List Cards */}
@@ -1837,26 +1844,15 @@ export default function CompanyPortalPage() {
                                 </div>
                               </div>
 
-                              <span
-                                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 whitespace-nowrap ${
-                                  item.stage === "HIRED"
-                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                    : item.stage === "INTERVIEW"
-                                      ? "bg-amber-50 text-amber-800 border-amber-200"
-                                      : item.stage === "SAVED"
-                                        ? "bg-blue-50 text-blue-700 border-blue-200"
-                                        : "bg-slate-100 text-slate-600 border-slate-200"
-                                }`}
-                              >
-                                {item.stage === "HIRED"
-                                  ? "Contratado"
-                                  : item.stage === "INTERVIEW"
-                                    ? "Em Entrevista"
-                                    : item.stage === "SAVED"
-                                      ? "Salvo no Radar"
-                                      : "Banco de Reserva"}
-                              </span>
+                              {renderStagePill(item.stage)}
                             </div>
+
+                            {/* Tags */}
+                            {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
+                              <div className="mb-2.5">
+                                {renderInterestTags(talent.areasOfInterest, 3)}
+                              </div>
+                            )}
 
                             {item.stage === "HIRED" && item.hiredRole && (
                               <div className="bg-emerald-50 border border-emerald-200 rounded p-1.5 mb-2 text-xs text-emerald-900 flex items-center gap-1.5 font-medium">
@@ -1891,23 +1887,24 @@ export default function CompanyPortalPage() {
                           </div>
 
                           {/* Actions */}
-                          <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-1.5" onClick={(e) => e.stopPropagation()}>
+                          <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-1.5" onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
                               onClick={() => openTalent(talent, item)}
-                              className="flex-1 h-8 px-3 rounded-md bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs transition-colors flex items-center justify-center cursor-pointer"
+                              className="flex-1 h-8 px-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                             >
-                              Gerenciar Candidato
+                              <Eye className="w-3.5 h-3.5 text-slate-400" />
+                              <span>Gerenciar Candidato</span>
                             </button>
 
                             {talent.resumeUrl && (
                               <button
                                 type="button"
                                 onClick={() => handleDownloadResume(talent)}
-                                className="h-8 px-2 rounded-md border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors flex items-center justify-center cursor-pointer"
-                                title="Baixar Currículo"
+                                className="h-8 px-2.5 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
+                                title="Baixar Currículo PDF"
                               >
-                                <Download className="w-3.5 h-3.5" />
+                                <Download className="w-3.5 h-3.5 text-slate-500" />
                               </button>
                             )}
 
@@ -1916,10 +1913,10 @@ export default function CompanyPortalPage() {
                                 href={whatsappUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="h-8 px-2 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer"
+                                className="h-8 px-2.5 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
                                 title="Conversar no WhatsApp"
                               >
-                                <MessageCircle className="w-3.5 h-3.5" />
+                                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
                               </a>
                             )}
                           </div>
