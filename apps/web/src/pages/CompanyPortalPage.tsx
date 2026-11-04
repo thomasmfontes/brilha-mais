@@ -33,6 +33,8 @@ import {
   ChevronRight,
   SlidersHorizontal,
   RotateCcw,
+  GripVertical,
+  StickyNote,
 } from "lucide-react";
 import api from "../utils/api";
 import { toast } from "react-hot-toast";
@@ -195,6 +197,11 @@ export default function CompanyPortalPage() {
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedStage, setSelectedStage] = useState("");
 
+  // Pipeline search & Drag and drop
+  const [pipelineSearch, setPipelineSearch] = useState("");
+  const [draggedTalentId, setDraggedTalentId] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+
   // Modal
   const [selectedTalent, setSelectedTalent] = useState<CompanyTalent | null>(
     null,
@@ -290,7 +297,7 @@ export default function CompanyPortalPage() {
     notes?: string,
     hiredRole?: string,
   ) => {
-    // Update local talents array
+    // 1. Instantly update local catalog talents array
     setTalents((prev) =>
       prev.map((t) =>
         t.id === talentId
@@ -304,11 +311,94 @@ export default function CompanyPortalPage() {
       ),
     );
 
-    // Refresh pipeline data in background
-    api
-      .get("/company/pipeline")
-      .then((res) => setPipelineData(res.data))
-      .catch(() => {});
+    // 2. Instantly update pipelineData state so Kanban moves immediately without page reload
+    setPipelineData((prev: any) => {
+      if (!prev) return prev;
+      const prevPipeline = prev.pipeline || {
+        SAVED: [],
+        INTERVIEW: [],
+        HIRED: [],
+        ARCHIVED: [],
+      };
+
+      let itemToMove: any = null;
+      const nextPipeline: Record<string, any[]> = {
+        SAVED: [],
+        INTERVIEW: [],
+        HIRED: [],
+        ARCHIVED: [],
+      };
+
+      // Pull out candidate from whichever column they were previously in
+      (["SAVED", "INTERVIEW", "HIRED", "ARCHIVED"] as const).forEach((col) => {
+        const list = prevPipeline[col] || [];
+        list.forEach((entry: any) => {
+          if (entry.talent?.id === talentId || entry.talentId === talentId) {
+            itemToMove = {
+              ...entry,
+              stage: newStage,
+              notes: notes !== undefined ? notes : entry.notes,
+              hiredRole: hiredRole !== undefined ? hiredRole : entry.hiredRole,
+              updatedAt: new Date().toISOString(),
+            };
+          } else {
+            nextPipeline[col].push(entry);
+          }
+        });
+      });
+
+      // If talent was not yet in pipeline (e.g. moved directly from catalog)
+      if (!itemToMove && newStage && newStage !== "") {
+        const t = talents.find((item) => item.id === talentId);
+        if (t) {
+          itemToMove = {
+            interactionId: `temp-${Date.now()}`,
+            stage: newStage,
+            notes: notes || "",
+            hiredRole: hiredRole || "",
+            updatedAt: new Date().toISOString(),
+            talent: {
+              id: t.id,
+              headline: t.headline,
+              city: t.city,
+              state: t.state,
+              availability: t.availability,
+              resumeUrl: t.resumeUrl,
+              phone: t.phone,
+              areasOfInterest: t.areasOfInterest,
+              user: {
+                id: t.user?.id || t.userId,
+                name: t.user?.name || "Aluno",
+                avatarUrl: t.user?.avatarUrl,
+              },
+            },
+          };
+        }
+      }
+
+      // If valid stage, insert at top of destination column
+      if (itemToMove && newStage && nextPipeline[newStage]) {
+        nextPipeline[newStage].unshift(itemToMove);
+      }
+
+      const total =
+        nextPipeline.SAVED.length +
+        nextPipeline.INTERVIEW.length +
+        nextPipeline.HIRED.length +
+        nextPipeline.ARCHIVED.length;
+
+      return {
+        ...prev,
+        pipeline: nextPipeline,
+        counts: {
+          total,
+          saved: nextPipeline.SAVED.length,
+          interview: nextPipeline.INTERVIEW.length,
+          hired: nextPipeline.HIRED.length,
+          archived: nextPipeline.ARCHIVED.length,
+        },
+      };
+    });
   };
 
   const handleDownloadResume = async (talent: CompanyTalent) => {
@@ -332,21 +422,30 @@ export default function CompanyPortalPage() {
     newStage: "SAVED" | "INTERVIEW" | "HIRED" | "ARCHIVED",
   ) => {
     setMovingTalent({ id: talentId, stage: newStage });
-    // Optimistic UI update: candidate card reflects the new stage immediately
+
+    // 1. Optimistic UI update: candidate card moves instantly in React memory (0ms lag)
     handleStageChange(talentId, newStage);
 
     try {
+      // 2. Persist to PostgreSQL database
       await api.put(`/company/talents/${talentId}/stage`, { stage: newStage });
+
       const stageMessages: Record<string, string> = {
-        SAVED: "Candidato salvo no seu Radar!",
+        SAVED: "Candidato salvo no Radar!",
         INTERVIEW: "Candidato movido para etapa de Entrevista!",
         HIRED: "Candidato registrado como Contratado! Parabéns!",
         ARCHIVED: "Candidato arquivado no Banco de Reserva.",
       };
       toast.success(stageMessages[newStage] || "Etapa atualizada com sucesso!");
+
+      // 3. ONLY after backend PUT succeeds, sync pipeline state from server
+      const res = await api.get("/company/pipeline");
+      if (res.data) setPipelineData(res.data);
     } catch (err: any) {
-      handleStageChange(talentId, "");
       toast.error(err.response?.data?.message || "Erro ao atualizar etapa.");
+      // Rollback to server state on error
+      const res = await api.get("/company/pipeline").catch(() => null);
+      if (res?.data) setPipelineData(res.data);
     } finally {
       setMovingTalent(null);
     }
@@ -366,21 +465,36 @@ export default function CompanyPortalPage() {
     }
   };
 
-  // Pipeline flat list according to filter
+  // Pipeline flat list according to filter & search
   const pipelineCandidates = useMemo(() => {
     if (!pipelineData?.pipeline) return [];
     const p = pipelineData.pipeline;
-    if (pipelineFilter === "SAVED") return p.SAVED || [];
-    if (pipelineFilter === "INTERVIEW") return p.INTERVIEW || [];
-    if (pipelineFilter === "HIRED") return p.HIRED || [];
-    if (pipelineFilter === "ARCHIVED") return p.ARCHIVED || [];
-    return [
-      ...(p.SAVED || []),
-      ...(p.INTERVIEW || []),
-      ...(p.HIRED || []),
-      ...(p.ARCHIVED || []),
-    ];
-  }, [pipelineData, pipelineFilter]);
+    let list: any[] = [];
+    if (pipelineFilter === "SAVED") list = p.SAVED || [];
+    else if (pipelineFilter === "INTERVIEW") list = p.INTERVIEW || [];
+    else if (pipelineFilter === "HIRED") list = p.HIRED || [];
+    else if (pipelineFilter === "ARCHIVED") list = p.ARCHIVED || [];
+    else {
+      list = [
+        ...(p.SAVED || []),
+        ...(p.INTERVIEW || []),
+        ...(p.HIRED || []),
+        ...(p.ARCHIVED || []),
+      ];
+    }
+
+    if (!pipelineSearch.trim()) return list;
+    const q = pipelineSearch.trim().toLowerCase();
+    return list.filter((item: any) => {
+      const t = item.talent;
+      return (
+        t?.user?.name?.toLowerCase().includes(q) ||
+        t?.headline?.toLowerCase().includes(q) ||
+        t?.city?.toLowerCase().includes(q) ||
+        t?.areasOfInterest?.some((a: string) => a.toLowerCase().includes(q))
+      );
+    });
+  }, [pipelineData, pipelineFilter, pipelineSearch]);
 
   if (loading) {
     return (
@@ -1030,242 +1144,407 @@ export default function CompanyPortalPage() {
         ) : (
           /* TAB 2: PROCESSOS SELETIVOS (KANBAN PIPELINE - GUPY ATS STANDARD) */
           <div className="space-y-4">
-            {/* Header info */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Header info & Kanban Toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white border border-slate-200 rounded-lg p-3 shadow-2xs">
               <div>
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                  Funil de Contratação
+                <h1 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>Funil de Contratação</span>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                    {pipelineData?.counts?.total || 0} candidatos em processo
+                  </span>
                 </h1>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Acompanhe e movimente os candidatos pelas etapas do processo seletivo da sua empresa.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 self-start sm:self-auto text-xs text-slate-600">
-                <span className="px-2.5 py-1 rounded-md bg-white border border-slate-200 font-semibold text-slate-800">
-                  {pipelineData?.counts?.total || 0} candidatos em processo
-                </span>
+              <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
+                {/* Search within pipeline */}
+                <div className="relative w-44 sm:w-56">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={pipelineSearch}
+                    onChange={(e) => setPipelineSearch(e.target.value)}
+                    placeholder="Filtrar candidatos no funil..."
+                    className="w-full h-8 pl-8 pr-6 rounded-md border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors bg-white"
+                  />
+                  {pipelineSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setPipelineSearch("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                {/* View switcher */}
+                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setPipelineView("kanban")}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
+                      pipelineView === "kanban"
+                        ? "bg-white text-slate-900 shadow-2xs font-semibold"
+                        : "text-slate-500 hover:text-slate-900"
+                    }`}
+                  >
+                    <Kanban className="w-3.5 h-3.5" />
+                    <span>Quadro</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPipelineView("list")}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
+                      pipelineView === "list"
+                        ? "bg-white text-slate-900 shadow-2xs font-semibold"
+                        : "text-slate-500 hover:text-slate-900"
+                    }`}
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    <span>Lista</span>
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Kanban or List View */}
             {pipelineView === "kanban" ? (
-              /* REAL GUPY KANBAN LANES */
+              /* REAL GUPY KANBAN LANES WITH NATIVE DRAG & DROP */
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
                 {[
                   {
                     key: "SAVED",
                     title: "Triagem / Radar",
-                    dotColor: "bg-blue-500",
+                    subtitle: "Perfis em avaliação",
+                    dotColor: "bg-sky-500",
+                    accentBorder: "border-t-sky-500",
+                    badgeStyle: "bg-sky-50 text-sky-700 border-sky-200",
                     candidates: pipelineData?.pipeline?.SAVED || [],
                   },
                   {
                     key: "INTERVIEW",
                     title: "Em Entrevista",
+                    subtitle: "Em contato / entrevista",
                     dotColor: "bg-amber-500",
+                    accentBorder: "border-t-amber-500",
+                    badgeStyle: "bg-amber-50 text-amber-800 border-amber-200",
                     candidates: pipelineData?.pipeline?.INTERVIEW || [],
                   },
                   {
                     key: "HIRED",
                     title: "Contratados",
+                    subtitle: "Contratações formalizadas",
                     dotColor: "bg-emerald-500",
+                    accentBorder: "border-t-emerald-500",
+                    badgeStyle: "bg-emerald-50 text-emerald-800 border-emerald-200",
                     candidates: pipelineData?.pipeline?.HIRED || [],
                   },
                   {
                     key: "ARCHIVED",
                     title: "Banco de Reserva",
+                    subtitle: "Guardados para o futuro",
                     dotColor: "bg-slate-400",
+                    accentBorder: "border-t-slate-400",
+                    badgeStyle: "bg-slate-100 text-slate-700 border-slate-200",
                     candidates: pipelineData?.pipeline?.ARCHIVED || [],
                   },
-                ].map((column) => (
-                  <div
-                    key={column.key}
-                    className="bg-slate-200/60 border border-slate-200/80 rounded-xl p-3 flex flex-col min-h-[580px]"
-                  >
-                    {/* Lane Header */}
-                    <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-200 px-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2.5 h-2.5 rounded-full ${column.dotColor}`} />
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                          {column.title}
-                        </h3>
-                      </div>
-                      <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-200">
-                        {column.candidates.length}
-                      </span>
-                    </div>
+                ].map((column) => {
+                  const filteredCandidates = column.candidates.filter((item: any) => {
+                    if (!pipelineSearch.trim()) return true;
+                    const q = pipelineSearch.trim().toLowerCase();
+                    const t = item.talent;
+                    return (
+                      t?.user?.name?.toLowerCase().includes(q) ||
+                      t?.headline?.toLowerCase().includes(q) ||
+                      t?.city?.toLowerCase().includes(q) ||
+                      t?.areasOfInterest?.some((a: string) => a.toLowerCase().includes(q))
+                    );
+                  });
 
-                    {/* Lane Cards Container */}
-                    <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[720px] pr-0.5 custom-scrollbar">
-                      {column.candidates.length === 0 ? (
-                        <div className="h-32 rounded-lg border border-dashed border-slate-300 flex flex-col items-center justify-center text-center p-3 text-slate-400">
-                          <p className="text-xs font-medium text-slate-500">Nenhum candidato</p>
-                          <p className="text-[11px] text-slate-400 mt-0.5">nesta etapa</p>
+                  const isOver = dragOverColumn === column.key;
+
+                  return (
+                    <div
+                      key={column.key}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                        if (dragOverColumn !== column.key) {
+                          setDragOverColumn(column.key);
+                        }
+                      }}
+                      onDragLeave={(e) => {
+                        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                          setDragOverColumn(null);
+                        }
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const talentId = e.dataTransfer.getData("text/plain") || draggedTalentId;
+                        setDragOverColumn(null);
+                        setDraggedTalentId(null);
+                        if (talentId) {
+                          // Check if candidate is already in this stage
+                          const currentItem = column.candidates.find((c: any) => c.talent?.id === talentId || c.talentId === talentId);
+                          if (!currentItem) {
+                            handleQuickMove(talentId, column.key as any);
+                          }
+                        }
+                      }}
+                      className={`
+                        bg-slate-100/75 border-t-4 ${column.accentBorder} border-x border-b border-slate-200/90 rounded-xl p-3 flex flex-col min-h-[600px] transition-all duration-150
+                        ${isOver ? "ring-2 ring-amber-400 border-amber-300 bg-amber-50/40 shadow-md" : "shadow-2xs"}
+                      `}
+                    >
+                      {/* Lane Header */}
+                      <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-200/80 px-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2.5 h-2.5 rounded-full ${column.dotColor}`} />
+                          <div>
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                              {column.title}
+                            </h3>
+                            <p className="text-[10px] text-slate-400 font-normal">
+                              {column.subtitle}
+                            </p>
+                          </div>
                         </div>
-                      ) : (
-                        column.candidates.map((item: any) => {
-                          const talent = item.talent;
-                          const cleanPhone = talent.phone ? talent.phone.replace(/\D/g, "") : "";
-                          const whatsappUrl = cleanPhone
-                            ? `https://wa.me/55${cleanPhone}?text=Ol%C3%A1%20${encodeURIComponent(
-                                talent.user.name || "Aluno",
-                              )}!%20Vi%20seu%20perfil%20no%20Banco%20de%20Talentos%20do%20Brilha%20Mais.`
-                            : null;
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${column.badgeStyle}`}>
+                          {column.candidates.length}
+                        </span>
+                      </div>
 
-                          return (
-                            <div
-                              key={item.interactionId || talent.id}
-                              onClick={() => openTalent(talent, item)}
-                              className="bg-white border border-slate-200 rounded-lg p-3 shadow-2xs hover:shadow-xs transition-all space-y-2.5 cursor-pointer group"
-                            >
-                              {/* Top row: Avatar & Info */}
-                              <div className="flex items-start gap-2.5">
-                                {talent.user.avatarUrl ? (
-                                  <img
-                                    src={talent.user.avatarUrl}
-                                    alt={talent.user.name}
-                                    className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0"
-                                  />
-                                ) : (
-                                  <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200 shrink-0">
-                                    {talent.user.name?.charAt(0) || "A"}
+                      {/* Drop Target Indicator when dragging over */}
+                      {isOver && draggedTalentId && (
+                        <div className="h-16 mb-2.5 rounded-lg border-2 border-dashed border-amber-400 bg-amber-100/60 flex flex-col items-center justify-center text-xs font-semibold text-amber-900 transition-all animate-pulse">
+                          <span>Soltar candidato aqui</span>
+                          <span className="text-[10px] font-normal text-amber-700">Mover para {column.title}</span>
+                        </div>
+                      )}
+
+                      {/* Lane Cards Container */}
+                      <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[720px] pr-0.5 custom-scrollbar">
+                        {filteredCandidates.length === 0 ? (
+                          <div className="h-28 rounded-lg border border-dashed border-slate-300/80 bg-white/40 flex flex-col items-center justify-center text-center p-3 text-slate-400">
+                            <Users className="w-5 h-5 text-slate-300 mb-1" />
+                            <p className="text-xs font-medium text-slate-500">Nenhum candidato</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">Arraste ou avance cards até aqui</p>
+                          </div>
+                        ) : (
+                          filteredCandidates.map((item: any) => {
+                            const talent = item.talent;
+                            const cleanPhone = talent.phone ? talent.phone.replace(/\D/g, "") : "";
+                            const whatsappUrl = cleanPhone
+                              ? `https://wa.me/55${cleanPhone}?text=Ol%C3%A1%20${encodeURIComponent(
+                                  talent.user.name || "Aluno",
+                                )}!%20Vi%20seu%20perfil%20no%20Banco%20de%20Talentos%20do%20Brilha%20Mais.`
+                              : null;
+                            const isBeingDragged = draggedTalentId === talent.id;
+
+                            return (
+                              <div
+                                key={item.interactionId || talent.id}
+                                draggable={true}
+                                onDragStart={(e) => {
+                                  e.dataTransfer.setData("text/plain", talent.id);
+                                  e.dataTransfer.effectAllowed = "move";
+                                  setDraggedTalentId(talent.id);
+                                }}
+                                onDragEnd={() => {
+                                  setDraggedTalentId(null);
+                                  setDragOverColumn(null);
+                                }}
+                                onClick={() => openTalent(talent, item)}
+                                className={`
+                                  bg-white border rounded-lg p-3 space-y-2.5 transition-all select-none group
+                                  ${isBeingDragged
+                                    ? "opacity-30 scale-95 border-dashed border-amber-400 shadow-none cursor-grabbing"
+                                    : "border-slate-200/90 shadow-2xs hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 cursor-grab active:cursor-grabbing"
+                                  }
+                                `}
+                              >
+                                {/* Top row: Drag Handle, Avatar & Info */}
+                                <div className="flex items-start gap-2">
+                                  <div
+                                    className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0 mt-1 cursor-grab"
+                                    title="Arraste para mover de etapa"
+                                  >
+                                    <GripVertical className="w-3.5 h-3.5" />
+                                  </div>
+                                  {talent.user.avatarUrl ? (
+                                    <img
+                                      src={talent.user.avatarUrl}
+                                      alt={talent.user.name}
+                                      className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200 shrink-0">
+                                      {talent.user.name?.charAt(0) || "A"}
+                                    </div>
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <span className="text-xs font-bold text-slate-900 truncate block group-hover:text-amber-700 transition-colors">
+                                      {talent.user.name}
+                                    </span>
+                                    <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                                      {talent.headline || "Jovem Aprendiz"}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Meta details: Location & Turno */}
+                                <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap">
+                                  {talent.city && (
+                                    <span className="flex items-center gap-1">
+                                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                                      <span className="truncate max-w-[110px]">{talent.city}{talent.state ? `/${talent.state}` : ""}</span>
+                                    </span>
+                                  )}
+                                  {talent.availability && (
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-slate-400 shrink-0" />
+                                      <span>{formatAvailability(talent.availability)}</span>
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Areas of Interest / Skills chips */}
+                                {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {talent.areasOfInterest.slice(0, 2).map((area: string, idx: number) => (
+                                      <span
+                                        key={idx}
+                                        className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-50 text-slate-600 border border-slate-200/80"
+                                      >
+                                        {area}
+                                      </span>
+                                    ))}
+                                    {talent.areasOfInterest.length > 2 && (
+                                      <span className="text-[10px] text-slate-400 px-1 py-0.5">
+                                        +{talent.areasOfInterest.length - 2}
+                                      </span>
+                                    )}
                                   </div>
                                 )}
-                                <div className="min-w-0 flex-1">
-                                  <span className="text-xs font-bold text-slate-900 truncate block group-hover:text-amber-700 transition-colors">
-                                    {talent.user.name}
-                                  </span>
-                                  <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                                    {talent.headline || "Jovem Aprendiz"}
-                                  </p>
+
+                                {/* Recruiter Notes */}
+                                {item.notes && (
+                                  <div className="bg-amber-50/60 border border-amber-200/60 rounded p-2 text-[11px] text-amber-900/90">
+                                    <div className="flex items-center gap-1 font-semibold text-amber-800 text-[10px] uppercase tracking-wider mb-0.5">
+                                      <StickyNote className="w-3 h-3 text-amber-600" />
+                                      <span>Anotação Interna</span>
+                                    </div>
+                                    <p className="line-clamp-2 italic">{item.notes}</p>
+                                  </div>
+                                )}
+
+                                {/* Hired role badge */}
+                                {item.stage === "HIRED" && item.hiredRole && (
+                                  <div className="bg-emerald-50 border border-emerald-200 rounded p-1.5 text-[11px] text-emerald-900 flex items-center gap-1.5 font-medium">
+                                    <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                    <span className="truncate">Cargo: {item.hiredRole}</span>
+                                  </div>
+                                )}
+
+                                {/* Bottom Action Strip */}
+                                <div
+                                  className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5"
+                                  onClick={(e) => e.stopPropagation()}
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                >
+                                  {/* Stage advance action */}
+                                  {item.stage === "SAVED" && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleQuickMove(talent.id, "INTERVIEW")}
+                                      disabled={movingTalent?.id === talent.id}
+                                      className="flex-1 h-7 px-2 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 text-[11px] font-medium text-amber-900 transition-colors flex items-center justify-between cursor-pointer disabled:opacity-50"
+                                      title="Avançar para entrevista"
+                                    >
+                                      <span>Chamar p/ Entrevista</span>
+                                      <ArrowRight className="w-3 h-3 text-amber-700" />
+                                    </button>
+                                  )}
+
+                                  {item.stage === "INTERVIEW" && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleQuickMove(talent.id, "HIRED")}
+                                      disabled={movingTalent?.id === talent.id}
+                                      className="flex-1 h-7 px-2 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[11px] font-medium text-emerald-900 transition-colors flex items-center justify-between cursor-pointer disabled:opacity-50"
+                                      title="Efetivar contratação"
+                                    >
+                                      <span>Efetivar Contratação</span>
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                    </button>
+                                  )}
+
+                                  {item.stage === "ARCHIVED" && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleQuickMove(talent.id, "SAVED")}
+                                      disabled={movingTalent?.id === talent.id}
+                                      className="flex-1 h-7 px-2 rounded bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[11px] font-medium text-slate-700 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                                    >
+                                      <RotateCcw className="w-3 h-3 text-slate-500" />
+                                      <span>Reativar no Radar</span>
+                                    </button>
+                                  )}
+
+                                  {item.stage === "HIRED" && (
+                                    <span className="flex-1 text-[11px] font-medium text-emerald-700 flex items-center gap-1">
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                      <span>Contratação Realizada</span>
+                                    </span>
+                                  )}
+
+                                  {/* Archive shortcut for SAVED or INTERVIEW */}
+                                  {(item.stage === "SAVED" || item.stage === "INTERVIEW") && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleQuickMove(talent.id, "ARCHIVED")}
+                                      className="h-7 w-7 rounded border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0"
+                                      title="Arquivar no Banco de Reserva"
+                                    >
+                                      <Archive className="w-3 h-3" />
+                                    </button>
+                                  )}
+
+                                  {/* CV and WhatsApp quick buttons */}
+                                  {talent.resumeUrl && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDownloadResume(talent)}
+                                      className="h-7 w-7 rounded border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0"
+                                      title="Baixar Currículo PDF"
+                                    >
+                                      <Download className="w-3 h-3" />
+                                    </button>
+                                  )}
+
+                                  {whatsappUrl && (
+                                    <a
+                                      href={whatsappUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="h-7 w-7 rounded border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer shrink-0"
+                                      title="WhatsApp Direto"
+                                    >
+                                      <MessageCircle className="w-3 h-3" />
+                                    </a>
+                                  )}
                                 </div>
                               </div>
-
-                              {/* Meta details */}
-                              <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap">
-                                {talent.city && (
-                                  <span className="flex items-center gap-1">
-                                    <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                                    <span className="truncate max-w-[110px]">{talent.city}</span>
-                                  </span>
-                                )}
-                                {talent.availability && (
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3 text-slate-400 shrink-0" />
-                                    <span>{formatAvailability(talent.availability)}</span>
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Recruiter Notes */}
-                              {item.notes && (
-                                <div className="bg-amber-50/60 border border-amber-200/60 rounded p-2 text-[11px] text-amber-900/90 line-clamp-2">
-                                  <span className="font-semibold text-amber-800 text-[10px] uppercase tracking-wider block mb-0.5">
-                                    Anotação Interna:
-                                  </span>
-                                  {item.notes}
-                                </div>
-                              )}
-
-                              {/* Hired role badge */}
-                              {item.stage === "HIRED" && item.hiredRole && (
-                                <div className="bg-emerald-50 border border-emerald-200 rounded p-1.5 text-[11px] text-emerald-900 flex items-center gap-1.5 font-medium">
-                                  <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                  <span className="truncate">Cargo: {item.hiredRole}</span>
-                                </div>
-                              )}
-
-                              {/* Bottom Action Strip */}
-                              <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5" onClick={(e) => e.stopPropagation()}>
-                                {/* Stage advance action */}
-                                {item.stage === "SAVED" && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleQuickMove(talent.id, "INTERVIEW")}
-                                    disabled={movingTalent?.id === talent.id}
-                                    className="flex-1 h-7 px-2 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 text-[11px] font-medium text-amber-900 transition-colors flex items-center justify-between cursor-pointer disabled:opacity-50"
-                                    title="Avançar para entrevista"
-                                  >
-                                    <span>Chamar p/ Entrevista</span>
-                                    <ArrowRight className="w-3 h-3 text-amber-700" />
-                                  </button>
-                                )}
-
-                                {item.stage === "INTERVIEW" && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleQuickMove(talent.id, "HIRED")}
-                                    disabled={movingTalent?.id === talent.id}
-                                    className="flex-1 h-7 px-2 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[11px] font-medium text-emerald-900 transition-colors flex items-center justify-between cursor-pointer disabled:opacity-50"
-                                    title="Efetivar contratação"
-                                  >
-                                    <span>Efetivar Contratação</span>
-                                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                  </button>
-                                )}
-
-                                {item.stage === "ARCHIVED" && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleQuickMove(talent.id, "SAVED")}
-                                    disabled={movingTalent?.id === talent.id}
-                                    className="flex-1 h-7 px-2 rounded bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[11px] font-medium text-slate-700 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
-                                  >
-                                    <RotateCcw className="w-3 h-3 text-slate-500" />
-                                    <span>Reativar no Radar</span>
-                                  </button>
-                                )}
-
-                                {item.stage === "HIRED" && (
-                                  <span className="flex-1 text-[11px] font-medium text-emerald-700 flex items-center gap-1">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                    <span>Contratação Realizada</span>
-                                  </span>
-                                )}
-
-                                {/* Archive shortcut for SAVED or INTERVIEW */}
-                                {(item.stage === "SAVED" || item.stage === "INTERVIEW") && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleQuickMove(talent.id, "ARCHIVED")}
-                                    className="h-7 w-7 rounded border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                    title="Arquivar no Banco de Reserva"
-                                  >
-                                    <Archive className="w-3 h-3" />
-                                  </button>
-                                )}
-
-                                {/* CV and WhatsApp quick buttons */}
-                                {talent.resumeUrl && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDownloadResume(talent)}
-                                    className="h-7 w-7 rounded border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                    title="Baixar Currículo PDF"
-                                  >
-                                    <Download className="w-3 h-3" />
-                                  </button>
-                                )}
-
-                                {whatsappUrl && (
-                                  <a
-                                    href={whatsappUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="h-7 w-7 rounded border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                    title="WhatsApp Direto"
-                                  >
-                                    <MessageCircle className="w-3 h-3" />
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
+                            );
+                          })
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               /* LIST VIEW MODE BY STAGE */
@@ -1459,7 +1738,13 @@ export default function CompanyPortalPage() {
       {selectedTalent && (
         <CompanyTalentModal
           talent={selectedTalent}
-          onClose={() => setSelectedTalent(null)}
+          onClose={() => {
+            setSelectedTalent(null);
+            api
+              .get("/company/pipeline")
+              .then((res) => setPipelineData(res.data))
+              .catch(() => {});
+          }}
           onStageChange={handleStageChange}
         />
       )}
