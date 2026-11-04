@@ -173,6 +173,65 @@ function FilterSelect({
   );
 }
 
+// Kanban card order persistence helpers
+const PIPELINE_ORDER_KEY = "brilha_mais_pipeline_card_order";
+
+function getSavedPipelineOrder(): Record<string, string[]> {
+  try {
+    const raw = localStorage.getItem(PIPELINE_ORDER_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePipelineOrder(pipeline: any) {
+  try {
+    if (!pipeline) return;
+    const orderMap: Record<string, string[]> = {
+      SAVED: (pipeline.SAVED || []).map((i: any) => i.talent?.id || i.talentId).filter(Boolean),
+      INTERVIEW: (pipeline.INTERVIEW || []).map((i: any) => i.talent?.id || i.talentId).filter(Boolean),
+      HIRED: (pipeline.HIRED || []).map((i: any) => i.talent?.id || i.talentId).filter(Boolean),
+      ARCHIVED: (pipeline.ARCHIVED || []).map((i: any) => i.talent?.id || i.talentId).filter(Boolean),
+    };
+    localStorage.setItem(PIPELINE_ORDER_KEY, JSON.stringify(orderMap));
+  } catch (e) {
+    console.error("Failed to save pipeline order:", e);
+  }
+}
+
+function applyOrderToPipeline(pipelineData: any) {
+  if (!pipelineData?.pipeline) return pipelineData;
+  const orderMap = getSavedPipelineOrder();
+  const stages = ["SAVED", "INTERVIEW", "HIRED", "ARCHIVED"] as const;
+  const newPipeline: Record<string, any[]> = {};
+
+  stages.forEach((stage) => {
+    const list = pipelineData.pipeline[stage] || [];
+    const order = orderMap[stage];
+    if (!order || order.length === 0) {
+      newPipeline[stage] = list;
+    } else {
+      const sorted = [...list].sort((a, b) => {
+        const idA = a.talent?.id || a.talentId;
+        const idB = b.talent?.id || b.talentId;
+        const idxA = order.indexOf(idA);
+        const idxB = order.indexOf(idB);
+        if (idxA === -1 && idxB === -1) return 0;
+        if (idxA === -1) return 1;
+        if (idxB === -1) return -1;
+        return idxA - idxB;
+      });
+      newPipeline[stage] = sorted;
+    }
+  });
+
+  return {
+    ...pipelineData,
+    pipeline: newPipeline,
+  };
+}
+
 export default function CompanyPortalPage() {
   const navigate = useNavigate();
 
@@ -224,7 +283,7 @@ export default function CompanyPortalPage() {
 
       setCompanyProfile(profileRes.data);
       setTalents(talentsRes.data || []);
-      setPipelineData(pipelineRes.data);
+      setPipelineData(applyOrderToPipeline(pipelineRes.data));
     } catch (err: any) {
       console.error("Failed to load company portal data:", err);
       if (err.response?.status === 401 || err.response?.status === 403) {
@@ -445,12 +504,12 @@ export default function CompanyPortalPage() {
 
       // 3. ONLY after backend PUT succeeds, sync pipeline state from server
       const res = await api.get("/company/pipeline");
-      if (res.data) setPipelineData(res.data);
+      if (res.data) setPipelineData(applyOrderToPipeline(res.data));
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Erro ao atualizar etapa.");
       // Rollback to server state on error
       const res = await api.get("/company/pipeline").catch(() => null);
-      if (res?.data) setPipelineData(res.data);
+      if (res?.data) setPipelineData(applyOrderToPipeline(res.data));
     } finally {
       setMovingTalent(null);
     }
@@ -511,15 +570,110 @@ export default function CompanyPortalPage() {
       return;
     }
 
-    const newStage = destination.droppableId as
+    const sourceCol = source.droppableId;
+    const destCol = destination.droppableId as
       | "SAVED"
       | "INTERVIEW"
       | "HIRED"
       | "ARCHIVED";
 
-    if (source.droppableId !== destination.droppableId) {
-      handleQuickMove(draggableId, newStage);
+    // 1. REORDERING WITHIN THE SAME COLUMN (Same Stage)
+    if (sourceCol === destCol) {
+      setPipelineData((prev: any) => {
+        if (!prev?.pipeline?.[sourceCol]) return prev;
+        const list = Array.from(prev.pipeline[sourceCol]);
+        const sourceIdx = list.findIndex(
+          (item: any) => item.talent?.id === draggableId || item.talentId === draggableId,
+        );
+        if (sourceIdx === -1) return prev;
+
+        const [movedItem] = list.splice(sourceIdx, 1);
+        list.splice(destination.index, 0, movedItem);
+
+        const newPipeline = {
+          ...prev.pipeline,
+          [sourceCol]: list,
+        };
+
+        savePipelineOrder(newPipeline);
+
+        return {
+          ...prev,
+          pipeline: newPipeline,
+        };
+      });
+      return;
     }
+
+    // 2. MOVING ACROSS DIFFERENT COLUMNS (Stage Transition)
+    setPipelineData((prev: any) => {
+      if (!prev?.pipeline) return prev;
+      const sourceList = Array.from(prev.pipeline[sourceCol] || []);
+      const destList = Array.from(prev.pipeline[destCol] || []);
+
+      const sourceIdx = sourceList.findIndex(
+        (item: any) => item.talent?.id === draggableId || item.talentId === draggableId,
+      );
+      if (sourceIdx === -1) return prev;
+
+      const [movedItem] = sourceList.splice(sourceIdx, 1) as any[];
+      const updatedItem = {
+        ...(movedItem as any),
+        stage: destCol,
+        updatedAt: new Date().toISOString(),
+      };
+
+      destList.splice(destination.index, 0, updatedItem);
+
+      const newPipeline = {
+        ...prev.pipeline,
+        [sourceCol]: sourceList,
+        [destCol]: destList,
+      };
+
+      savePipelineOrder(newPipeline);
+
+      const total =
+        (newPipeline.SAVED?.length || 0) +
+        (newPipeline.INTERVIEW?.length || 0) +
+        (newPipeline.HIRED?.length || 0) +
+        (newPipeline.ARCHIVED?.length || 0);
+
+      return {
+        ...prev,
+        pipeline: newPipeline,
+        counts: {
+          total,
+          saved: newPipeline.SAVED?.length || 0,
+          interview: newPipeline.INTERVIEW?.length || 0,
+          hired: newPipeline.HIRED?.length || 0,
+          archived: newPipeline.ARCHIVED?.length || 0,
+        },
+      };
+    });
+
+    // Update talents in memory so catalog syncs
+    setTalents((prev) =>
+      prev.map((t) => (t.id === draggableId ? { ...t, companyStage: destCol } : t)),
+    );
+
+    // Persist to backend database
+    api
+      .put(`/company/talents/${draggableId}/stage`, { stage: destCol })
+      .then(() => {
+        const stageMessages: Record<string, string> = {
+          SAVED: "Candidato salvo no Radar!",
+          INTERVIEW: "Candidato movido para etapa de Entrevista!",
+          HIRED: "Candidato registrado como Contratado! Parabéns!",
+          ARCHIVED: "Candidato arquivado no Banco de Reserva.",
+        };
+        toast.success(stageMessages[destCol] || "Etapa atualizada com sucesso!");
+      })
+      .catch((err) => {
+        console.error("Failed to persist stage change:", err);
+        toast.error(err.response?.data?.message || "Erro ao salvar etapa no servidor.");
+        fetchCompanyData();
+      });
   };
 
   if (loading) {
@@ -1703,7 +1857,7 @@ export default function CompanyPortalPage() {
             setSelectedTalent(null);
             api
               .get("/company/pipeline")
-              .then((res) => setPipelineData(res.data))
+              .then((res) => setPipelineData(applyOrderToPipeline(res.data)))
               .catch(() => {});
           }}
           onStageChange={handleStageChange}
