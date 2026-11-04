@@ -1483,18 +1483,43 @@ export default function CompanyPortalPage() {
                             <div
                               ref={provided.innerRef}
                               {...provided.droppableProps}
-                              className={`flex flex-col flex-1 min-h-[220px] rounded-lg transition-colors p-1 ${
-                                snapshot.isDraggingOver ? "bg-slate-200/40" : ""
-                              }`}
+                              className="flex flex-col flex-1 min-h-[220px] rounded-lg p-1"
                             >
-                              {filteredCandidates.length === 0 && !snapshot.isDraggingOver ? (
-                                <div className="h-28 rounded-lg border border-dashed border-slate-200 bg-white/40 flex flex-col items-center justify-center text-center p-3 text-slate-400 pointer-events-none mb-3">
-                                  <Users className="w-5 h-5 text-slate-300 mb-1" />
-                                  <p className="text-xs font-medium text-slate-500">Nenhum candidato</p>
-                                  <p className="text-[10px] text-slate-400 mt-0.5">Arraste cards para esta etapa</p>
+                              {filteredCandidates.length === 0 ? (
+                                <div
+                                  className={`h-28 rounded-xl border border-dashed transition-all duration-150 flex flex-col items-center justify-center text-center p-3 pointer-events-none mb-3 ${
+                                    snapshot.isDraggingOver
+                                      ? "border-slate-300 bg-slate-200/60 text-slate-700"
+                                      : "border-slate-200 bg-white/40 text-slate-400"
+                                  }`}
+                                >
+                                  <Users
+                                    className={`w-5 h-5 mb-1 ${
+                                      snapshot.isDraggingOver
+                                        ? "text-slate-600"
+                                        : "text-slate-300"
+                                    }`}
+                                  />
+                                  <p
+                                    className={`text-xs font-semibold ${
+                                      snapshot.isDraggingOver
+                                        ? "text-slate-800"
+                                        : "text-slate-500"
+                                    }`}
+                                  >
+                                    {snapshot.isDraggingOver
+                                      ? "Soltar candidato aqui"
+                                      : "Nenhum candidato"}
+                                  </p>
+                                  <p className="text-[10px] text-slate-400 mt-0.5">
+                                    {snapshot.isDraggingOver
+                                      ? "Mover para esta etapa"
+                                      : "Arraste cards para esta etapa"}
+                                  </p>
                                 </div>
-                              ) : (
-                                filteredCandidates.map((item: any, index: number) => {
+                              ) : null}
+
+                              {filteredCandidates.map((item: any, index: number) => {
                                   const talent = item.talent;
                                   const cleanPhone = talent.phone ? talent.phone.replace(/\D/g, "") : "";
                                   const whatsappUrl = cleanPhone
@@ -1678,8 +1703,7 @@ export default function CompanyPortalPage() {
                                       )}
                                     </Draggable>
                                   );
-                                })
-                              )}
+                                })}
                               {provided.placeholder}
                             </div>
                           )}

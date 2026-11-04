@@ -197,13 +197,3 @@ input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 50px white inset !important;
   -webkit-text-fill-color: #18181b !important;
 }
-
-/* ClickUp-style drag-and-drop placeholder slot indicator */
-[data-rfd-droppable-id] > div:not([data-rfd-draggable-id]) {
-  background-color: rgba(226, 232, 240, 0.5) !important;
-  border: 2px dashed #94a3b8 !important;
-  border-radius: 0.5rem !important;
-  box-sizing: border-box !important;
-  margin-bottom: 0.75rem !important;
-  transition: all 0.15s ease !important;
-}
