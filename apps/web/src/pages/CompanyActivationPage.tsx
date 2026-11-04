@@ -155,10 +155,11 @@ export default function CompanyActivationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] text-zinc-900 flex flex-col items-center justify-center px-4 py-8 sm:py-12 selection:bg-amber-100 selection:text-amber-900">
-      {/* Document Card */}
-      <main className="w-full max-w-2xl bg-white border border-zinc-200/80 rounded-2xl p-6 sm:p-9 shadow-sm">
-        {/* Header with Centered Logo & Title */}
+    <div className="min-h-screen bg-[#FAFAF9] text-zinc-900 flex flex-col justify-between selection:bg-amber-100 selection:text-amber-900">
+      {/* Central Document Area */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
+        <div className="w-full max-w-2xl bg-white border border-zinc-200/80 rounded-2xl p-6 sm:p-9 shadow-sm">
+          {/* Header with Centered Logo & Title */}
           <div className="flex flex-col items-center text-center mb-7 pb-6 border-b border-zinc-100">
             <Link to="/" className="mb-4 inline-block focus:outline-none">
               <img src={logo} alt="Brilha Mais" className="h-11 w-auto object-contain mx-auto" />
@@ -330,17 +331,20 @@ export default function CompanyActivationPage() {
               </button>
             </div>
           </form>
-        </main>
+        </div>
+      </main>
 
-        {/* Footer closely aligned with document */}
-        <footer className="w-full max-w-2xl pt-6 pb-2 px-2 text-center text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-3">
+      {/* Professional Anchored Footer Bar */}
+      <footer className="w-full border-t border-zinc-200/70 bg-white/70 backdrop-blur-xs mt-auto">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400">
           <p>&copy; 2026 Instituto Brilha Mais. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4">
             <Link to="/termos" className="hover:text-zinc-600 transition-colors">Termos de Uso</Link>
             <span>·</span>
             <Link to="/privacidade" className="hover:text-zinc-600 transition-colors">Política de Privacidade</Link>
           </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
+    </div>
   );
 }
