@@ -91,18 +91,18 @@ function FilterSelect({
   }, []);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative w-full" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          w-full sm:w-auto min-w-[160px] h-9 flex items-center justify-between px-3 rounded-lg text-xs font-medium outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-colors select-none cursor-pointer
+          w-full h-9 flex items-center justify-between px-3 rounded-lg text-xs font-medium outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-colors select-none cursor-pointer
           ${
             isActive
               ? "bg-amber-50/80 border border-amber-300 text-amber-900 shadow-2xs"
               : isOpen
                 ? "bg-slate-100 border border-slate-300 text-slate-900"
-                : "bg-white border border-slate-200/80 hover:bg-slate-50 hover:border-slate-300 text-slate-600"
+                : "bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700"
           }
         `}
       >
@@ -583,24 +583,24 @@ export default function CompanyPortalPage() {
               </div>
             </div>
 
-            {/* Filter Bar */}
-            <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-2xs space-y-3">
+            {/* Filter Bar - Clean Toolbar */}
+            <div className="bg-white border border-slate-200 rounded-lg p-2.5 sm:p-3 shadow-2xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 {/* Search */}
-                <div className="relative">
+                <div className="relative w-full">
                   <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Buscar por nome, cargo, habilidades..."
-                    className="w-full h-9 pl-9 pr-7 rounded-md border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                    className="w-full h-9 pl-9 pr-7 rounded-lg border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors bg-white"
                   />
                   {search && (
                     <button
                       type="button"
                       onClick={() => setSearch("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -651,31 +651,31 @@ export default function CompanyPortalPage() {
                   ]}
                 />
               </div>
+            </div>
 
-              {/* Filter active feedback */}
-              <div className="flex items-center justify-between pt-1 text-xs text-slate-500 border-t border-slate-100">
-                <span>
-                  Exibindo <strong>{filteredTalents.length}</strong> de{" "}
-                  <strong>{talents.length}</strong> candidatos
-                </span>
+            {/* Filter active feedback & count */}
+            <div className="flex items-center justify-between text-xs text-slate-500 px-0.5">
+              <span>
+                Exibindo <strong>{filteredTalents.length}</strong> de{" "}
+                <strong>{talents.length}</strong> candidatos
+              </span>
 
-                {(search || selectedArea || selectedAvailability || selectedCity || selectedStage) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearch("");
-                      setSelectedArea("");
-                      setSelectedAvailability("");
-                      setSelectedCity("");
-                      setSelectedStage("");
-                    }}
-                    className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-900 font-medium hover:underline cursor-pointer"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                    <span>Limpar Filtros</span>
-                  </button>
-                )}
-              </div>
+              {(search || selectedArea || selectedAvailability || selectedCity || selectedStage) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    setSelectedArea("");
+                    setSelectedAvailability("");
+                    setSelectedCity("");
+                    setSelectedStage("");
+                  }}
+                  className="inline-flex items-center gap-1.5 text-xs text-amber-700 hover:text-amber-800 font-medium hover:underline cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Limpar Filtros</span>
+                </button>
+              )}
             </div>
 
             {/* Talent Presentation (Grid or Table View) */}
