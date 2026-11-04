@@ -606,67 +606,6 @@ export default function CompanyPortalPage() {
                 )}
               </button>
             </nav>
-
-            {/* View Mode Toggle Controls */}
-            <div className="py-2 flex items-center gap-2">
-              {activeTab === "catalog" && (
-                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setCatalogView("table")}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                      catalogView === "table"
-                        ? "bg-white text-slate-900 shadow-2xs font-semibold"
-                        : "text-slate-500 hover:text-slate-900"
-                    }`}
-                  >
-                    <List className="w-3.5 h-3.5" />
-                    <span>Tabela</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCatalogView("grid")}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                      catalogView === "grid"
-                        ? "bg-white text-slate-900 shadow-2xs font-semibold"
-                        : "text-slate-500 hover:text-slate-900"
-                    }`}
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                    <span>Cards</span>
-                  </button>
-                </div>
-              )}
-
-              {activeTab === "pipeline" && (
-                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setPipelineView("kanban")}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                      pipelineView === "kanban"
-                        ? "bg-white text-slate-900 shadow-2xs font-semibold"
-                        : "text-slate-500 hover:text-slate-900"
-                    }`}
-                  >
-                    <Kanban className="w-3.5 h-3.5" />
-                    <span>Quadro Kanban</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPipelineView("list")}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                      pipelineView === "list"
-                        ? "bg-white text-slate-900 shadow-2xs font-semibold"
-                        : "text-slate-500 hover:text-slate-900"
-                    }`}
-                  >
-                    <List className="w-3.5 h-3.5" />
-                    <span>Lista por Etapa</span>
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </header>
@@ -694,6 +633,34 @@ export default function CompanyPortalPage() {
                 <p className="text-xs text-slate-500 mt-1 max-w-2xl">
                   Estudantes capacitados e avaliados pelo Instituto Brilha Mais disponíveis para recrutamento corporativo.
                 </p>
+              </div>
+
+              {/* View Switcher: Tabela / Cards */}
+              <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 shadow-2xs self-start sm:self-center">
+                <button
+                  type="button"
+                  onClick={() => setCatalogView("table")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
+                    catalogView === "table"
+                      ? "bg-slate-900 text-white shadow-2xs font-semibold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <List className="w-3.5 h-3.5" />
+                  <span>Tabela</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCatalogView("grid")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
+                    catalogView === "grid"
+                      ? "bg-slate-900 text-white shadow-2xs font-semibold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span>Cards</span>
+                </button>
               </div>
             </div>
 
