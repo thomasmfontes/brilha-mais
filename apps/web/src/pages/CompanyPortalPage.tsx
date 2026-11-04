@@ -232,6 +232,28 @@ function applyOrderToPipeline(pipelineData: any) {
   };
 }
 
+// Applies physics-based tilt while dragging, smoothly straightening when released
+function getDraggableCardStyle(style: any, snapshot: any) {
+  if (!snapshot.isDragging) {
+    return style;
+  }
+  // While actively dragging: apply 2.5deg tilt and 1.02 scale
+  if (!snapshot.isDropAnimating) {
+    return {
+      ...style,
+      transform: style?.transform
+        ? `${style.transform} rotate(2.5deg) scale(1.02)`
+        : "rotate(2.5deg) scale(1.02)",
+      zIndex: 9999,
+    };
+  }
+  // When released (drop animation): smoothly straighten back to 0deg
+  return {
+    ...style,
+    zIndex: 9999,
+  };
+}
+
 export default function CompanyPortalPage() {
   const navigate = useNavigate();
 
@@ -1540,14 +1562,15 @@ export default function CompanyPortalPage() {
                                           {...dragProvided.draggableProps}
                                           {...dragProvided.dragHandleProps}
                                           onClick={() => openTalent(talent, item)}
-                                          style={{
-                                            ...dragProvided.draggableProps.style,
-                                          }}
+                                          style={getDraggableCardStyle(
+                                            dragProvided.draggableProps.style,
+                                            dragSnapshot,
+                                          )}
                                           className={`
                                             bg-white rounded-lg border p-3.5 space-y-2.5 select-none transition-shadow cursor-grab active:cursor-grabbing group mb-3
                                             ${
                                               dragSnapshot.isDragging
-                                                ? "shadow-2xl border border-slate-300 rotate-1 scale-[1.02] z-50 bg-white ring-1 ring-slate-900/10"
+                                                ? "shadow-2xl border-slate-300 bg-white ring-1 ring-slate-900/10"
                                                 : "border-slate-200/90 shadow-2xs hover:shadow-md hover:border-slate-300"
                                             }
                                           `}
