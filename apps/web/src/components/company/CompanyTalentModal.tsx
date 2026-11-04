@@ -5,22 +5,19 @@ import {
   Phone,
   MapPin,
   Calendar,
-  Briefcase,
-  FileText,
   Download,
   ExternalLink,
   MessageCircle,
   Clock,
-  Sparkles,
-  Building2,
   CheckCircle2,
   Bookmark,
   Users,
   Award,
-  ChevronDown,
-  Info,
   ShieldCheck,
   GraduationCap,
+  StickyNote,
+  Flag,
+  FileText,
 } from "lucide-react";
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
@@ -95,31 +92,45 @@ export interface CompanyTalent {
 interface CompanyTalentModalProps {
   talent: CompanyTalent;
   onClose: () => void;
-  onStageChange: (talentId: string, newStage: string, notes?: string, hiredRole?: string) => void;
+  onStageChange: (
+    talentId: string,
+    newStage: string,
+    notes?: string,
+    hiredRole?: string,
+  ) => void;
 }
 
-const STAGE_CONFIG = {
-  SAVED: {
-    label: "Salvo no Radar",
-    bg: "bg-blue-50 text-blue-700 border-blue-200",
+// ClickUp Stage Definitions (Solid Pill colors matching Kanban board)
+const CLICKUP_STAGES = [
+  {
+    key: "SAVED",
+    label: "TRIAGEM / RADAR",
     icon: Bookmark,
+    pillClass: "bg-sky-500 text-white hover:bg-sky-600",
+    activeClass: "bg-sky-500 text-white shadow-xs ring-2 ring-sky-300",
   },
-  INTERVIEW: {
-    label: "Em Entrevista",
-    bg: "bg-amber-50 text-amber-800 border-amber-200",
-    icon: Users,
-  },
-  HIRED: {
-    label: "Contratado",
-    bg: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    icon: Award,
-  },
-  ARCHIVED: {
-    label: "Arquivado",
-    bg: "bg-slate-100 text-slate-600 border-slate-200",
+  {
+    key: "INTERVIEW",
+    label: "EM ENTREVISTA",
     icon: Clock,
+    pillClass: "bg-amber-500 text-white hover:bg-amber-600",
+    activeClass: "bg-amber-500 text-white shadow-xs ring-2 ring-amber-300",
   },
-};
+  {
+    key: "HIRED",
+    label: "CONTRATADO",
+    icon: CheckCircle2,
+    pillClass: "bg-emerald-600 text-white hover:bg-emerald-700",
+    activeClass: "bg-emerald-600 text-white shadow-xs ring-2 ring-emerald-300",
+  },
+  {
+    key: "ARCHIVED",
+    label: "BANCO DE RESERVA",
+    icon: Bookmark,
+    pillClass: "bg-slate-600 text-white hover:bg-slate-700",
+    activeClass: "bg-slate-600 text-white shadow-xs ring-2 ring-slate-400",
+  },
+] as const;
 
 export default function CompanyTalentModal({
   talent,
@@ -151,7 +162,6 @@ export default function CompanyTalentModal({
 
     const previousStage = stage;
     setPendingStage(newStage);
-    // Optimistic UI update: instantly reflect selection and update parent lists/counts
     setStage(newStage);
     onStageChange(talent.id, newStage, notes);
 
@@ -160,11 +170,11 @@ export default function CompanyTalentModal({
         stage: newStage,
         notes,
       });
+      const stageConfig = CLICKUP_STAGES.find((s) => s.key === newStage);
       toast.success(
-        `Candidato movido para ${STAGE_CONFIG[newStage as keyof typeof STAGE_CONFIG]?.label || newStage}!`,
+        `Candidato movido para ${stageConfig?.label || newStage}!`,
       );
     } catch (err: any) {
-      // Revert upon error
       setStage(previousStage);
       onStageChange(talent.id, previousStage || "", notes);
       toast.error(
@@ -214,7 +224,7 @@ export default function CompanyTalentModal({
         hiredRole: stage === "HIRED" ? hiredRole : undefined,
       });
       onStageChange(talent.id, stage || "", notes, hiredRole);
-      toast.success("Anotações da empresa salvas.");
+      toast.success("Anotações salvas com sucesso.");
     } catch (err: any) {
       toast.error("Erro ao salvar anotações.");
     } finally {
@@ -230,7 +240,6 @@ export default function CompanyTalentModal({
 
     setIsDownloading(true);
     try {
-      // Nominal audit download call
       const res = await api.get(`/company/talents/${talent.id}/resume`);
       const url = res.data?.resumeUrl || talent.resumeUrl;
       window.open(url, "_blank", "noopener,noreferrer");
@@ -249,60 +258,62 @@ export default function CompanyTalentModal({
 
   return (
     <PortalModal isOpen={true} onClose={onClose} className="relative z-[100000] w-full max-w-2xl">
-      <div className="bg-white rounded-2xl shadow-2xl border border-zinc-200/80 overflow-hidden flex flex-col max-h-[90vh] text-left">
-        {/* Header do Perfil */}
-        <div className="p-4 sm:p-6 pb-3.5 sm:pb-4 border-b border-zinc-100 bg-white relative">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0 flex-1 pr-8 sm:pr-0">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] text-left">
+        {/* ClickUp-Style Header */}
+        <div className="p-5 sm:p-6 pb-4 border-b border-slate-100 bg-white">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
               {talent.user?.avatarUrl ? (
                 <img
                   src={talent.user.avatarUrl}
                   alt={talent.user.name}
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-zinc-200/80 shrink-0 shadow-2xs mt-0.5 sm:mt-0"
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-slate-200 shrink-0 shadow-2xs"
                 />
               ) : (
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-amber-50 text-[#F19B0A] font-semibold text-lg sm:text-xl flex items-center justify-center border border-amber-200/60 shrink-0 shadow-2xs mt-0.5 sm:mt-0">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-100 text-slate-700 font-bold text-lg sm:text-xl flex items-center justify-center border border-slate-200 shrink-0 shadow-2xs">
                   {talent.user?.name ? talent.user.name.charAt(0).toUpperCase() : "A"}
                 </div>
               )}
 
-              <div className="min-w-0 flex-1 space-y-1">
+              <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-lg sm:text-xl font-bold text-zinc-900 tracking-tight leading-snug truncate">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-snug truncate">
                     {talent.user?.name || "Aluno"}
                   </h3>
 
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Disponível
                   </span>
                 </div>
 
                 {talent.headline && (
                   <p
-                    className="text-xs sm:text-sm font-medium text-zinc-700 leading-snug line-clamp-2"
+                    className="text-xs sm:text-sm font-medium text-slate-600 leading-snug line-clamp-2 mt-0.5"
                     title={talent.headline}
                   >
                     {talent.headline}
                   </p>
                 )}
 
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 pt-0.5">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400 pt-1">
                   {talent.user?.email && (
-                    <span className="break-all">{talent.user.email}</span>
+                    <span className="text-slate-500 font-normal">{talent.user.email}</span>
                   )}
-                  {(talent.phone || talent.city) && (
-                    <div className="flex items-center gap-1.5 shrink-0 text-zinc-500">
-                      {talent.user?.email && <span className="text-zinc-300 hidden sm:inline">•</span>}
-                      {talent.phone && <span>{formatPhoneDisplay(talent.phone)}</span>}
-                      {talent.phone && talent.city && <span className="text-zinc-300">•</span>}
-                      {talent.city && (
-                        <span>
-                          {talent.city}
-                          {talent.state ? `/${talent.state}` : ""}
-                        </span>
-                      )}
-                    </div>
+                  {talent.phone && (
+                    <>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-slate-500">{formatPhoneDisplay(talent.phone)}</span>
+                    </>
+                  )}
+                  {talent.city && (
+                    <>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-slate-500">
+                        {talent.city}
+                        {talent.state ? `/${talent.state}` : ""}
+                      </span>
+                    </>
                   )}
                 </div>
               </div>
@@ -311,95 +322,90 @@ export default function CompanyTalentModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer shrink-0 absolute top-3.5 right-3.5 sm:relative sm:top-auto sm:right-auto"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
               title="Fechar"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Barra de Ações Rápidas */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-4 pt-3.5 border-t border-zinc-100">
+          {/* Quick Contact & CV Actions */}
+          <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100 flex-wrap">
             {talent.resumeUrl ? (
               <button
                 type="button"
                 onClick={handleDownloadResume}
                 disabled={isDownloading}
-                className="h-9 sm:h-8 px-4 rounded-xl text-xs font-semibold bg-[#F19B0A] hover:bg-[#D98B08] active:scale-[0.98] text-white shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer w-full sm:w-auto disabled:opacity-50"
+                className="h-8 px-3.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-2xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
               >
                 {isDownloading ? (
                   <LoadingSpinner size="sm" variant="white" />
                 ) : (
-                  <Download className="w-3.5 h-3.5 shrink-0" />
+                  <Download className="w-3.5 h-3.5" />
                 )}
-                <span>Baixar Currículo</span>
+                <span>Baixar Currículo PDF</span>
               </button>
             ) : (
-              <span className="h-9 sm:h-8 px-4 rounded-xl text-xs font-medium text-zinc-400 bg-zinc-50 border border-zinc-200/80 flex items-center justify-center gap-2 w-full sm:w-auto">
-                <FileText className="w-3.5 h-3.5 text-zinc-300 shrink-0" />
+              <span className="h-8 px-3 rounded-lg text-xs font-medium text-slate-400 bg-slate-50 border border-slate-200 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-slate-300" />
                 <span>Sem currículo anexado</span>
               </span>
             )}
 
-            {(whatsappUrl || talent.linkedinUrl) && (
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                {whatsappUrl && (
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="h-9 sm:h-8 px-3.5 rounded-xl text-xs font-semibold bg-white hover:bg-emerald-50 text-zinc-800 hover:text-emerald-700 border border-zinc-200/80 hover:border-emerald-300 shadow-2xs flex-1 sm:flex-none flex items-center justify-center gap-2 transition-all cursor-pointer"
-                  >
-                    <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>WhatsApp</span>
-                  </a>
-                )}
+            {whatsappUrl && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="h-8 px-3 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Conversar no WhatsApp</span>
+              </a>
+            )}
 
-                {talent.linkedinUrl && (
-                  <a
-                    href={talent.linkedinUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="h-9 sm:h-8 px-3.5 rounded-xl text-xs font-semibold bg-white hover:bg-blue-50 text-zinc-800 hover:text-blue-700 border border-zinc-200/80 hover:border-blue-300 shadow-2xs flex-1 sm:flex-none flex items-center justify-center gap-2 transition-all cursor-pointer"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span>LinkedIn</span>
-                  </a>
-                )}
-              </div>
+            {talent.linkedinUrl && (
+              <a
+                href={talent.linkedinUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="h-8 px-3 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+                <span>Perfil LinkedIn</span>
+              </a>
             )}
           </div>
         </div>
 
-        {/* Barra de Status no Processo Seletivo da Empresa */}
-        <div className="p-4 sm:p-5 bg-zinc-50/70 border-b border-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1.5">
-            <span className="text-xs font-semibold text-zinc-900 block">
-              Etapa no seu Processo
+        {/* ClickUp-Style Status Bar */}
+        <div className="px-5 py-3.5 bg-slate-50/80 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              Status no Processo:
             </span>
             <div className="flex items-center gap-1.5 flex-wrap">
-              {(["SAVED", "INTERVIEW", "HIRED", "ARCHIVED"] as const).map((s) => {
-                const cfg = STAGE_CONFIG[s];
-                const isSelected = stage === s;
-                const isPending = pendingStage === s;
+              {CLICKUP_STAGES.map((s) => {
+                const isSelected = stage === s.key;
+                const isPending = pendingStage === s.key;
                 return (
                   <button
-                    key={s}
+                    key={s.key}
                     type="button"
-                    onClick={() => handleStageSelect(s)}
+                    onClick={() => handleStageSelect(s.key)}
                     disabled={pendingStage !== null}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer flex items-center gap-1.5 active:scale-[0.98] ${
+                    className={`px-2.5 py-1 rounded text-[11px] font-bold tracking-wider uppercase inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                       isSelected
-                        ? `${cfg.bg} shadow-2xs font-semibold ring-1 ring-amber-500/30`
-                        : "bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50 hover:text-zinc-900"
+                        ? s.activeClass
+                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900"
                     } ${pendingStage !== null && !isPending ? "opacity-60 cursor-not-allowed" : ""}`}
                   >
                     {isPending ? (
                       <LoadingSpinner size="xs" variant="current" />
                     ) : (
-                      <cfg.icon className="w-3.5 h-3.5" />
+                      <s.icon className="w-3 h-3" />
                     )}
-                    <span>{cfg.label}</span>
+                    <span>{s.label}</span>
                   </button>
                 );
               })}
@@ -407,7 +413,7 @@ export default function CompanyTalentModal({
           </div>
 
           {stage === "HIRED" && (talent.hiredRole || hiredRole) && (
-            <div className="bg-emerald-50 border border-emerald-200/80 rounded-lg px-3 py-1.5 text-xs text-emerald-800 font-medium shrink-0 flex items-center gap-1.5">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-md px-2.5 py-1 text-xs text-emerald-800 font-medium shrink-0 flex items-center gap-1.5">
               <Award className="w-3.5 h-3.5 text-emerald-600" />
               <span>Cargo: <strong>{hiredRole || talent.hiredRole}</strong></span>
             </div>
@@ -416,7 +422,7 @@ export default function CompanyTalentModal({
 
         {/* Dialog for Hiring details */}
         {showHiredDialog && (
-          <div className="p-4 sm:p-5 bg-amber-50/70 border-b border-amber-200/80 space-y-3">
+          <div className="p-4 sm:p-5 bg-amber-50/80 border-b border-amber-200 space-y-3">
             <div className="flex items-center gap-2 text-amber-900 font-semibold text-xs sm:text-sm">
               <Award className="w-4 h-4 text-amber-600" />
               <span>Registrar Contratação Efetivada</span>
@@ -429,14 +435,14 @@ export default function CompanyTalentModal({
                 type="text"
                 value={hiredRole}
                 onChange={(e) => setHiredRole(e.target.value)}
-                placeholder="Ex: Jovem Aprendiz Administrativo, Estagiário de TI..."
-                className="w-full sm:flex-1 h-9.5 px-3.5 rounded-xl border border-amber-300 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                placeholder="Ex: Jovem Aprendiz Administrativo, Estagiário de RH..."
+                className="w-full sm:flex-1 h-9 px-3 rounded-lg border border-amber-300 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setShowHiredDialog(false)}
-                  className="flex-1 sm:flex-initial h-9.5 px-3.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="flex-1 sm:flex-initial h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -444,7 +450,7 @@ export default function CompanyTalentModal({
                   type="button"
                   onClick={handleConfirmHired}
                   disabled={pendingStage === "HIRED"}
-                  className="flex-1 sm:flex-initial h-9.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs shadow-xs cursor-pointer flex items-center justify-center gap-1.5 transition-all"
+                  className="flex-1 sm:flex-initial h-9 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs shadow-2xs cursor-pointer flex items-center justify-center gap-1.5 transition-all"
                 >
                   {pendingStage === "HIRED" ? (
                     <LoadingSpinner size="sm" variant="white" />
@@ -458,146 +464,168 @@ export default function CompanyTalentModal({
           </div>
         )}
 
-        {/* Conteúdo do Modal (Seguindo rigorosamente o TalentDetailsModal) */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 custom-scrollbar">
-          {/* Grid de Informações Chave */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-3.5 rounded-xl bg-zinc-50/60 border border-zinc-200/60 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-white border border-zinc-200/70 flex items-center justify-center text-zinc-500 shrink-0 shadow-2xs">
-                <GraduationCap className="w-4 h-4" />
+        {/* Modal Scrollable Body */}
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 custom-scrollbar">
+          {/* ClickUp-Style Clean Attributes Table / Grid */}
+          <div className="bg-slate-50/70 border border-slate-200/80 rounded-xl divide-y divide-slate-200/70">
+            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/70">
+              <div className="p-3.5 flex items-start gap-3">
+                <div className="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+                  <GraduationCap className="w-4 h-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">
+                    Turma / Formação
+                  </span>
+                  <p className="text-xs font-medium text-slate-800 mt-0.5 truncate" title={turmasText}>
+                    {turmasText}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <span className="text-[11px] text-zinc-500 font-medium block">Turma(s)</span>
-                <p className="text-sm font-semibold text-zinc-900 mt-0.5 truncate" title={turmasText}>
-                  {turmasText}
-                </p>
+
+              <div className="p-3.5 flex items-start gap-3">
+                <div className="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+                  <MapPin className="w-4 h-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">
+                    Localidade
+                  </span>
+                  <p className="text-xs font-medium text-slate-800 mt-0.5 truncate">
+                    {talent.city ? `${talent.city}${talent.state ? ` - ${talent.state}` : ""}` : "Não informado"}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-zinc-50/60 border border-zinc-200/60 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-white border border-zinc-200/70 flex items-center justify-center text-zinc-500 shrink-0 shadow-2xs">
-                <MapPin className="w-4 h-4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/70">
+              <div className="p-3.5 flex items-start gap-3">
+                <div className="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+                  <Clock className="w-4 h-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">
+                    Disponibilidade / Turno
+                  </span>
+                  <p className="text-xs font-medium text-slate-800 mt-0.5 truncate">
+                    {formatAvailability(talent.availability) || "Não informado"}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <span className="text-[11px] text-zinc-500 font-medium block">Localidade</span>
-                <p className="text-sm font-semibold text-zinc-900 mt-0.5 truncate">
-                  {talent.city ? `${talent.city}${talent.state ? ` - ${talent.state}` : ""}` : "Não informado"}
-                </p>
-              </div>
-            </div>
 
-            <div className="p-3.5 rounded-xl bg-zinc-50/60 border border-zinc-200/60 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-white border border-zinc-200/70 flex items-center justify-center text-zinc-500 shrink-0 shadow-2xs">
-                <Clock className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[11px] text-zinc-500 font-medium block">Disponibilidade</span>
-                <p className="text-sm font-semibold text-zinc-900 mt-0.5 truncate">
-                  {formatAvailability(talent.availability) || "Não informado"}
-                </p>
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-zinc-50/60 border border-zinc-200/60 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-white border border-zinc-200/70 flex items-center justify-center text-zinc-500 shrink-0 shadow-2xs">
-                <Calendar className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <span className="text-[11px] text-zinc-500 font-medium block">Idade / Nascimento</span>
-                <p className="text-sm font-semibold text-zinc-900 mt-0.5 truncate">
-                  {talent.birthDate ? (
-                    <>
-                      {age !== null ? `${age} anos` : ""}
-                      <span className="text-xs font-normal text-zinc-500 ml-1">
-                        ({new Date(talent.birthDate).toLocaleDateString("pt-BR")})
-                      </span>
-                    </>
-                  ) : (
-                    "Não informado"
-                  )}
-                </p>
+              <div className="p-3.5 flex items-start gap-3">
+                <div className="w-7 h-7 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-500 shrink-0">
+                  <Calendar className="w-4 h-4 text-slate-600" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] text-slate-400 font-semibold block uppercase tracking-wider">
+                    Idade / Nascimento
+                  </span>
+                  <p className="text-xs font-medium text-slate-800 mt-0.5 truncate">
+                    {talent.birthDate ? (
+                      <>
+                        {age !== null ? `${age} anos` : ""}
+                        <span className="text-slate-400 ml-1">
+                          ({new Date(talent.birthDate).toLocaleDateString("pt-BR")})
+                        </span>
+                      </>
+                    ) : (
+                      "Não informado"
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Áreas de Interesse */}
+          {/* ClickUp Style Tags (Áreas de Interesse) */}
           {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
-            <div className="space-y-2 pt-2 border-t border-zinc-100">
-              <h4 className="text-xs font-semibold text-zinc-900">Áreas de Interesse</h4>
-              <div className="flex flex-wrap gap-2">
-                {talent.areasOfInterest.map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-zinc-100 text-zinc-800 border border-zinc-200/60"
-                  >
-                    {tag}
-                  </span>
-                ))}
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                Áreas de Interesse / Competências
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {talent.areasOfInterest.map((tag, idx) => {
+                  const bgColors = [
+                    "bg-indigo-600 text-white",
+                    "bg-blue-600 text-white",
+                    "bg-violet-600 text-white",
+                    "bg-sky-600 text-white",
+                  ];
+                  return (
+                    <span
+                      key={idx}
+                      className={`px-2.5 py-1 rounded-full text-xs font-semibold shadow-2xs ${
+                        bgColors[idx % bgColors.length]
+                      }`}
+                    >
+                      {tag}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* Sobre o Aluno (Bio) */}
           {talent.bio && (
-            <div className="space-y-2 pt-2 border-t border-zinc-100">
-              <h4 className="text-xs font-semibold text-zinc-900">Sobre o Aluno</h4>
-              <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-line bg-zinc-50/50 rounded-xl p-4 border border-zinc-200/50">
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                Sobre o Aluno / Apresentação
+              </span>
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 text-xs text-slate-700 leading-relaxed whitespace-pre-line">
                 {talent.bio}
-              </p>
+              </div>
             </div>
           )}
 
-          {/* Anotações Internas do seu RH (Privado) */}
-          <div className="space-y-2 pt-2 border-t border-zinc-100">
+          {/* Recruiter Internal Notes (ClickUp Task Notes) */}
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-semibold text-zinc-900">
-                  Anotações da sua Equipe (Privado)
-                </h4>
-                <p className="text-[11px] text-zinc-400">
-                  Visível apenas para recrutadores credenciados da sua empresa.
-                </p>
+              <div className="flex items-center gap-1.5">
+                <StickyNote className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Anotações da sua Equipe (Privado da Empresa)
+                </span>
               </div>
               <button
                 type="button"
                 onClick={handleSaveNotes}
                 disabled={isSavingNotes}
-                className="h-7 px-3 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white rounded-lg text-xs font-medium transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="h-7 px-3 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-xs font-medium transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 {isSavingNotes ? (
                   <LoadingSpinner size="sm" variant="white" />
                 ) : (
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <CheckCircle2 className="w-3 h-3" />
                 )}
-                <span>Salvar</span>
+                <span>Salvar Anotações</span>
               </button>
             </div>
             <textarea
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Ex: Entrevista agendada para terça às 14h. Perfil com boa comunicação e domínio do Pacote Office..."
-              className="w-full p-3.5 rounded-xl border border-zinc-200/80 bg-white text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors resize-none"
+              placeholder="Ex: Entrevista agendada para quarta às 14h. Demonstrou ótima desenvoltura e interesse..."
+              className="w-full p-3 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-colors resize-none shadow-2xs"
             />
           </div>
 
-          {/* Conformidade LGPD */}
-          <div className="pt-2 border-t border-zinc-100">
-            <div className="p-3.5 rounded-xl bg-zinc-50/60 border border-zinc-200/70 flex items-center gap-2.5 text-xs text-zinc-500">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>
-                Acesso auditado nominalmente. Currículo e dados compartilhados sob estrito termo de consentimento LGPD.
-              </span>
-            </div>
+          {/* LGPD Compliance Footer Box */}
+          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center gap-2 text-xs text-slate-500">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>
+              Acesso corporativo auditado nominalmente com autorização formal sob as diretrizes da LGPD.
+            </span>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end p-3.5 sm:p-4 px-4 sm:px-6 border-t border-zinc-100 bg-white">
+        {/* Modal Footer */}
+        <div className="flex items-center justify-end p-4 px-6 border-t border-slate-100 bg-white">
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto h-10 px-5 rounded-xl text-xs font-semibold bg-white border border-zinc-200/80 hover:bg-zinc-50 text-zinc-700 active:scale-[0.98] shadow-2xs transition-all cursor-pointer flex items-center justify-center"
+            className="h-9 px-5 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all cursor-pointer shadow-2xs"
           >
             Fechar
           </button>
