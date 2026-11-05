@@ -313,7 +313,7 @@ export default function CompanyPortalPage() {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<"catalog" | "pipeline">("catalog");
-  const [catalogView, setCatalogView] = useState<"grid" | "table">("grid");
+  const [catalogView, setCatalogView] = useState<"grid" | "table">("table");
   const [pipelineView, setPipelineView] = useState<"kanban" | "list">("kanban");
   const [pipelineFilter, setPipelineFilter] = useState<
     "ALL" | "SAVED" | "INTERVIEW" | "HIRED" | "ARCHIVED"
