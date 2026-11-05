@@ -1134,9 +1134,9 @@ export default function CompanyManagementTab() {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
       >
-        <div className="relative w-full max-w-xl bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-100">
+        <div className="relative w-full max-w-xl bg-white border border-slate-200/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
+          {/* Header (Fixo) */}
+          <div className="p-6 pb-4 border-b border-slate-100 bg-white shrink-0 flex items-start justify-between gap-4">
             <div>
               <h2 className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight">
                 Cadastrar Empresa Parceira
@@ -1156,169 +1156,173 @@ export default function CompanyManagementTab() {
 
           <form
             onSubmit={handleCreateCompany}
-            className="flex-1 overflow-y-auto pr-1 py-4 space-y-5 text-xs custom-scrollbar"
+            className="flex flex-col flex-1 overflow-hidden min-h-0"
           >
-            {/* Seção 1: Dados da Organização */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
-                <Building2 className="w-3.5 h-3.5 text-amber-600" />
-                <h3 className="text-[11px] font-semibold text-slate-700 tracking-wider uppercase">
-                  Dados da Organização
-                </h3>
+            {/* Corpo do Formulário com Scroll */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5 text-xs custom-scrollbar">
+              {/* Seção 1: Dados da Organização */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+                  <Building2 className="w-3.5 h-3.5 text-amber-600" />
+                  <h3 className="text-[11px] font-semibold text-slate-700 tracking-wider uppercase">
+                    Dados da Organização
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Nome Fantasia <span className="text-amber-600 font-semibold">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="Nome de divulgação da empresa ou marca"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Razão Social <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.tradeName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tradeName: e.target.value })
+                      }
+                      placeholder="Razão social oficial"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      CNPJ <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.cnpj}
+                      maxLength={18}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cnpj: formatCnpjMask(e.target.value) })
+                      }
+                      placeholder="00.000.000/0000-00"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none font-mono transition-all shadow-2xs"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Setor de Atuação <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.segment}
+                      onChange={(e) =>
+                        setFormData({ ...formData, segment: e.target.value })
+                      }
+                      placeholder="Ex: Tecnologia, Varejo, Jurídico, Serviços..."
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Nome Fantasia <span className="text-amber-600 font-semibold">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder="Nome de divulgação da empresa ou marca"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
+              {/* Seção 2: Contato de Recursos Humanos */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+                  <Users className="w-3.5 h-3.5 text-amber-600" />
+                  <h3 className="text-[11px] font-semibold text-slate-700 tracking-wider uppercase">
+                    Ponto de Contato RH
+                  </h3>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Razão Social <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.tradeName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, tradeName: e.target.value })
-                    }
-                    placeholder="Razão social oficial"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Nome do Responsável <span className="text-amber-600 font-semibold">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.contactName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, contactName: e.target.value })
+                      }
+                      placeholder="Nome completo do recrutador ou gestor"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    CNPJ <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cnpj}
-                    maxLength={18}
-                    onChange={(e) =>
-                      setFormData({ ...formData, cnpj: formatCnpjMask(e.target.value) })
-                    }
-                    placeholder="00.000.000/0000-00"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none font-mono transition-all shadow-2xs"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      E-mail Corporativo <span className="text-amber-600 font-semibold">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.contactEmail}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          contactEmail: e.target.value,
+                        })
+                      }
+                      placeholder="rh@empresa.com.br"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
 
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Setor de Atuação <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.segment}
-                    onChange={(e) =>
-                      setFormData({ ...formData, segment: e.target.value })
-                    }
-                    placeholder="Ex: Tecnologia, Varejo, Jurídico, Serviços..."
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Telefone / WhatsApp <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.contactPhone}
+                      maxLength={15}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          contactPhone: formatPhoneMask(e.target.value),
+                        })
+                      }
+                      placeholder="(11) 98765-4321"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
                 </div>
+              </div>
+
+              {/* Seção 3: Observações Internas */}
+              <div className="space-y-2 pt-2">
+                <label className="block text-xs font-medium text-slate-700">
+                  Observações Internas <span className="text-slate-400 text-[11px] font-normal">(visível apenas para coordenação)</span>
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.notes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
+                  placeholder="Anotações internas sobre perfil de vagas, convênio ou requisitos..."
+                  className="w-full p-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none resize-none transition-all shadow-2xs"
+                />
               </div>
             </div>
 
-            {/* Seção 2: Contato de Recursos Humanos */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
-                <Users className="w-3.5 h-3.5 text-amber-600" />
-                <h3 className="text-[11px] font-semibold text-slate-700 tracking-wider uppercase">
-                  Ponto de Contato RH
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Nome do Responsável <span className="text-amber-600 font-semibold">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.contactName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, contactName: e.target.value })
-                    }
-                    placeholder="Nome completo do recrutador ou gestor"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    E-mail Corporativo <span className="text-amber-600 font-semibold">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.contactEmail}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contactEmail: e.target.value,
-                      })
-                    }
-                    placeholder="rh@empresa.com.br"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Telefone / WhatsApp <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.contactPhone}
-                    maxLength={15}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contactPhone: formatPhoneMask(e.target.value),
-                      })
-                    }
-                    placeholder="(11) 98765-4321"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Seção 3: Observações Internas */}
-            <div className="space-y-2 pt-2">
-              <label className="block text-xs font-medium text-slate-700">
-                Observações Internas <span className="text-slate-400 text-[11px] font-normal">(visível apenas para coordenação)</span>
-              </label>
-              <textarea
-                rows={3}
-                value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-                placeholder="Anotações internas sobre perfil de vagas, convênio ou requisitos..."
-                className="w-full p-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none resize-none transition-all shadow-2xs"
-              />
-            </div>
-
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            {/* Rodapé de Ações Fixo */}
+            <div className="p-4 px-6 border-t border-slate-100 bg-slate-50/60 flex items-center justify-end gap-2.5 shrink-0">
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="h-10 px-4 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+                className="h-10 px-4 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
               >
                 Cancelar
               </button>
@@ -1349,9 +1353,9 @@ export default function CompanyManagementTab() {
         isOpen={!!editingCompany}
         onClose={() => setEditingCompany(null)}
       >
-        <div className="relative w-full max-w-xl bg-white border border-slate-200/80 rounded-2xl p-6 md:p-7 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
-          {/* Header */}
-          <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-100">
+        <div className="relative w-full max-w-xl bg-white border border-slate-200/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left">
+          {/* Header (Fixo) */}
+          <div className="p-6 pb-4 border-b border-slate-100 bg-white shrink-0 flex items-start justify-between gap-4">
             <div>
               <h2 className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight">
                 Editar Empresa Parceira
@@ -1371,169 +1375,173 @@ export default function CompanyManagementTab() {
 
           <form
             onSubmit={handleUpdateCompany}
-            className="flex-1 overflow-y-auto pr-1 py-4 space-y-5 text-xs custom-scrollbar"
+            className="flex flex-col flex-1 overflow-hidden min-h-0"
           >
-            {/* Seção 1: Dados da Organização */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
-                <Building2 className="w-3.5 h-3.5 text-amber-600" />
-                <h3 className="text-[11px] font-semibold text-slate-700 tracking-wider uppercase">
-                  Dados da Organização
-                </h3>
+            {/* Corpo do Formulário com Scroll */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5 text-xs custom-scrollbar">
+              {/* Seção 1: Dados da Organização */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+                  <Building2 className="w-3.5 h-3.5 text-amber-600" />
+                  <h3 className="text-[11px] font-semibold text-slate-700 tracking-wider uppercase">
+                    Dados da Organização
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Nome Fantasia <span className="text-amber-600 font-semibold">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="Nome de divulgação da empresa ou marca"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Razão Social <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.tradeName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tradeName: e.target.value })
+                      }
+                      placeholder="Razão social oficial"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      CNPJ <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.cnpj}
+                      maxLength={18}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cnpj: formatCnpjMask(e.target.value) })
+                      }
+                      placeholder="00.000.000/0000-00"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none font-mono transition-all shadow-2xs"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Setor de Atuação <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.segment}
+                      onChange={(e) =>
+                        setFormData({ ...formData, segment: e.target.value })
+                      }
+                      placeholder="Ex: Tecnologia, Varejo, Jurídico, Serviços..."
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Nome Fantasia <span className="text-amber-600 font-semibold">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder="Nome de divulgação da empresa ou marca"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
+              {/* Seção 2: Contato de Recursos Humanos */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+                  <Users className="w-3.5 h-3.5 text-amber-600" />
+                  <h3 className="text-[11px] font-semibold text-slate-700 tracking-wider uppercase">
+                    Ponto de Contato RH
+                  </h3>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Razão Social <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.tradeName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, tradeName: e.target.value })
-                    }
-                    placeholder="Razão social oficial"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Nome do Responsável <span className="text-amber-600 font-semibold">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.contactName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, contactName: e.target.value })
+                      }
+                      placeholder="Nome completo do responsável no RH"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    CNPJ <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cnpj}
-                    maxLength={18}
-                    onChange={(e) =>
-                      setFormData({ ...formData, cnpj: formatCnpjMask(e.target.value) })
-                    }
-                    placeholder="00.000.000/0000-00"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none font-mono transition-all shadow-2xs"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      E-mail Corporativo <span className="text-amber-600 font-semibold">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.contactEmail}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          contactEmail: e.target.value,
+                        })
+                      }
+                      placeholder="rh@empresa.com.br"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
 
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Setor de Atuação <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.segment}
-                    onChange={(e) =>
-                      setFormData({ ...formData, segment: e.target.value })
-                    }
-                    placeholder="Ex: Tecnologia, Varejo, Jurídico, Serviços..."
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">
+                      Telefone / WhatsApp <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.contactPhone}
+                      maxLength={15}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          contactPhone: formatPhoneMask(e.target.value),
+                        })
+                      }
+                      placeholder="(11) 98765-4321"
+                      className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
                 </div>
+              </div>
+
+              {/* Seção 3: Observações Internas */}
+              <div className="space-y-2 pt-2">
+                <label className="block text-xs font-medium text-slate-700">
+                  Observações Internas <span className="text-slate-400 text-[11px] font-normal">(visível apenas para coordenação)</span>
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.notes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
+                  placeholder="Anotações internas sobre perfil de vagas, convênio ou requisitos..."
+                  className="w-full p-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none resize-none transition-all shadow-2xs"
+                />
               </div>
             </div>
 
-            {/* Seção 2: Contato de Recursos Humanos */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
-                <Users className="w-3.5 h-3.5 text-amber-600" />
-                <h3 className="text-[11px] font-semibold text-slate-700 tracking-wider uppercase">
-                  Ponto de Contato RH
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Nome do Responsável <span className="text-amber-600 font-semibold">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.contactName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, contactName: e.target.value })
-                    }
-                    placeholder="Nome completo do responsável no RH"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    E-mail Corporativo <span className="text-amber-600 font-semibold">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.contactEmail}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contactEmail: e.target.value,
-                      })
-                    }
-                    placeholder="rh@empresa.com.br"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Telefone / WhatsApp <span className="text-slate-400 text-[11px] font-normal">(opcional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.contactPhone}
-                    maxLength={15}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        contactPhone: formatPhoneMask(e.target.value),
-                      })
-                    }
-                    placeholder="(11) 98765-4321"
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Seção 3: Observações Internas */}
-            <div className="space-y-2 pt-2">
-              <label className="block text-xs font-medium text-slate-700">
-                Observações Internas <span className="text-slate-400 text-[11px] font-normal">(visível apenas para coordenação)</span>
-              </label>
-              <textarea
-                rows={3}
-                value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-                placeholder="Anotações internas sobre perfil de vagas, convênio ou requisitos..."
-                className="w-full p-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none resize-none transition-all shadow-2xs"
-              />
-            </div>
-
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            {/* Rodapé de Ações Fixo */}
+            <div className="p-4 px-6 border-t border-slate-100 bg-slate-50/60 flex items-center justify-end gap-2.5 shrink-0">
               <button
                 type="button"
                 onClick={() => setEditingCompany(null)}
-                className="h-10 px-4 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+                className="h-10 px-4 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
               >
                 Cancelar
               </button>
