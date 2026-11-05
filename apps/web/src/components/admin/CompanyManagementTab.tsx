@@ -1180,7 +1180,7 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, name: e.target.value })
                     }
                     placeholder="Nome de divulgação da empresa ou marca"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
 
@@ -1195,7 +1195,7 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, tradeName: e.target.value })
                     }
                     placeholder="Razão social oficial"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
 
@@ -1211,7 +1211,7 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, cnpj: formatCnpjMask(e.target.value) })
                     }
                     placeholder="00.000.000/0000-00"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none font-mono transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none font-mono transition-all shadow-2xs"
                   />
                 </div>
 
@@ -1226,7 +1226,7 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, segment: e.target.value })
                     }
                     placeholder="Ex: Tecnologia, Varejo, Jurídico, Serviços..."
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
               </div>
@@ -1254,7 +1254,7 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, contactName: e.target.value })
                     }
                     placeholder="Nome completo do recrutador ou gestor"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
 
@@ -1273,7 +1273,7 @@ export default function CompanyManagementTab() {
                       })
                     }
                     placeholder="rh@empresa.com.br"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
 
@@ -1292,7 +1292,7 @@ export default function CompanyManagementTab() {
                       })
                     }
                     placeholder="(11) 98765-4321"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
               </div>
@@ -1304,13 +1304,13 @@ export default function CompanyManagementTab() {
                 Observações Internas <span className="text-slate-400 text-[11px] font-normal">(visível apenas para coordenação)</span>
               </label>
               <textarea
-                rows={2}
+                rows={3}
                 value={formData.notes}
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
                 placeholder="Anotações internas sobre perfil de vagas, convênio ou requisitos..."
-                className="w-full p-3 bg-slate-50/60 border border-slate-200/80 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none resize-none transition-colors"
+                className="w-full p-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none resize-none transition-all shadow-2xs"
               />
             </div>
 
@@ -1318,14 +1318,14 @@ export default function CompanyManagementTab() {
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="h-9.5 px-4 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="h-10 px-4 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-9.5 px-5 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white rounded-xl font-medium text-xs shadow-xs transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="h-10 px-5 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white rounded-lg font-semibold text-xs shadow-2xs transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -1395,7 +1395,7 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, name: e.target.value })
                     }
                     placeholder="Nome de divulgação da empresa ou marca"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
 
@@ -1410,7 +1410,7 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, tradeName: e.target.value })
                     }
                     placeholder="Razão social oficial"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
 
@@ -1426,7 +1426,7 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, cnpj: formatCnpjMask(e.target.value) })
                     }
                     placeholder="00.000.000/0000-00"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none font-mono transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none font-mono transition-all shadow-2xs"
                   />
                 </div>
 
@@ -1441,7 +1441,7 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, segment: e.target.value })
                     }
                     placeholder="Ex: Tecnologia, Varejo, Jurídico, Serviços..."
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
               </div>
@@ -1469,7 +1469,7 @@ export default function CompanyManagementTab() {
                       setFormData({ ...formData, contactName: e.target.value })
                     }
                     placeholder="Nome completo do responsável no RH"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
 
@@ -1488,7 +1488,7 @@ export default function CompanyManagementTab() {
                       })
                     }
                     placeholder="rh@empresa.com.br"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
 
@@ -1507,7 +1507,7 @@ export default function CompanyManagementTab() {
                       })
                     }
                     placeholder="(11) 98765-4321"
-                    className="w-full h-9.5 bg-white border border-slate-200/80 rounded-xl px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-colors"
+                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all shadow-2xs"
                   />
                 </div>
               </div>
@@ -1519,13 +1519,13 @@ export default function CompanyManagementTab() {
                 Observações Internas <span className="text-slate-400 text-[11px] font-normal">(visível apenas para coordenação)</span>
               </label>
               <textarea
-                rows={2}
+                rows={3}
                 value={formData.notes}
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
                 placeholder="Anotações internas sobre perfil de vagas, convênio ou requisitos..."
-                className="w-full p-3 bg-slate-50/60 border border-slate-200/80 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none resize-none transition-colors"
+                className="w-full p-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none resize-none transition-all shadow-2xs"
               />
             </div>
 
@@ -1533,14 +1533,14 @@ export default function CompanyManagementTab() {
               <button
                 type="button"
                 onClick={() => setEditingCompany(null)}
-                className="h-9.5 px-4 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="h-10 px-4 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-9.5 px-5 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white rounded-xl font-medium text-xs shadow-xs transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="h-10 px-5 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white rounded-lg font-semibold text-xs shadow-2xs transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
