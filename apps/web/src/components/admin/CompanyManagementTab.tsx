@@ -75,18 +75,16 @@ const StatSkeleton = () => (
 const CompanyRowSkeleton = () => (
   <tr className="border-b border-slate-100 last:border-0">
     <td className="px-5 py-3.5">
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-9 w-9" variant="rounded" />
-        <div className="space-y-1.5">
-          <Skeleton className="h-4 w-36" variant="rectangle" />
-          <Skeleton className="h-3 w-48" variant="rectangle" />
-        </div>
+      <div className="space-y-1.5">
+        <Skeleton className="h-4 w-36" variant="rectangle" />
+        <Skeleton className="h-3 w-48" variant="rectangle" />
       </div>
     </td>
     <td className="px-5 py-3.5">
       <div className="space-y-1.5">
         <Skeleton className="h-4 w-28" variant="rectangle" />
         <Skeleton className="h-3 w-36" variant="rectangle" />
+        <Skeleton className="h-3 w-24" variant="rectangle" />
       </div>
     </td>
     <td className="px-5 py-3.5 text-center">
@@ -696,27 +694,22 @@ export default function CompanyManagementTab() {
                   >
                     {/* Empresa */}
                     <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0 font-bold text-xs shadow-2xs">
-                          <Building2 className="w-4 h-4 text-amber-600" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-semibold text-slate-900 truncate text-xs sm:text-sm">
-                            {c.name}
-                          </p>
-                          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 truncate mt-0.5">
-                            <span className="truncate">
-                              {c.tradeName || c.segment || "Empresa Parceira"}
-                            </span>
-                            {c.cnpj && (
-                              <>
-                                <span className="text-slate-300">•</span>
-                                <span className="font-mono text-slate-500 font-medium shrink-0">
-                                  {formatCnpjMask(c.cnpj)}
-                                </span>
-                              </>
-                            )}
-                          </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-900 truncate text-xs sm:text-sm">
+                          {c.name}
+                        </p>
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 truncate mt-0.5">
+                          <span className="truncate">
+                            {c.tradeName || c.segment || "Empresa Parceira"}
+                          </span>
+                          {c.cnpj && (
+                            <>
+                              <span className="text-slate-300">•</span>
+                              <span className="font-mono text-slate-500 font-medium shrink-0">
+                                {formatCnpjMask(c.cnpj)}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -726,17 +719,14 @@ export default function CompanyManagementTab() {
                       <p className="font-medium text-slate-800 text-xs truncate leading-snug">
                         {c.contactName}
                       </p>
-                      <div className="flex items-center gap-1.5 text-[11px] text-slate-400 truncate mt-0.5">
-                        <span className="truncate">{c.contactEmail}</span>
-                        {c.contactPhone && (
-                          <>
-                            <span className="text-slate-300">•</span>
-                            <span className="text-slate-500 font-medium shrink-0">
-                              {formatPhoneMask(c.contactPhone)}
-                            </span>
-                          </>
-                        )}
-                      </div>
+                      <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                        {c.contactEmail}
+                      </p>
+                      {c.contactPhone && (
+                        <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                          {formatPhoneMask(c.contactPhone)}
+                        </p>
+                      )}
                     </td>
 
                     {/* Status & LGPD */}
@@ -997,19 +987,14 @@ export default function CompanyManagementTab() {
               className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-4"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0 font-bold text-sm shadow-2xs">
-                    <Building2 className="w-5 h-5 text-amber-600" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-sm text-slate-900 truncate leading-snug">
-                      {c.name}
-                    </h3>
-                    <p className="text-xs text-slate-400 truncate mt-0.5">
-                      {c.tradeName || c.segment || "Empresa Parceira"}
-                      {c.cnpj && ` • ${formatCnpjMask(c.cnpj)}`}
-                    </p>
-                  </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-sm text-slate-900 truncate leading-snug">
+                    {c.name}
+                  </h3>
+                  <p className="text-xs text-slate-400 truncate mt-0.5">
+                    {c.tradeName || c.segment || "Empresa Parceira"}
+                    {c.cnpj && ` • ${formatCnpjMask(c.cnpj)}`}
+                  </p>
                 </div>
 
                 <div className="shrink-0">
