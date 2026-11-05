@@ -78,6 +78,7 @@ const CompanyRowSkeleton = () => (
       <div className="space-y-1.5">
         <Skeleton className="h-4 w-36" variant="rectangle" />
         <Skeleton className="h-3 w-48" variant="rectangle" />
+        <Skeleton className="h-3 w-32" variant="rectangle" />
       </div>
     </td>
     <td className="px-5 py-3.5">
@@ -698,19 +699,14 @@ export default function CompanyManagementTab() {
                         <p className="font-semibold text-slate-900 truncate text-xs sm:text-sm">
                           {c.name}
                         </p>
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 truncate mt-0.5">
-                          <span className="truncate">
-                            {c.tradeName || c.segment || "Empresa Parceira"}
-                          </span>
-                          {c.cnpj && (
-                            <>
-                              <span className="text-slate-300">•</span>
-                              <span className="font-mono text-slate-500 font-medium shrink-0">
-                                {formatCnpjMask(c.cnpj)}
-                              </span>
-                            </>
-                          )}
-                        </div>
+                        <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                          {c.tradeName || c.segment || "Empresa Parceira"}
+                        </p>
+                        {c.cnpj && (
+                          <p className="text-[11px] font-mono text-slate-500 font-medium truncate mt-0.5">
+                            {formatCnpjMask(c.cnpj)}
+                          </p>
+                        )}
                       </div>
                     </td>
 
@@ -993,8 +989,12 @@ export default function CompanyManagementTab() {
                   </h3>
                   <p className="text-xs text-slate-400 truncate mt-0.5">
                     {c.tradeName || c.segment || "Empresa Parceira"}
-                    {c.cnpj && ` • ${formatCnpjMask(c.cnpj)}`}
                   </p>
+                  {c.cnpj && (
+                    <p className="text-[11px] font-mono text-slate-500 font-medium truncate mt-0.5">
+                      {formatCnpjMask(c.cnpj)}
+                    </p>
+                  )}
                 </div>
 
                 <div className="shrink-0">
