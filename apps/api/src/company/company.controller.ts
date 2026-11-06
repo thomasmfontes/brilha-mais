@@ -109,6 +109,13 @@ export class CompanyController {
     return this.companyService.updateCandidateStage(req.user.id, id, dto);
   }
 
+  @Delete('company/talents/:id/stage')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.COMPANY)
+  async removeCandidateFromPipeline(@Req() req: any, @Param('id') id: string) {
+    return this.companyService.removeCandidateFromPipeline(req.user.id, id);
+  }
+
   @Get('company/pipeline')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.COMPANY)

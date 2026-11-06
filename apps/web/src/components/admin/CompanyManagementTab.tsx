@@ -24,6 +24,7 @@ import {
   Check,
   ShieldCheck,
   Bookmark,
+  Archive,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../../utils/api";
@@ -34,6 +35,7 @@ import CountUp from "../CountUp";
 import Tooltip from "../Tooltip";
 import { PortalModal } from "../PortalModal";
 import { ConfirmModal } from "../ConfirmModal";
+import { CompanyPipelineModal } from "./CompanyPipelineModal";
 import { formatPhoneMask, formatCnpjMask } from "../../utils/formatters";
 
 interface PartnerCompany {
@@ -57,6 +59,7 @@ interface PartnerCompany {
     saved: number;
     interview: number;
     hired: number;
+    archived?: number;
   };
   createdAt: string;
 }
@@ -93,9 +96,10 @@ const CompanyRowSkeleton = () => (
     </td>
     <td className="px-5 py-3.5 text-center">
       <div className="flex justify-center gap-1.5">
-        <Skeleton className="h-6 w-10" variant="rounded" />
-        <Skeleton className="h-6 w-10" variant="rounded" />
-        <Skeleton className="h-6 w-10" variant="rounded" />
+        <Skeleton className="h-6 w-9" variant="rounded" />
+        <Skeleton className="h-6 w-9" variant="rounded" />
+        <Skeleton className="h-6 w-9" variant="rounded" />
+        <Skeleton className="h-6 w-9" variant="rounded" />
       </div>
     </td>
     <td className="px-5 py-3.5 text-right">
@@ -328,6 +332,7 @@ export default function CompanyManagementTab() {
     inviteToken: string;
     phone?: string;
   } | null>(null);
+  const [pipelineModalCompany, setPipelineModalCompany] = useState<PartnerCompany | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedRowId, setCopiedRowId] = useState<string | null>(null);
   const [reissuingId, setReissuingId] = useState<string | null>(null);
@@ -804,28 +809,38 @@ export default function CompanyManagementTab() {
                       </div>
                     </td>
 
-                    {/* Funil de Talentos */}
+                    {/* Funil de Talentos (4 Etapas) */}
                     <td className="px-5 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <Tooltip content={`${c.pipelineStats?.saved || 0} alunos salvos no radar`}>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium">
-                            <Bookmark className="w-3 h-3 text-slate-500" />
+                      <button
+                        type="button"
+                        onClick={() => setPipelineModalCompany(c)}
+                        className="inline-flex items-center justify-center gap-1.5 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer group"
+                      >
+                        <Tooltip content={`${c.pipelineStats?.saved || 0} em Triagem`}>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 group-hover:bg-white text-slate-700 border border-slate-200/60 text-xs font-medium">
+                            <Bookmark className="w-3 h-3 text-sky-600" />
                             <span>{c.pipelineStats?.saved || 0}</span>
                           </span>
                         </Tooltip>
-                        <Tooltip content={`${c.pipelineStats?.interview || 0} em processo seletivo`}>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 text-xs font-medium">
+                        <Tooltip content={`${c.pipelineStats?.interview || 0} em Entrevista`}>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 group-hover:bg-amber-100/70 text-amber-700 border border-amber-200/60 text-xs font-medium">
                             <UserCheck className="w-3 h-3 text-amber-600" />
                             <span>{c.pipelineStats?.interview || 0}</span>
                           </span>
                         </Tooltip>
-                        <Tooltip content={`${c.pipelineStats?.hired || 0} contratações efetivadas`}>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-xs font-medium">
+                        <Tooltip content={`${c.pipelineStats?.hired || 0} Contratados`}>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 group-hover:bg-emerald-100/70 text-emerald-700 border border-emerald-200/60 text-xs font-medium">
                             <Award className="w-3 h-3 text-emerald-600" />
                             <span>{c.pipelineStats?.hired || 0}</span>
                           </span>
                         </Tooltip>
-                      </div>
+                        <Tooltip content={`${c.pipelineStats?.archived || 0} Arquivados`}>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 group-hover:bg-slate-200/70 text-slate-600 border border-slate-200/60 text-xs font-medium">
+                            <Archive className="w-3 h-3 text-slate-500" />
+                            <span>{c.pipelineStats?.archived || 0}</span>
+                          </span>
+                        </Tooltip>
+                      </button>
                     </td>
 
                     {/* Ações */}
@@ -1041,34 +1056,45 @@ export default function CompanyManagementTab() {
 
               <div className="flex items-center justify-between gap-2 pt-1">
                 <span className="text-[11px] text-slate-400 font-medium">
-                  Funil de Vagas:
+                  Funil de Talentos:
                 </span>
-                <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setPipelineModalCompany(c)}
+                  className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                >
                   <span
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-[11px] font-medium"
-                    title="Radar"
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60 text-[11px] font-medium"
+                    title="Triagem"
                   >
-                    <Bookmark className="w-3 h-3 text-slate-500" />{" "}
+                    <Bookmark className="w-3 h-3 text-sky-600" />{" "}
                     {c.pipelineStats?.saved || 0}
                   </span>
                   <span
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 text-[11px] font-medium"
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200/60 text-[11px] font-medium"
                     title="Entrevista"
                   >
                     <UserCheck className="w-3 h-3 text-amber-600" />{" "}
                     {c.pipelineStats?.interview || 0}
                   </span>
                   <span
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[11px] font-medium"
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[11px] font-medium"
                     title="Contratados"
                   >
                     <Award className="w-3 h-3 text-emerald-600" />{" "}
                     {c.pipelineStats?.hired || 0}
                   </span>
-                </div>
+                  <span
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60 text-[11px] font-medium"
+                    title="Arquivados"
+                  >
+                    <Archive className="w-3 h-3 text-slate-500" />{" "}
+                    {c.pipelineStats?.archived || 0}
+                  </span>
+                </button>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2 flex-wrap">
                 {c.inviteToken && !c.termsAccepted && (
                   <button
                     type="button"
@@ -1675,6 +1701,16 @@ export default function CompanyManagementTab() {
           description={confirmModal.description}
           confirmText={confirmModal.confirmText}
           variant={confirmModal.variant}
+        />
+      )}
+
+      {/* Modal de Visualização Completa do Funil da Empresa */}
+      {pipelineModalCompany && (
+        <CompanyPipelineModal
+          isOpen={true}
+          companyId={pipelineModalCompany.id}
+          companyName={pipelineModalCompany.name}
+          onClose={() => setPipelineModalCompany(null)}
         />
       )}
     </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { LucideFileText, LucideCheck, LucideDownload, LucideX, LucideZap, LucideChevronRight, LucideRefreshCw, LucidePaperclip, LucideClock } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
 import api from "../utils/api";
+import { toast } from "react-hot-toast";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -108,7 +109,7 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
             setEssayFile({ url: publicUrl, name: file.name });
         } catch (err) {
             console.error(err);
-            alert("Erro ao enviar arquivo. Tente novamente.");
+            toast.error("Erro ao enviar arquivo. Tente novamente.");
         } finally {
             setIsUploading(false);
         }
@@ -131,7 +132,7 @@ export default function EssaySubmissionForm({ lesson, mySubmission, isLoading, o
             }
         } catch (err) {
             console.error(err);
-            alert("Erro ao enviar resposta.");
+            toast.error("Erro ao enviar resposta.");
         } finally {
             setIsSubmitting(false);
         }

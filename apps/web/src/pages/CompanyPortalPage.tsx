@@ -43,8 +43,10 @@ import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import api from "../utils/api";
 import { toast } from "react-hot-toast";
+import WhatsAppIcon from "../components/WhatsAppIcon";
 import logo from "../assets/logo.png";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { PortalModal } from "../components/PortalModal";
 import CompanyTalentModal, {
   CompanyTalent,
 } from "../components/company/CompanyTalentModal";
@@ -103,7 +105,7 @@ function FilterSelect({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          w-full h-9 flex items-center justify-between px-3 rounded-lg text-xs font-medium outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-colors select-none cursor-pointer
+          w-full h-8 flex items-center justify-between px-3 rounded-lg text-xs font-medium outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 transition-colors select-none cursor-pointer
           ${
             isActive
               ? "bg-amber-50/80 border border-amber-300 text-amber-900 shadow-2xs"
@@ -232,22 +234,11 @@ function applyOrderToPipeline(pipelineData: any) {
   };
 }
 
-// Applies physics-based tilt while dragging, smoothly straightening when released
+// Clean draggable card style ensuring smooth native @hello-pangea/dnd drop animation
 function getDraggableCardStyle(style: any, snapshot: any) {
   if (!snapshot.isDragging) {
     return style;
   }
-  // While actively dragging: apply 2.5deg tilt and 1.02 scale
-  if (!snapshot.isDropAnimating) {
-    return {
-      ...style,
-      transform: style?.transform
-        ? `${style.transform} rotate(2.5deg) scale(1.02)`
-        : "rotate(2.5deg) scale(1.02)",
-      zIndex: 9999,
-    };
-  }
-  // When released (drop animation): smoothly straighten back to 0deg
   return {
     ...style,
     zIndex: 9999,
@@ -258,16 +249,17 @@ function getDraggableCardStyle(style: any, snapshot: any) {
 function renderStagePill(stage?: string | null) {
   if (!stage) {
     return (
-      <span className="px-2.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs whitespace-nowrap">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
         Disponível
       </span>
     );
   }
   const config: Record<string, { label: string; bg: string }> = {
-    SAVED: { label: "TRIAGEM / RADAR", bg: "bg-sky-500 text-white" },
-    INTERVIEW: { label: "EM ENTREVISTA", bg: "bg-amber-500 text-white" },
+    SAVED: { label: "TRIAGEM", bg: "bg-sky-500 text-white" },
+    INTERVIEW: { label: "ENTREVISTA", bg: "bg-amber-500 text-white" },
     HIRED: { label: "CONTRATADO", bg: "bg-emerald-600 text-white" },
-    ARCHIVED: { label: "BANCO DE RESERVA", bg: "bg-slate-600 text-white" },
+    ARCHIVED: { label: "ARQUIVADO", bg: "bg-slate-600 text-white" },
   };
   const c = config[stage] || { label: stage, bg: "bg-slate-600 text-white" };
   return (
@@ -349,9 +341,23 @@ export default function CompanyPortalPage() {
   );
   const [movingTalent, setMovingTalent] = useState<{ id: string; stage: string } | null>(null);
 
-  const fetchCompanyData = async () => {
+  // Candidate tracking & Highlight in Pipeline
+  const [highlightedTalentId, setHighlightedTalentId] = useState<string | null>(null);
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Hiring confirmation dialog from drag and drop
+  const [pendingHiring, setPendingHiring] = useState<{
+    talent: CompanyTalent;
+    sourceCol: string;
+    sourceIndex: number;
+    destinationIndex: number;
+  } | null>(null);
+  const [hiredRoleInput, setHiredRoleInput] = useState("");
+  const [isHiringSubmitting, setIsHiringSubmitting] = useState(false);
+
+  const fetchCompanyData = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const [profileRes, talentsRes, pipelineRes] = await Promise.all([
         api.get("/company/me"),
         api.get("/company/talents"),
@@ -371,7 +377,7 @@ export default function CompanyPortalPage() {
         toast.error("Erro ao carregar dados do portal corporativo.");
       }
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -414,6 +420,8 @@ export default function CompanyPortalPage() {
       if (selectedStage) {
         if (selectedStage === "NONE") {
           if (t.currentStage) return false;
+        } else if (selectedStage === "IN_PIPELINE") {
+          if (!t.currentStage) return false;
         } else if (t.currentStage !== selectedStage) {
           return false;
         }
@@ -434,7 +442,7 @@ export default function CompanyPortalPage() {
 
   const handleStageChange = (
     talentId: string,
-    newStage: string,
+    newStage: string | null,
     notes?: string,
     hiredRole?: string,
   ) => {
@@ -450,6 +458,17 @@ export default function CompanyPortalPage() {
             }
           : t,
       ),
+    );
+
+    setSelectedTalent((prev) =>
+      prev && prev.id === talentId
+        ? {
+            ...prev,
+            currentStage: newStage as any,
+            interactionNotes: notes !== undefined ? notes : prev.interactionNotes,
+            hiredRole: hiredRole !== undefined ? hiredRole : prev.hiredRole,
+          }
+        : prev,
     );
 
     // 2. Instantly update pipelineData state so Kanban moves immediately without page reload
@@ -475,13 +494,15 @@ export default function CompanyPortalPage() {
         const list = prevPipeline[col] || [];
         list.forEach((entry: any) => {
           if (entry.talent?.id === talentId || entry.talentId === talentId) {
-            itemToMove = {
-              ...entry,
-              stage: newStage,
-              notes: notes !== undefined ? notes : entry.notes,
-              hiredRole: hiredRole !== undefined ? hiredRole : entry.hiredRole,
-              updatedAt: new Date().toISOString(),
-            };
+            if (newStage) {
+              itemToMove = {
+                ...entry,
+                stage: newStage,
+                notes: notes !== undefined ? notes : entry.notes,
+                hiredRole: hiredRole !== undefined ? hiredRole : entry.hiredRole,
+                updatedAt: new Date().toISOString(),
+              };
+            }
           } else {
             nextPipeline[col].push(entry);
           }
@@ -528,6 +549,8 @@ export default function CompanyPortalPage() {
         nextPipeline.HIRED.length +
         nextPipeline.ARCHIVED.length;
 
+      savePipelineOrder(nextPipeline);
+
       return {
         ...prev,
         pipeline: nextPipeline,
@@ -572,10 +595,10 @@ export default function CompanyPortalPage() {
       await api.put(`/company/talents/${talentId}/stage`, { stage: newStage });
 
       const stageMessages: Record<string, string> = {
-        SAVED: "Candidato salvo no Radar!",
+        SAVED: "Candidato adicionado ao seu processo seletivo em Triagem!",
         INTERVIEW: "Candidato movido para etapa de Entrevista!",
         HIRED: "Candidato registrado como Contratado! Parabéns!",
-        ARCHIVED: "Candidato arquivado no Banco de Reserva.",
+        ARCHIVED: "Candidato arquivado no processo seletivo.",
       };
       toast.success(stageMessages[newStage] || "Etapa atualizada com sucesso!");
 
@@ -598,6 +621,34 @@ export default function CompanyPortalPage() {
     } finally {
       setMovingTalent(null);
     }
+  };
+
+  const handleNavigateToFunnel = (talentId: string, stage?: string | null) => {
+    setActiveTab("pipeline");
+    setPipelineSearch(""); // clear search filter so target card is not hidden
+    if (stage && pipelineFilter !== "ALL" && pipelineFilter !== stage) {
+      setPipelineFilter("ALL");
+    }
+
+    setHighlightedTalentId(talentId);
+
+    if (highlightTimeoutRef.current) {
+      clearTimeout(highlightTimeoutRef.current);
+    }
+
+    // Scroll into view smoothly once the tab is rendered
+    setTimeout(() => {
+      const el =
+        document.getElementById(`kanban-card-${talentId}`) ||
+        document.getElementById(`list-card-${talentId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      }
+    }, 150);
+
+    highlightTimeoutRef.current = setTimeout(() => {
+      setHighlightedTalentId(null);
+    }, 1000);
   };
 
   const openTalent = (talent: CompanyTalent, interaction?: any) => {
@@ -669,6 +720,143 @@ export default function CompanyPortalPage() {
     });
   }, [pipelineData, pipelineFilter, pipelineSearch]);
 
+  const handleConfirmHiringModal = async () => {
+    if (!pendingHiring) return;
+    const role = hiredRoleInput.trim();
+    if (!role) {
+      toast.error("O cargo da contratação é obrigatório.");
+      return;
+    }
+
+    const { talent } = pendingHiring;
+    setIsHiringSubmitting(true);
+
+    try {
+      await api.put(`/company/talents/${talent.id}/stage`, {
+        stage: "HIRED",
+        hiredRole: role,
+      });
+
+      // Update hiredRole in local state (card is already in HIRED column)
+      setPipelineData((prev: any) => {
+        if (!prev?.pipeline?.HIRED) return prev;
+        const list = prev.pipeline.HIRED.map((item: any) =>
+          (item.talent?.id || item.talentId) === talent.id
+            ? { ...item, hiredRole: role, talent: { ...item.talent, hiredRole: role } }
+            : item,
+        );
+        return {
+          ...prev,
+          pipeline: {
+            ...prev.pipeline,
+            HIRED: list,
+          },
+        };
+      });
+
+      setTalents((prev) =>
+        prev.map((t) =>
+          t.id === talent.id
+            ? { ...t, currentStage: "HIRED", hiredRole: role }
+            : t,
+        ),
+      );
+
+      setSelectedTalent((prev) =>
+        prev && prev.id === talent.id
+          ? { ...prev, currentStage: "HIRED", hiredRole: role }
+          : prev,
+      );
+
+      toast.success("Candidato registrado como Contratado! Parabéns!");
+      setPendingHiring(null);
+      setHiredRoleInput("");
+
+      // Background sync to ensure full consistency
+      api
+        .get("/company/talents")
+        .then((res) => {
+          if (res.data) setTalents(res.data);
+        })
+        .catch(() => {});
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Erro ao registrar contratação.");
+    } finally {
+      setIsHiringSubmitting(false);
+    }
+  };
+
+  const handleCancelHiringModal = () => {
+    if (pendingHiring) {
+      const { talent, sourceCol, sourceIndex } = pendingHiring;
+
+      // Revert card from HIRED back to sourceCol
+      setPipelineData((prev: any) => {
+        if (!prev?.pipeline) return prev;
+        const hiredList = Array.from(prev.pipeline.HIRED || []);
+        const sourceList = Array.from(prev.pipeline[sourceCol] || []);
+
+        const idxInHired = hiredList.findIndex(
+          (item: any) => (item.talent?.id || item.talentId) === talent.id,
+        );
+        if (idxInHired !== -1) {
+          const [movedItem] = hiredList.splice(idxInHired, 1) as any[];
+          const revertedItem = {
+            ...movedItem,
+            stage: sourceCol,
+            talent: {
+              ...movedItem.talent,
+              currentStage: sourceCol,
+            },
+            updatedAt: new Date().toISOString(),
+          };
+          sourceList.splice(sourceIndex, 0, revertedItem);
+        }
+
+        const newPipeline = {
+          ...prev.pipeline,
+          HIRED: hiredList,
+          [sourceCol]: sourceList,
+        };
+
+        savePipelineOrder(newPipeline);
+
+        const total =
+          (newPipeline.SAVED?.length || 0) +
+          (newPipeline.INTERVIEW?.length || 0) +
+          (newPipeline.HIRED?.length || 0) +
+          (newPipeline.ARCHIVED?.length || 0);
+
+        return {
+          ...prev,
+          pipeline: newPipeline,
+          counts: {
+            total,
+            saved: newPipeline.SAVED?.length || 0,
+            interview: newPipeline.INTERVIEW?.length || 0,
+            hired: newPipeline.HIRED?.length || 0,
+            archived: newPipeline.ARCHIVED?.length || 0,
+          },
+        };
+      });
+
+      setTalents((prev) =>
+        prev.map((t) =>
+          t.id === talent.id ? { ...t, currentStage: sourceCol as any } : t,
+        ),
+      );
+
+      setSelectedTalent((prev) =>
+        prev && prev.id === talent.id
+          ? { ...prev, currentStage: sourceCol as any }
+          : prev,
+      );
+    }
+
+    setPendingHiring(null);
+    setHiredRoleInput("");
+  };
+
   const handleDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
     if (!destination) return;
@@ -729,6 +917,10 @@ export default function CompanyPortalPage() {
       const updatedItem = {
         ...(movedItem as any),
         stage: destCol,
+        talent: {
+          ...movedItem.talent,
+          currentStage: destCol,
+        },
         updatedAt: new Date().toISOString(),
       };
 
@@ -766,15 +958,35 @@ export default function CompanyPortalPage() {
       prev.map((t) => (t.id === draggableId ? { ...t, currentStage: destCol } : t)),
     );
 
+    // If destination is HIRED, prompt modal for mandatory role without calling API yet
+    if (destCol === "HIRED") {
+      const targetTalent =
+        talents.find((t) => t.id === draggableId) ||
+        pipelineData?.pipeline?.[sourceCol]?.find(
+          (item: any) => (item.talent?.id || item.talentId) === draggableId,
+        )?.talent;
+
+      if (targetTalent) {
+        setPendingHiring({
+          talent: targetTalent,
+          sourceCol,
+          sourceIndex: source.index,
+          destinationIndex: destination.index,
+        });
+        setHiredRoleInput(targetTalent.hiredRole || "");
+      }
+      return;
+    }
+
     // Persist to backend database
     api
       .put(`/company/talents/${draggableId}/stage`, { stage: destCol })
       .then(() => {
         const stageMessages: Record<string, string> = {
-          SAVED: "Candidato salvo no Radar!",
+          SAVED: "Candidato movido para Triagem!",
           INTERVIEW: "Candidato movido para etapa de Entrevista!",
           HIRED: "Candidato registrado como Contratado! Parabéns!",
-          ARCHIVED: "Candidato arquivado no Banco de Reserva.",
+          ARCHIVED: "Candidato movido para Arquivados!",
         };
         toast.success(stageMessages[destCol] || "Etapa atualizada com sucesso!");
 
@@ -789,7 +1001,7 @@ export default function CompanyPortalPage() {
       .catch((err) => {
         console.error("Failed to persist stage change:", err);
         toast.error(err.response?.data?.message || "Erro ao salvar etapa no servidor.");
-        fetchCompanyData();
+        fetchCompanyData(false);
       });
   };
 
@@ -911,149 +1123,149 @@ export default function CompanyPortalPage() {
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
         {activeTab === "catalog" ? (
           /* TAB 1: BANCO DE TALENTOS */
-          <div className="space-y-5">
-            {/* Page Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="space-y-4">
+            {/* Header info & Catalog Toolbar (identical pattern to Funil) */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white border border-slate-200 rounded-lg p-3 shadow-2xs">
               <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                    Banco de Talentos
-                  </h1>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                <h1 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+                  <span>Banco de Talentos</span>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                     {talents.length} disponíveis
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    Auditado LGPD
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1 max-w-2xl">
+                </h1>
+                <p className="text-xs text-slate-500 mt-0.5">
                   Estudantes capacitados e avaliados pelo Instituto Brilha Mais disponíveis para recrutamento corporativo.
                 </p>
               </div>
 
-              {/* View Switcher: Tabela / Cards */}
-              <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 shadow-2xs self-start sm:self-center">
-                <button
-                  type="button"
-                  onClick={() => setCatalogView("table")}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                    catalogView === "table"
-                      ? "bg-slate-900 text-white shadow-2xs font-semibold"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <List className="w-3.5 h-3.5" />
-                  <span>Tabela</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCatalogView("grid")}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                    catalogView === "grid"
-                      ? "bg-slate-900 text-white shadow-2xs font-semibold"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>Cards</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Filter Bar - Clean Toolbar */}
-            <div className="bg-white border border-slate-200 rounded-lg p-2.5 sm:p-3 shadow-2xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+              <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
                 {/* Search */}
-                <div className="relative w-full">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <div className="relative w-44 sm:w-60">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Buscar por nome, cargo, habilidades..."
-                    className="w-full h-9 pl-9 pr-7 rounded-lg border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors bg-white"
+                    placeholder="Buscar candidatos..."
+                    className="w-full h-8 pl-8 pr-6 rounded-md border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-colors bg-white"
                   />
                   {search && (
                     <button
                       type="button"
                       onClick={() => setSearch("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   )}
                 </div>
 
-                {/* Area filter */}
-                <FilterSelect
-                  icon={Briefcase}
-                  value={selectedArea}
-                  onChange={setSelectedArea}
-                  placeholder="Área de Atuação"
-                  options={[
-                    { id: "", name: "Todas as Áreas de Atuação" },
-                    ...availableAreas.map((area) => ({ id: area, name: area })),
-                  ]}
-                />
-
-                {/* Availability filter */}
-                <FilterSelect
-                  icon={Clock}
-                  value={selectedAvailability}
-                  onChange={setSelectedAvailability}
-                  placeholder="Disponibilidade / Turno"
-                  options={[
-                    { id: "", name: "Qualquer Disponibilidade" },
-                    { id: "MANHA", name: "Manhã" },
-                    { id: "TARDE", name: "Tarde" },
-                    { id: "NOITE", name: "Noite" },
-                    { id: "INTEGRAL", name: "Integral" },
-                    { id: "FLEXIVEL", name: "Flexível" },
-                  ]}
-                />
-
-                {/* Status no Funil filter */}
-                <FilterSelect
-                  icon={Bookmark}
-                  value={selectedStage}
-                  onChange={setSelectedStage}
-                  placeholder="Status no Funil"
-                  options={[
-                    { id: "", name: "Todos os Status" },
-                    { id: "NONE", name: "Sem Etapa / Novos" },
-                    { id: "SAVED", name: "Salvos no Radar" },
-                    { id: "INTERVIEW", name: "Em Entrevista" },
-                    { id: "HIRED", name: "Contratados" },
-                    { id: "ARCHIVED", name: "Banco de Reserva" },
-                  ]}
-                />
+                {/* View switcher */}
+                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setCatalogView("table")}
+                    className={`px-2.5 py-1 rounded-md text-xs flex items-center gap-1.5 transition-colors duration-150 cursor-pointer ${
+                      catalogView === "table"
+                        ? "bg-white text-slate-900 shadow-2xs font-semibold"
+                        : "text-slate-500 hover:text-slate-900 font-medium"
+                    }`}
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    <span>Tabela</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCatalogView("grid")}
+                    className={`px-2.5 py-1 rounded-md text-xs flex items-center gap-1.5 transition-colors duration-150 cursor-pointer ${
+                      catalogView === "grid"
+                        ? "bg-white text-slate-900 shadow-2xs font-semibold"
+                        : "text-slate-500 hover:text-slate-900 font-medium"
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <span>Cards</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Filter active feedback & count */}
-            <div className="flex items-center justify-between text-xs text-slate-500 px-0.5">
-              <span>
+            {/* Secondary Filter Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2 flex-wrap flex-1">
+                {/* Area filter */}
+                <div className="w-full sm:w-52">
+                  <FilterSelect
+                    icon={Briefcase}
+                    value={selectedArea}
+                    onChange={setSelectedArea}
+                    placeholder="Área de Atuação"
+                    options={[
+                      { id: "", name: "Todas as Áreas" },
+                      ...availableAreas.map((area) => ({ id: area, name: area })),
+                    ]}
+                  />
+                </div>
+
+                {/* Availability filter */}
+                <div className="w-full sm:w-60">
+                  <FilterSelect
+                    icon={Clock}
+                    value={selectedAvailability}
+                    onChange={setSelectedAvailability}
+                    placeholder="Disponibilidade / Turno"
+                    options={[
+                      { id: "", name: "Qualquer Disponibilidade" },
+                      { id: "MANHA", name: "Manhã" },
+                      { id: "TARDE", name: "Tarde" },
+                      { id: "NOITE", name: "Noite" },
+                      { id: "INTEGRAL", name: "Integral" },
+                      { id: "FLEXIVEL", name: "Flexível" },
+                    ]}
+                  />
+                </div>
+
+                {/* Status no Processo filter */}
+                <div className="w-full sm:w-56">
+                  <FilterSelect
+                    icon={Bookmark}
+                    value={selectedStage}
+                    onChange={setSelectedStage}
+                    placeholder="Status no Processo"
+                    options={[
+                      { id: "", name: "Todos os Alunos" },
+                      { id: "NONE", name: "Disponíveis (Novos)" },
+                      { id: "IN_PIPELINE", name: "Já no Meu Funil" },
+                      { id: "SAVED", name: "Em Triagem" },
+                      { id: "INTERVIEW", name: "Em Entrevista" },
+                      { id: "HIRED", name: "Contratados" },
+                      { id: "ARCHIVED", name: "Arquivados" },
+                    ]}
+                  />
+                </div>
+
+                {(search || selectedArea || selectedAvailability || selectedCity || selectedStage) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch("");
+                      setSelectedArea("");
+                      setSelectedAvailability("");
+                      setSelectedCity("");
+                      setSelectedStage("");
+                    }}
+                    className="h-8 px-2.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                  >
+                    <X className="w-3 h-3 text-slate-400" />
+                    <span>Limpar Filtros</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="text-xs text-slate-500 shrink-0 px-0.5">
                 Exibindo <strong>{filteredTalents.length}</strong> de{" "}
                 <strong>{talents.length}</strong> candidatos
-              </span>
-
-              {(search || selectedArea || selectedAvailability || selectedCity || selectedStage) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearch("");
-                    setSelectedArea("");
-                    setSelectedAvailability("");
-                    setSelectedCity("");
-                    setSelectedStage("");
-                  }}
-                  className="inline-flex items-center gap-1.5 text-xs text-amber-700 hover:text-amber-800 font-medium hover:underline cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" />
-                  <span>Limpar Filtros</span>
-                </button>
-              )}
+              </div>
             </div>
 
             {/* Talent Presentation (Grid or Table View) */}
@@ -1077,7 +1289,7 @@ export default function CompanyPortalPage() {
                         <th className="py-3 px-4">Candidato</th>
                         <th className="py-3 px-4">Localização &amp; Turno</th>
                         <th className="py-3 px-4">Áreas de Interesse</th>
-                        <th className="py-3 px-4">Status no Funil</th>
+                        <th className="py-3 px-4">Status no Processo</th>
                         <th className="py-3 px-4 text-right">Ações</th>
                       </tr>
                     </thead>
@@ -1132,39 +1344,44 @@ export default function CompanyPortalPage() {
                             <td className="py-3 px-4">
                               {renderInterestTags(talent.areasOfInterest, 2)}
                             </td>
-                            <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
-                              {talent.currentStage ? (
-                                renderStagePill(talent.currentStage)
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleQuickMove(talent.id, "SAVED")}
-                                  disabled={movingTalent?.id === talent.id}
-                                  className="h-7 px-2.5 rounded-lg border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-[11px] font-medium text-slate-600 hover:text-sky-700 transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50 shadow-2xs"
-                                >
-                                  <Bookmark className="w-3 h-3 text-slate-400" />
-                                  <span>Salvar no Radar</span>
-                                </button>
-                              )}
+                            <td className="py-3 px-4">
+                              {renderStagePill(talent.currentStage)}
                             </td>
                             <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex items-center justify-end gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setSelectedTalent(talent)}
-                                  className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
-                                >
-                                  <span>Ver Perfil</span>
-                                </button>
+                              <div className="flex items-center justify-end gap-1.5">
+                                {talent.currentStage ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleNavigateToFunnel(talent.id, talent.currentStage)}
+                                    className="h-8 w-8 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
+                                    title="Acompanhar no Funil de Contratação"
+                                  >
+                                    <Kanban className="w-4 h-4 text-amber-700" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleQuickMove(talent.id, "SAVED")}
+                                    disabled={movingTalent?.id === talent.id}
+                                    className="h-8 w-8 rounded-lg bg-sky-600 hover:bg-sky-700 text-white transition-colors flex items-center justify-center cursor-pointer shadow-2xs disabled:opacity-50"
+                                    title="Adicionar ao Funil (Triagem)"
+                                  >
+                                    {movingTalent?.id === talent.id && movingTalent.stage === "SAVED" ? (
+                                      <LoadingSpinner size="xs" variant="current" />
+                                    ) : (
+                                      <Plus className="w-4 h-4" />
+                                    )}
+                                  </button>
+                                )}
 
                                 {talent.resumeUrl && (
                                   <button
                                     type="button"
                                     onClick={() => handleDownloadResume(talent)}
-                                    className="h-8 w-8 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-100 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
+                                    className="h-8 w-8 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
                                     title="Baixar Currículo PDF"
                                   >
-                                    <Download className="w-4 h-4 text-slate-600" />
+                                    <Download className="w-3.5 h-3.5 text-slate-500" />
                                   </button>
                                 )}
 
@@ -1174,9 +1391,9 @@ export default function CompanyPortalPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="h-8 w-8 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
-                                    title="WhatsApp Direto"
+                                    title="Conversar no WhatsApp"
                                   >
-                                    <MessageCircle className="w-4 h-4 text-emerald-600" />
+                                    <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
                                   </a>
                                 )}
                               </div>
@@ -1232,12 +1449,19 @@ export default function CompanyPortalPage() {
                             </div>
                           </div>
 
-                          {/* Stage Pill */}
-                          {talent.currentStage && renderStagePill(talent.currentStage)}
+                          {/* Stage Pill (or Disponível if not in pipeline) */}
+                          {renderStagePill(talent.currentStage)}
                         </div>
 
+                        {/* Tags */}
+                        {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
+                          <div className="mb-2.5">
+                            {renderInterestTags(talent.areasOfInterest, 3)}
+                          </div>
+                        )}
+
                         {/* Location & Turno */}
-                        <div className="flex items-center gap-3 text-xs text-slate-500 mb-2.5 flex-wrap">
+                        <div className="flex items-center gap-3 text-xs text-slate-500 mb-3 flex-wrap">
                           {talent.city && (
                             <span className="flex items-center gap-1">
                               <MapPin className="w-3.5 h-3.5 text-slate-400" />
@@ -1252,88 +1476,58 @@ export default function CompanyPortalPage() {
                             </span>
                           )}
                         </div>
-
-                        {/* Bio snippet */}
-                        {talent.bio && (
-                          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
-                            {talent.bio}
-                          </p>
-                        )}
-
-                        {/* Areas tags */}
-                        {talent.areasOfInterest && talent.areasOfInterest.length > 0 && (
-                          <div className="mb-3">
-                            {renderInterestTags(talent.areasOfInterest, 3)}
-                          </div>
-                        )}
                       </div>
 
                       {/* Card Actions */}
-                      <div className="pt-3 border-t border-slate-100 space-y-2" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1.5">
+                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-1.5" onClick={(e) => e.stopPropagation()}>
+                        {!talent.currentStage ? (
                           <button
                             type="button"
-                            onClick={() => setSelectedTalent(talent)}
-                            className="flex-1 h-8 px-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                            onClick={() => handleQuickMove(talent.id, "SAVED")}
+                            disabled={movingTalent?.id === talent.id}
+                            className="flex-1 h-8 px-2.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+                            title="Adicionar ao processo seletivo em Triagem"
                           >
-                            <Eye className="w-3.5 h-3.5 text-slate-400" />
-                            <span>Ver Perfil</span>
+                            {movingTalent?.id === talent.id && movingTalent.stage === "SAVED" ? (
+                              <LoadingSpinner size="xs" variant="current" />
+                            ) : (
+                              <Plus className="w-3.5 h-3.5" />
+                            )}
+                            <span>Adicionar ao Funil</span>
                           </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleNavigateToFunnel(talent.id, talent.currentStage)}
+                            className="flex-1 h-8 px-2.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                            title="Acompanhar este candidato no Funil de Contratação"
+                          >
+                            <Kanban className="w-3.5 h-3.5 text-amber-700" />
+                            <span>Acompanhar no Funil</span>
+                          </button>
+                        )}
 
-                          {talent.resumeUrl && (
-                            <button
-                              type="button"
-                              onClick={() => handleDownloadResume(talent)}
-                              className="h-8 px-2.5 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
-                              title="Baixar Currículo PDF"
-                            >
-                              <Download className="w-3.5 h-3.5 text-slate-500" />
-                            </button>
-                          )}
+                        {talent.resumeUrl && (
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadResume(talent)}
+                            className="h-8 px-2.5 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
+                            title="Baixar Currículo PDF"
+                          >
+                            <Download className="w-3.5 h-3.5 text-slate-500" />
+                          </button>
+                        )}
 
-                          {whatsappUrl && (
-                            <a
-                              href={whatsappUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="h-8 px-2.5 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
-                              title="Contato via WhatsApp"
-                            >
-                              <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                            </a>
-                          )}
-                        </div>
-
-                        {/* Quick action: Save to Radar */}
-                        {!talent.currentStage && (
-                          <div className="flex items-center gap-1.5 pt-0.5">
-                            <button
-                              type="button"
-                              onClick={() => handleQuickMove(talent.id, "SAVED")}
-                              disabled={movingTalent?.id === talent.id}
-                              className="flex-1 h-7.5 px-2 rounded-lg border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-[11px] font-medium text-slate-600 hover:text-sky-700 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50 shadow-2xs"
-                            >
-                              {movingTalent?.id === talent.id && movingTalent.stage === "SAVED" ? (
-                                <LoadingSpinner size="xs" variant="current" />
-                              ) : (
-                                <Bookmark className="w-3 h-3 text-slate-400" />
-                              )}
-                              <span>Salvar no Radar</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleQuickMove(talent.id, "INTERVIEW")}
-                              disabled={movingTalent?.id === talent.id}
-                              className="flex-1 h-7.5 px-2 rounded-lg border border-amber-200 bg-amber-50 hover:bg-amber-100 text-[11px] font-semibold text-amber-800 transition-colors flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50 shadow-2xs"
-                            >
-                              {movingTalent?.id === talent.id && movingTalent.stage === "INTERVIEW" ? (
-                                <LoadingSpinner size="xs" variant="current" />
-                              ) : (
-                                <Users className="w-3 h-3 text-amber-600" />
-                              )}
-                              <span>Chamar p/ Entrevista</span>
-                            </button>
-                          </div>
+                        {whatsappUrl && (
+                          <a
+                            href={whatsappUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="h-8 px-2 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
+                            title="Conversar no WhatsApp"
+                          >
+                            <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
+                          </a>
                         )}
                       </div>
                     </div>
@@ -1386,10 +1580,10 @@ export default function CompanyPortalPage() {
                   <button
                     type="button"
                     onClick={() => setPipelineView("kanban")}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-md text-xs flex items-center gap-1.5 transition-colors duration-150 cursor-pointer ${
                       pipelineView === "kanban"
                         ? "bg-white text-slate-900 shadow-2xs font-semibold"
-                        : "text-slate-500 hover:text-slate-900"
+                        : "text-slate-500 hover:text-slate-900 font-medium"
                     }`}
                   >
                     <Kanban className="w-3.5 h-3.5" />
@@ -1398,10 +1592,10 @@ export default function CompanyPortalPage() {
                   <button
                     type="button"
                     onClick={() => setPipelineView("list")}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-md text-xs flex items-center gap-1.5 transition-colors duration-150 cursor-pointer ${
                       pipelineView === "list"
                         ? "bg-white text-slate-900 shadow-2xs font-semibold"
-                        : "text-slate-500 hover:text-slate-900"
+                        : "text-slate-500 hover:text-slate-900 font-medium"
                     }`}
                   >
                     <List className="w-3.5 h-3.5" />
@@ -1419,7 +1613,7 @@ export default function CompanyPortalPage() {
                   {[
                     {
                       key: "SAVED",
-                      title: "TRIAGEM / RADAR",
+                      title: "TRIAGEM",
                       pillBg: "bg-sky-500 text-white",
                       countColor: "text-sky-700",
                       icon: Bookmark,
@@ -1427,7 +1621,7 @@ export default function CompanyPortalPage() {
                     },
                     {
                       key: "INTERVIEW",
-                      title: "EM ENTREVISTA",
+                      title: "ENTREVISTA",
                       pillBg: "bg-amber-500 text-white",
                       countColor: "text-amber-700",
                       icon: Clock,
@@ -1443,7 +1637,7 @@ export default function CompanyPortalPage() {
                     },
                     {
                       key: "ARCHIVED",
-                      title: "BANCO DE RESERVA",
+                      title: "ARQUIVADOS",
                       pillBg: "bg-slate-600 text-white",
                       countColor: "text-slate-700",
                       icon: Archive,
@@ -1548,25 +1742,35 @@ export default function CompanyPortalPage() {
                                       draggableId={talent.id}
                                       index={index}
                                     >
-                                      {(dragProvided, dragSnapshot) => (
-                                        <div
-                                          ref={dragProvided.innerRef}
-                                          {...dragProvided.draggableProps}
-                                          {...dragProvided.dragHandleProps}
-                                          onClick={() => openTalent(talent, item)}
-                                          style={getDraggableCardStyle(
-                                            dragProvided.draggableProps.style,
-                                            dragSnapshot,
-                                          )}
-                                          className={`
-                                            bg-white rounded-lg border p-3.5 space-y-2.5 select-none transition-shadow cursor-grab active:cursor-grabbing group mb-3
-                                            ${
-                                              dragSnapshot.isDragging
-                                                ? "shadow-2xl border-slate-300 bg-white ring-1 ring-slate-900/10"
-                                                : "border-slate-200/90 shadow-2xs hover:shadow-md hover:border-slate-300"
-                                            }
-                                          `}
-                                        >
+                                      {(dragProvided, dragSnapshot) => {
+                                        const isHighlighted = highlightedTalentId === talent.id;
+                                        const isActivelyDragging =
+                                          dragSnapshot.isDragging && !dragSnapshot.isDropAnimating;
+                                        return (
+                                          <div
+                                            id={`kanban-card-${talent.id}`}
+                                            ref={dragProvided.innerRef}
+                                            {...dragProvided.draggableProps}
+                                            {...dragProvided.dragHandleProps}
+                                            onClick={() => openTalent(talent, item)}
+                                            style={getDraggableCardStyle(
+                                              dragProvided.draggableProps.style,
+                                              dragSnapshot,
+                                            )}
+                                            className="mb-3 select-none cursor-grab active:cursor-grabbing outline-none"
+                                          >
+                                            <div
+                                              className={`
+                                                relative rounded-lg border p-3.5 space-y-2.5 transition-all duration-200 ease-out group
+                                                ${
+                                                  isActivelyDragging
+                                                    ? "rotate-2 scale-[1.03] shadow-2xl border-slate-300 bg-white ring-1 ring-slate-900/10"
+                                                    : isHighlighted
+                                                    ? "border-amber-400 bg-amber-50/80 ring-2 ring-amber-400/40 shadow-md"
+                                                    : "bg-white border-slate-200/90 shadow-2xs hover:shadow-md hover:border-slate-300"
+                                                }
+                                              `}
+                                            >
                                           {/* ClickUp Card Title & Grip */}
                                           <div className="flex items-start gap-2">
                                             <div
@@ -1708,15 +1912,17 @@ export default function CompanyPortalPage() {
                                                   className="h-7 px-2 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center gap-1 text-[11px] font-medium cursor-pointer shrink-0"
                                                   title="WhatsApp Direto"
                                                 >
-                                                  <MessageCircle className="w-3 h-3" />
+                                                  <WhatsAppIcon className="w-3 h-3 text-emerald-600" />
                                                   <span>WhatsApp</span>
                                                 </a>
                                               )}
                                             </div>
                                           )}
                                         </div>
-                                      )}
-                                    </Draggable>
+                                      </div>
+                                    );
+                                  }}
+                                </Draggable>
                                   );
                                 })}
                               {provided.placeholder}
@@ -1747,12 +1953,12 @@ export default function CompanyPortalPage() {
                     { key: "ALL", label: "Todos", count: pipelineData?.counts?.total || 0 },
                     {
                       key: "SAVED",
-                      label: "Triagem / Radar",
+                      label: "Triagem",
                       count: pipelineData?.counts?.saved || 0,
                     },
                     {
                       key: "INTERVIEW",
-                      label: "Em Entrevista",
+                      label: "Entrevista",
                       count: pipelineData?.counts?.interview || 0,
                     },
                     {
@@ -1762,7 +1968,7 @@ export default function CompanyPortalPage() {
                     },
                     {
                       key: "ARCHIVED",
-                      label: "Banco de Reserva",
+                      label: "Arquivados",
                       count: pipelineData?.counts?.archived || 0,
                     },
                   ].map((item) => {
@@ -1772,15 +1978,15 @@ export default function CompanyPortalPage() {
                         key={item.key}
                         type="button"
                         onClick={() => setPipelineFilter(item.key as any)}
-                        className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap shadow-2xs ${
+                        className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 border transition-colors duration-150 cursor-pointer whitespace-nowrap shadow-2xs ${
                           active
-                            ? "bg-slate-900 text-white"
-                            : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                            ? "bg-slate-900 border-slate-900 text-white"
+                            : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                         }`}
                       >
                         <span>{item.label}</span>
                         <span
-                          className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold transition-colors duration-150 ${
                             active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
                           }`}
                         >
@@ -1799,7 +2005,7 @@ export default function CompanyPortalPage() {
                       Nenhum candidato nesta etapa
                     </h3>
                     <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                      Navegue pelo Banco de Talentos para adicionar alunos ao seu radar.
+                      Navegue pelo Banco de Talentos para adicionar alunos ao seu processo seletivo.
                     </p>
                   </div>
                 ) : (
@@ -1813,11 +2019,18 @@ export default function CompanyPortalPage() {
                           )}!%20Vi%20seu%20perfil%20no%20Banco%20de%20Talentos%20do%20Brilha%20Mais.`
                         : null;
 
+                      const isHighlighted = highlightedTalentId === talent.id;
+
                       return (
                         <div
+                          id={`list-card-${talent.id}`}
                           key={item.interactionId}
                           onClick={() => openTalent(talent, item)}
-                          className="bg-white border border-slate-200 hover:border-slate-300 rounded-lg p-4 shadow-2xs transition-all flex flex-col justify-between cursor-pointer group"
+                          className={`relative border rounded-lg p-4 transition-[background-color,border-color,box-shadow] duration-300 flex flex-col justify-between cursor-pointer group ${
+                            isHighlighted
+                              ? "border-amber-400 bg-amber-50/80 ring-2 ring-amber-400/40 shadow-md"
+                              : "bg-white border-slate-200 hover:border-slate-300 shadow-2xs"
+                          }`}
                         >
                           <div>
                             <div className="flex items-start justify-between gap-3 mb-2.5">
@@ -1915,7 +2128,7 @@ export default function CompanyPortalPage() {
                                 className="h-8 px-2.5 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors flex items-center justify-center cursor-pointer shadow-2xs"
                                 title="Conversar no WhatsApp"
                               >
-                                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                                <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
                               </a>
                             )}
                           </div>
@@ -1949,6 +2162,80 @@ export default function CompanyPortalPage() {
           }}
           onStageChange={handleStageChange}
         />
+      )}
+
+      {/* Confirmation Modal for Hiring via Drag & Drop */}
+      {pendingHiring && (
+        <PortalModal
+          isOpen={true}
+          onClose={() => !isHiringSubmitting && handleCancelHiringModal()}
+        >
+          <div className="bg-white rounded-2xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-slate-200/80 text-left space-y-5 relative">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border bg-emerald-50 text-emerald-600 border-emerald-200/60">
+                <Award className="h-5 w-5" />
+              </div>
+              <div className="space-y-1 min-w-0 flex-1">
+                <h2 className="text-base sm:text-lg font-semibold text-slate-900 leading-snug">
+                  Confirmar Contratação
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                  Parabéns pela contratação! Informe o cargo de <strong>{pendingHiring.talent?.user?.name}</strong> para registrar no histórico da sua empresa.
+                </p>
+              </div>
+            </div>
+
+            {/* Input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700 block">
+                Cargo Contratado <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                autoFocus
+                value={hiredRoleInput}
+                onChange={(e) => setHiredRoleInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && hiredRoleInput.trim() && !isHiringSubmitting) {
+                    handleConfirmHiringModal();
+                  }
+                }}
+                placeholder="Ex: Jovem Aprendiz Administrativo"
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={handleCancelHiringModal}
+                disabled={isHiringSubmitting}
+                className="h-10 px-4 rounded-xl border border-slate-200/80 hover:bg-slate-50 text-slate-600 text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={isHiringSubmitting || !hiredRoleInput.trim()}
+                onClick={handleConfirmHiringModal}
+                className="h-10 px-5 rounded-xl text-xs font-medium text-white shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 cursor-pointer"
+              >
+                {isHiringSubmitting ? (
+                  <>
+                    <LoadingSpinner size="xs" variant="white" />
+                    <span>Processando...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>Confirmar Contratação</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </PortalModal>
       )}
     </div>
   );

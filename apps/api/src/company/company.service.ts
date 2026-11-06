@@ -173,6 +173,9 @@ export class CompanyService {
         ).length,
         hired: comp.interactions.filter((i) => i.stage === CandidateStage.HIRED)
           .length,
+        archived: comp.interactions.filter(
+          (i) => i.stage === CandidateStage.ARCHIVED,
+        ).length,
       };
 
       const isInviteExpired =
@@ -784,6 +787,15 @@ export class CompanyService {
       throw new NotFoundException('Candidato não encontrado.');
     }
 
+    if (
+      dto.stage === CandidateStage.HIRED &&
+      (!dto.hiredRole || !dto.hiredRole.trim())
+    ) {
+      throw new BadRequestException(
+        'O cargo do candidato contratado é obrigatório.',
+      );
+    }
+
     const interaction = await this.prisma.companyCandidateInteraction.upsert({
       where: {
         companyId_talentId: {
@@ -832,6 +844,40 @@ export class CompanyService {
     );
 
     return interaction;
+  }
+
+  async removeCandidateFromPipeline(userId: string, talentId: string) {
+    const company = await this.getCompanyProfileForUser(userId);
+
+    const talent = await this.prisma.talentProfile.findUnique({
+      where: { id: talentId },
+      include: {
+        user: { select: { id: true, name: true } },
+      },
+    });
+
+    await this.prisma.companyCandidateInteraction.deleteMany({
+      where: {
+        companyId: company.id,
+        talentId,
+      },
+    });
+
+    if (talent) {
+      await this.audit.log(
+        'Remoção de Candidato do Funil pela Empresa',
+        talent.user?.name || talent.id,
+        talent.id,
+        userId,
+        {
+          companyId: company.id,
+          companyName: company.name,
+          candidateName: talent.user?.name,
+        },
+      );
+    }
+
+    return { success: true };
   }
 
   async getPipeline(userId: string) {
