@@ -147,14 +147,14 @@ export function RichTextInput({
     return (
         <div className="space-y-1.5">
             {label && (
-                <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-medium text-zinc-700">{label}</span>
-                    <div className="flex items-center gap-1 bg-zinc-100/80 border border-zinc-200/80 rounded-lg p-0.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs font-medium text-zinc-700 leading-snug">{label}</span>
+                    <div className="flex items-center gap-0.5 bg-zinc-100/80 border border-zinc-200/80 rounded-lg p-0.5 shrink-0 ml-auto">
                         <button
                             type="button"
                             onClick={() => applyWrap('**', '**', 'negrito')}
                             title="Negrito (**texto**)"
-                            className="h-6 w-6 flex items-center justify-center rounded-md text-zinc-600 hover:text-zinc-950 hover:bg-white transition-colors"
+                            className="h-7 w-7 sm:h-6 sm:w-6 flex items-center justify-center rounded-md text-zinc-600 hover:text-zinc-950 hover:bg-white transition-colors"
                         >
                             <Bold className="h-3.5 w-3.5" />
                         </button>
@@ -162,7 +162,7 @@ export function RichTextInput({
                             type="button"
                             onClick={() => applyWrap('*', '*', 'itálico')}
                             title="Itálico (*texto*)"
-                            className="h-6 w-6 flex items-center justify-center rounded-md text-zinc-600 hover:text-zinc-950 hover:bg-white transition-colors"
+                            className="h-7 w-7 sm:h-6 sm:w-6 flex items-center justify-center rounded-md text-zinc-600 hover:text-zinc-950 hover:bg-white transition-colors"
                         >
                             <Italic className="h-3.5 w-3.5" />
                         </button>
@@ -170,7 +170,7 @@ export function RichTextInput({
                             type="button"
                             onClick={() => applyWrap('__', '__', 'sublinhado')}
                             title="Sublinhado (__texto__)"
-                            className="h-6 w-6 flex items-center justify-center rounded-md text-zinc-600 hover:text-zinc-950 hover:bg-white transition-colors"
+                            className="h-7 w-7 sm:h-6 sm:w-6 flex items-center justify-center rounded-md text-zinc-600 hover:text-zinc-950 hover:bg-white transition-colors"
                         >
                             <Underline className="h-3.5 w-3.5" />
                         </button>
@@ -178,7 +178,7 @@ export function RichTextInput({
                             type="button"
                             onClick={applyListLine}
                             title="Item de lista (- item)"
-                            className="h-6 w-6 flex items-center justify-center rounded-md text-zinc-600 hover:text-zinc-950 hover:bg-white transition-colors"
+                            className="h-7 w-7 sm:h-6 sm:w-6 flex items-center justify-center rounded-md text-zinc-600 hover:text-zinc-950 hover:bg-white transition-colors"
                         >
                             <List className="h-3.5 w-3.5" />
                         </button>

@@ -341,10 +341,32 @@ export default function AdminFormSubmissionsPage() {
     };
 
     return (
-        <div className="space-y-8 w-full pb-10">
+        <div className="space-y-6 sm:space-y-8 w-full pb-10">
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-                <div className="flex items-start gap-3.5">
+                {/* Mobile Header (< sm) */}
+                <div className="sm:hidden space-y-2.5 min-w-0">
+                    <div>
+                        <Link
+                            to="/admin/formularios"
+                            className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-slate-200/80 bg-white active:bg-slate-50 text-xs font-medium text-slate-600 shadow-2xs"
+                        >
+                            <ArrowLeft className="h-3.5 w-3.5" />
+                            <span>Formulários</span>
+                        </Link>
+                    </div>
+                    <div className="space-y-1">
+                        <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-snug line-clamp-2">
+                            {form?.title || 'Respostas do Formulário'}
+                        </h1>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                            Acompanhe as submissões em tempo real, avalie candidatos no funil de triagem e matricule alunos.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Desktop Header (>= sm) */}
+                <div className="hidden sm:flex items-start gap-3.5 min-w-0">
                     <Link
                         to="/admin/formularios"
                         className="h-10 w-10 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors shrink-0 mt-0.5 shadow-2xs"
@@ -352,7 +374,7 @@ export default function AdminFormSubmissionsPage() {
                     >
                         <ArrowLeft className="h-4 w-4" />
                     </Link>
-                    <div>
+                    <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
                                 {form?.title || 'Respostas do Formulário'}
@@ -364,42 +386,43 @@ export default function AdminFormSubmissionsPage() {
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto shrink-0">
                     <button
                         type="button"
                         disabled={exportingFormat !== null || submissions.length === 0}
                         onClick={() => handleExport('csv')}
-                        className="h-10 px-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 inline-flex items-center gap-2 disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
+                        className="h-10 px-3 sm:px-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 inline-flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
                     >
                         {exportingFormat === 'csv' ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-amber-600" />
+                            <Loader2 className="h-4 w-4 animate-spin text-amber-600 shrink-0" />
                         ) : (
-                            <Download className="h-4 w-4 text-slate-400" />
+                            <Download className="h-4 w-4 text-slate-400 shrink-0" />
                         )}
-                        <span>Exportar CSV</span>
+                        <span className="truncate">Exportar CSV</span>
                     </button>
 
                     <button
                         type="button"
                         disabled={exportingFormat !== null || submissions.length === 0}
                         onClick={() => handleExport('xlsx')}
-                        className="h-10 px-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 inline-flex items-center gap-2 disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
+                        className="h-10 px-3 sm:px-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 inline-flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
                     >
                         {exportingFormat === 'xlsx' ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+                            <Loader2 className="h-4 w-4 animate-spin text-emerald-600 shrink-0" />
                         ) : (
-                            <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+                            <FileSpreadsheet className="h-4 w-4 text-emerald-600 shrink-0" />
                         )}
-                        <span>Exportar Excel (.xlsx)</span>
+                        <span className="sm:hidden truncate">Excel (.xlsx)</span>
+                        <span className="hidden sm:inline">Exportar Excel (.xlsx)</span>
                     </button>
 
                     <button
                         type="button"
                         disabled={selectedIds.length === 0}
                         onClick={() => openEnrollModal(selectedIds)}
-                        className="h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs transition-all active:scale-[0.98] shadow-xs inline-flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                        className="col-span-2 sm:col-span-1 h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs transition-all active:scale-[0.98] shadow-xs inline-flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                     >
-                        <GraduationCap className="h-4 w-4" />
+                        <GraduationCap className="h-4 w-4 shrink-0" />
                         <span>
                             Pré-matricular ({selectedIds.length})
                         </span>
@@ -471,30 +494,30 @@ export default function AdminFormSubmissionsPage() {
                 </div>
 
                 {/* Segmented Tab Switcher */}
-                <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/60">
+                <div className="grid grid-cols-2 sm:inline-flex w-full sm:w-auto p-1 bg-slate-100 rounded-xl border border-slate-200/60">
                     <button
                         type="button"
                         onClick={() => setActiveTab('list')}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+                        className={`px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer min-w-0 ${
                             activeTab === 'list'
                                 ? 'bg-white text-slate-900 font-semibold shadow-2xs'
                                 : 'text-slate-600 hover:text-slate-900 font-medium'
                         }`}
                     >
-                        <Users className="h-3.5 w-3.5 text-amber-600" />
-                        <span>Inscritos & Triagem</span>
+                        <Users className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        <span className="truncate">Inscritos & Triagem</span>
                     </button>
                     <button
                         type="button"
                         onClick={() => setActiveTab('summary')}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+                        className={`px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer min-w-0 ${
                             activeTab === 'summary'
                                 ? 'bg-white text-slate-900 font-semibold shadow-2xs'
                                 : 'text-slate-600 hover:text-slate-900 font-medium'
                         }`}
                     >
-                        <BarChart3 className="h-3.5 w-3.5 text-amber-600" />
-                        <span>Resumo por Pergunta</span>
+                        <BarChart3 className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        <span className="truncate">Resumo por Pergunta</span>
                     </button>
                 </div>
 
@@ -865,7 +888,7 @@ export default function AdminFormSubmissionsPage() {
                 {activeSubmission && form && (
                     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
                         {/* Header */}
-                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4 shrink-0 bg-slate-50/70">
+                        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between gap-4 shrink-0 bg-slate-50/70">
                             <div className="flex items-center gap-3 min-w-0">
                                 <div className="h-10 w-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center font-bold text-sm text-amber-700 shrink-0">
                                     {getInitials(activeSubmission.respondentName)}
@@ -920,9 +943,9 @@ export default function AdminFormSubmissionsPage() {
                         </div>
 
                         {/* Body */}
-                        <div className="p-6 overflow-y-auto space-y-6 bg-[#FAFAF9]">
+                        <div className="p-4 sm:p-6 overflow-y-auto space-y-6 bg-[#FAFAF9]">
                             {/* Triage Decision Card */}
-                            <div className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-4 shadow-2xs">
+                            <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-2xs">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                                     <div className="space-y-1">
                                         <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">

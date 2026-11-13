@@ -572,12 +572,50 @@ export default function AdminFormEditorPage() {
     const resolvedDesktopCover = resolveCoverUrl(watchedValues.coverImageUrl);
     const resolvedMobileCover = resolveCoverUrl(watchedValues.mobileCoverImageUrl);
 
+    const statusBadge = (
+        <span
+            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium border shrink-0 ${
+                watchedValues.isActive
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+                    : 'bg-slate-100 text-slate-600 border-slate-200/80'
+            }`}
+        >
+            <span className={`h-1.5 w-1.5 rounded-full ${watchedValues.isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+            {watchedValues.isActive ? 'Ativo' : 'Rascunho'}
+        </span>
+    );
+
+    const pageTitle = isEditing ? watchedValues.title || 'Editar Formulário' : 'Novo Formulário';
+
     return (
         <>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 w-full pb-10">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8 w-full pb-10">
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-                <div className="flex items-start gap-3.5 min-w-0">
+                {/* Mobile Header (< sm) */}
+                <div className="sm:hidden space-y-2.5 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                        <Link
+                            to="/admin/formularios"
+                            className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-slate-200/80 bg-white active:bg-slate-50 text-xs font-medium text-slate-600 shadow-2xs"
+                        >
+                            <ArrowLeft className="h-3.5 w-3.5" />
+                            <span>Formulários</span>
+                        </Link>
+                        {statusBadge}
+                    </div>
+                    <div className="space-y-1">
+                        <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-snug line-clamp-2">
+                            {pageTitle}
+                        </h1>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                            Organize os blocos temáticos da ficha única, edite os campos e defina regras condicionais inline.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Desktop Header (>= sm) */}
+                <div className="hidden sm:flex items-start gap-3.5 min-w-0">
                     <Link
                         to="/admin/formularios"
                         className="h-10 w-10 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors shrink-0 mt-0.5 shadow-2xs"
@@ -588,18 +626,9 @@ export default function AdminFormEditorPage() {
                     <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2.5">
                             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 truncate">
-                                {isEditing ? watchedValues.title || 'Editar Formulário' : 'Novo Formulário'}
+                                {pageTitle}
                             </h1>
-                            <span
-                                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium border ${
-                                    watchedValues.isActive
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-                                        : 'bg-slate-100 text-slate-600 border-slate-200/80'
-                                }`}
-                            >
-                                <span className={`h-1.5 w-1.5 rounded-full ${watchedValues.isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                                {watchedValues.isActive ? 'Ativo' : 'Rascunho'}
-                            </span>
+                            {statusBadge}
                         </div>
                         <p className="text-sm text-slate-500 mt-1">
                             Organize os blocos temáticos da ficha única, edite os campos e defina regras condicionais inline.
@@ -607,25 +636,26 @@ export default function AdminFormEditorPage() {
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <div className="grid grid-cols-2 sm:flex items-center gap-2.5 sm:gap-2 w-full sm:w-auto shrink-0">
                     <button
                         type="button"
                         onClick={() => {
+                            setPreviewDevice(window.innerWidth < 640 ? 'mobile' : 'desktop');
                             setPreviewScreen('form');
                             setIsPreviewOpen(true);
                         }}
-                        className="h-10 px-4 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 inline-flex items-center gap-2 transition-all shadow-2xs cursor-pointer"
+                        className="h-10 px-4 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 inline-flex items-center justify-center gap-2 transition-all shadow-2xs cursor-pointer"
                     >
-                        <Eye className="h-4 w-4 text-slate-500" />
+                        <Eye className="h-4 w-4 text-slate-500 shrink-0" />
                         <span>Pré-visualizar</span>
                     </button>
 
                     <button
                         type="submit"
                         disabled={saving}
-                        className="h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs transition-all active:scale-[0.98] shadow-xs inline-flex items-center gap-2 disabled:opacity-60 cursor-pointer"
+                        className="h-10 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs transition-all active:scale-[0.98] shadow-xs inline-flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
                     >
-                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin shrink-0" /> : <Save className="h-4 w-4 shrink-0" />}
                         <span>{saving ? 'Salvando...' : 'Salvar Formulário'}</span>
                     </button>
                 </div>
@@ -638,30 +668,32 @@ export default function AdminFormEditorPage() {
                 className="space-y-6"
             >
                 {/* Segmented Tab Switcher */}
-                <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/60">
+                <div className="grid grid-cols-2 sm:inline-flex w-full sm:w-auto p-1 bg-slate-100 rounded-xl border border-slate-200/60">
                     <button
                         type="button"
                         onClick={() => setActiveTab('builder')}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+                        className={`px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer min-w-0 ${
                             activeTab === 'builder'
                                 ? 'bg-white text-slate-900 font-semibold shadow-2xs'
                                 : 'text-slate-600 hover:text-slate-900 font-medium'
                         }`}
                     >
-                        <SlidersHorizontal className="h-3.5 w-3.5 text-amber-600" />
-                        <span>Estrutura da Ficha & Campos</span>
+                        <SlidersHorizontal className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        <span className="sm:hidden truncate">Estrutura & Campos</span>
+                        <span className="hidden sm:inline whitespace-nowrap">Estrutura da Ficha & Campos</span>
                     </button>
                     <button
                         type="button"
                         onClick={() => setActiveTab('settings')}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+                        className={`px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer min-w-0 ${
                             activeTab === 'settings'
                                 ? 'bg-white text-slate-900 font-semibold shadow-2xs'
                                 : 'text-slate-600 hover:text-slate-900 font-medium'
                         }`}
                     >
-                        <Settings className="h-3.5 w-3.5 text-amber-600" />
-                        <span>Configurações & Regras</span>
+                        <Settings className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        <span className="sm:hidden truncate">Configurações</span>
+                        <span className="hidden sm:inline whitespace-nowrap">Configurações & Regras</span>
                     </button>
                 </div>
 
@@ -670,7 +702,7 @@ export default function AdminFormEditorPage() {
                         {/* Form Presentation Card */}
                         <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-2xs">
                             <div className="h-1.5 bg-[#F19B0A]" />
-                            <div className="p-5 sm:p-7 space-y-6">
+                            <div className="p-4 sm:p-7 space-y-5 sm:space-y-6">
                                 {/* Cover banners: Desktop & Mobile */}
                                 <div className="space-y-3">
                                     <div className="space-y-0.5">
@@ -704,7 +736,7 @@ export default function AdminFormEditorPage() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-[1.265fr_1fr] gap-4">
                                         {/* Desktop Cover Slot */}
-                                        <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 space-y-3">
+                                        <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 sm:p-3.5 space-y-3">
                                             <div className="flex items-center justify-between gap-2">
                                                 <div className="flex items-center gap-2.5 min-w-0">
                                                     <div className="w-7 h-7 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center text-slate-600 shrink-0">
@@ -715,7 +747,7 @@ export default function AdminFormEditorPage() {
                                                             Versão Desktop
                                                         </p>
                                                         <p className="text-[11px] text-slate-500 truncate">
-                                                            Proporção 2.25:1 · 1600×710 px
+                                                            <span className="hidden sm:inline">Proporção </span>2.25:1 · 1600×710 px
                                                         </p>
                                                     </div>
                                                 </div>
@@ -789,7 +821,7 @@ export default function AdminFormEditorPage() {
                                         </div>
 
                                         {/* Mobile Cover Slot */}
-                                        <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3.5 space-y-3">
+                                        <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 sm:p-3.5 space-y-3">
                                             <div className="flex items-center justify-between gap-2">
                                                 <div className="flex items-center gap-2.5 min-w-0">
                                                     <div className="w-7 h-7 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center text-slate-600 shrink-0">
@@ -800,7 +832,7 @@ export default function AdminFormEditorPage() {
                                                             Versão Mobile
                                                         </p>
                                                         <p className="text-[11px] text-slate-500 truncate">
-                                                            Proporção 16:9 · 1080×608 px
+                                                            <span className="hidden sm:inline">Proporção </span>16:9 · 1080×608 px
                                                         </p>
                                                     </div>
                                                 </div>
@@ -948,8 +980,8 @@ export default function AdminFormEditorPage() {
                                                                 }`}
                                                             >
                                                                 {/* Section Header */}
-                                                                <div className="bg-slate-50/80 border-b border-slate-200/80 px-4 sm:px-5 py-3.5 flex items-center justify-between gap-3">
-                                                                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                                                <div className="bg-slate-50/80 border-b border-slate-200/80 px-3.5 sm:px-5 py-3 sm:py-3.5 flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
+                                                                    <div className="order-1 flex items-center gap-2 shrink-0">
                                                                         <div
                                                                             {...dragProvided.dragHandleProps}
                                                                             className="cursor-grab active:cursor-grabbing touch-none select-none text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-200/60 transition-colors"
@@ -957,55 +989,59 @@ export default function AdminFormEditorPage() {
                                                                         >
                                                                             <GripVertical className="h-4 w-4" />
                                                                         </div>
-                                                                <span className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200/80 text-xs font-bold text-amber-900 shrink-0">
-                                                                    Bloco {sIdx + 1}
-                                                                </span>
-                                                                <input
-                                                                    type="text"
-                                                                    value={sec.title}
-                                                                    onChange={(e) =>
-                                                                        updateSection(sIdx, {
-                                                                            title: e.target.value,
-                                                                        })
-                                                                    }
-                                                                    placeholder="Título do Bloco Temático"
-                                                                    className="flex-1 min-w-0 bg-transparent text-sm sm:text-base font-bold text-slate-900 focus:outline-none border-b border-transparent focus:border-[#F19B0A] focus:bg-white px-2 py-0.5 rounded transition-all"
-                                                                />
-                                                            </div>
+                                                                        <span className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200/80 text-xs font-bold text-amber-900 shrink-0">
+                                                                            Bloco {sIdx + 1}
+                                                                        </span>
+                                                                        <span className="sm:hidden text-[11px] font-medium text-slate-400">
+                                                                            · {sec.fields.length} {sec.fields.length === 1 ? 'campo' : 'campos'}
+                                                                        </span>
+                                                                    </div>
 
-                                                            <div className="flex items-center gap-1 shrink-0">
-                                                                <Tooltip content={isCollapsed ? 'Expandir bloco' : 'Recolher bloco'}>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            setCollapsedSections((prev) => ({
-                                                                                ...prev,
-                                                                                [secKey]: !prev[secKey],
-                                                                            }))
+                                                                    <div className="order-2 sm:order-3 flex items-center gap-1 ml-auto sm:ml-0 shrink-0">
+                                                                        <Tooltip content={isCollapsed ? 'Expandir bloco' : 'Recolher bloco'}>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() =>
+                                                                                    setCollapsedSections((prev) => ({
+                                                                                        ...prev,
+                                                                                        [secKey]: !prev[secKey],
+                                                                                    }))
+                                                                                }
+                                                                                className="h-8 w-8 rounded-lg hover:bg-slate-200/60 text-slate-500 flex items-center justify-center transition-colors"
+                                                                            >
+                                                                                {isCollapsed ? (
+                                                                                    <ChevronDown className="h-4 w-4" />
+                                                                                ) : (
+                                                                                    <ChevronUp className="h-4 w-4" />
+                                                                                )}
+                                                                            </button>
+                                                                        </Tooltip>
+                                                                        <Tooltip content="Excluir bloco">
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => removeSection(sIdx)}
+                                                                                className="h-8 w-8 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 flex items-center justify-center transition-colors"
+                                                                            >
+                                                                                <Trash2 className="h-4 w-4" />
+                                                                            </button>
+                                                                        </Tooltip>
+                                                                    </div>
+
+                                                                    <input
+                                                                        type="text"
+                                                                        value={sec.title}
+                                                                        onChange={(e) =>
+                                                                            updateSection(sIdx, {
+                                                                                title: e.target.value,
+                                                                            })
                                                                         }
-                                                                        className="h-8 w-8 rounded-lg hover:bg-slate-200/60 text-slate-500 flex items-center justify-center transition-colors"
-                                                                    >
-                                                                        {isCollapsed ? (
-                                                                            <ChevronDown className="h-4 w-4" />
-                                                                        ) : (
-                                                                            <ChevronUp className="h-4 w-4" />
-                                                                        )}
-                                                                    </button>
-                                                                </Tooltip>
-                                                                <Tooltip content="Excluir bloco">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => removeSection(sIdx)}
-                                                                        className="h-8 w-8 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 flex items-center justify-center transition-colors"
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </button>
-                                                                </Tooltip>
-                                                            </div>
-                                                        </div>
+                                                                        placeholder="Título do Bloco Temático"
+                                                                        className="order-3 sm:order-2 w-full sm:w-auto sm:flex-1 min-w-0 bg-white sm:bg-transparent border border-slate-200/80 sm:border-0 sm:border-b sm:border-transparent focus:border-[#F19B0A] focus:bg-white rounded-xl sm:rounded px-3 sm:px-2 h-9 sm:h-auto sm:py-0.5 text-sm sm:text-base font-bold text-slate-900 focus:outline-none transition-all"
+                                                                    />
+                                                                </div>
 
                                                         {!isCollapsed && (
-                                                            <div className="p-5 sm:p-6 space-y-5">
+                                                            <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-5">
                                                                 {/* Optional section description */}
                                                                 <RichTextInput
                                                                     label="Subtítulo / Orientações deste Bloco (Opcional)"
@@ -1095,14 +1131,14 @@ export default function AdminFormEditorPage() {
                                                                                                     className="mb-3.5 outline-none"
                                                                                                 >
                                                                                                     <div
-                                                                                                        className={`rounded-2xl border bg-white p-4 sm:p-5 space-y-4 transition-[box-shadow,border-color,transform] duration-200 ease-out ${
+                                                                                                        className={`rounded-2xl border bg-white p-3.5 sm:p-5 space-y-3.5 sm:space-y-4 transition-[box-shadow,border-color,transform] duration-200 ease-out ${
                                                                                                             isFieldActivelyDragging
                                                                                                                 ? 'scale-[1.01] shadow-xl border-amber-300 ring-2 ring-[#F19B0A]/15'
                                                                                                                 : 'border-slate-200/80 hover:border-slate-300 shadow-2xs'
                                                                                                         }`}
                                                                                                     >
                                                                                                         {/* Main Question Header Row */}
-                                                                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                                                                                        <div className="flex flex-col lg:flex-row lg:items-center gap-2.5 sm:gap-3">
                                                                                                             <div className="flex items-center gap-2 flex-1 min-w-0">
                                                                                                                 <div
                                                                                                                     {...fldDrag.dragHandleProps}
@@ -1111,110 +1147,114 @@ export default function AdminFormEditorPage() {
                                                                                                                 >
                                                                                                                     <GripVertical className="h-4 w-4" />
                                                                                                                 </div>
-                                                                                                        <input
-                                                                                                            type="text"
-                                                                                                            value={field.label}
-                                                                                                            onChange={(e) =>
-                                                                                                                updateField(
-                                                                                                                    sIdx,
-                                                                                                                    fIdx,
-                                                                                                                    {
-                                                                                                                        label: e.target.value,
-                                                                                                                    },
-                                                                                                                )
-                                                                                                            }
-                                                                                                            placeholder="Enunciado da pergunta *"
-                                                                                                            className="flex-1 h-10 px-3.5 rounded-xl border border-slate-200/90 bg-slate-50/40 focus:bg-white text-sm font-semibold text-slate-900 focus:outline-none focus:border-[#F19B0A] focus:ring-2 focus:ring-[#F19B0A]/15 transition-all"
-                                                                                                        />
-                                                                                                    </div>
-
-                                                                                                    <div className="flex items-center gap-2 shrink-0">
-                                                                                                        <select
-                                                                                                            value={field.type}
-                                                                                                            onChange={(e) => {
-                                                                                                                const nextType = e.target.value as FormFieldType;
-                                                                                                                updateField(
-                                                                                                                    sIdx,
-                                                                                                                    fIdx,
-                                                                                                                    {
-                                                                                                                        type: nextType,
-                                                                                                                        options:
-                                                                                                                            CHOICE_TYPES.includes(nextType) &&
-                                                                                                                            (!field.options || field.options.length === 0)
-                                                                                                                                ? ['Sim', 'Não']
-                                                                                                                                : field.options,
-                                                                                                                    },
-                                                                                                                );
-                                                                                                            }}
-                                                                                                            className="h-10 px-3 rounded-xl border border-slate-200/90 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F19B0A] shadow-2xs"
-                                                                                                        >
-                                                                                                            {Object.entries(
-                                                                                                                FIELD_TYPE_LABELS,
-                                                                                                            ).map(([val, lbl]) => (
-                                                                                                                <option key={val} value={val}>
-                                                                                                                    {lbl}
-                                                                                                                </option>
-                                                                                                            ))}
-                                                                                                        </select>
-
-                                                                                                        {field.type !== 'INFO_BLOCK' && (
-                                                                                                            <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer px-2.5 py-2 rounded-xl hover:bg-slate-100 transition-colors">
                                                                                                                 <input
-                                                                                                                    type="checkbox"
-                                                                                                                    checked={field.required}
+                                                                                                                    type="text"
+                                                                                                                    value={field.label}
                                                                                                                     onChange={(e) =>
                                                                                                                         updateField(
                                                                                                                             sIdx,
                                                                                                                             fIdx,
                                                                                                                             {
-                                                                                                                                required: e.target.checked,
+                                                                                                                                label: e.target.value,
                                                                                                                             },
                                                                                                                         )
                                                                                                                     }
-                                                                                                                    className="rounded border-slate-300 text-[#F19B0A] focus:ring-[#F19B0A]"
+                                                                                                                    placeholder="Enunciado da pergunta *"
+                                                                                                                    className="flex-1 min-w-0 h-10 px-3.5 rounded-xl border border-slate-200/90 bg-slate-50/40 focus:bg-white text-sm font-semibold text-slate-900 focus:outline-none focus:border-[#F19B0A] focus:ring-2 focus:ring-[#F19B0A]/15 transition-all"
                                                                                                                 />
-                                                                                                                <span>Obrigatória</span>
-                                                                                                            </label>
-                                                                                                        )}
+                                                                                                            </div>
 
-                                                                                                        <button
-                                                                                                            type="button"
-                                                                                                            onClick={() =>
-                                                                                                                setExpandedFieldKeys((prev) => ({
-                                                                                                                    ...prev,
-                                                                                                                    [field.key]: !isExpanded,
-                                                                                                                }))
-                                                                                                            }
-                                                                                                            className={`h-9 px-3 rounded-xl border text-xs font-semibold transition-all ${
-                                                                                                                isExpanded
-                                                                                                                    ? 'border-amber-300 bg-amber-50 text-amber-900'
-                                                                                                                    : 'border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700'
-                                                                                                            }`}
-                                                                                                        >
-                                                                                                            {isExpanded ? 'Menos Opções' : 'Mais Opções'}
-                                                                                                        </button>
+                                                                                                            <div className="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap sm:items-center gap-2 lg:shrink-0">
+                                                                                                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                                                                                                    <select
+                                                                                                                        value={field.type}
+                                                                                                                        onChange={(e) => {
+                                                                                                                            const nextType = e.target.value as FormFieldType;
+                                                                                                                            updateField(
+                                                                                                                                sIdx,
+                                                                                                                                fIdx,
+                                                                                                                                {
+                                                                                                                                    type: nextType,
+                                                                                                                                    options:
+                                                                                                                                        CHOICE_TYPES.includes(nextType) &&
+                                                                                                                                        (!field.options || field.options.length === 0)
+                                                                                                                                            ? ['Sim', 'Não']
+                                                                                                                                            : field.options,
+                                                                                                                                },
+                                                                                                                            );
+                                                                                                                        }}
+                                                                                                                        className="flex-1 min-w-0 sm:flex-none h-9 sm:h-10 px-3 rounded-xl border border-slate-200/90 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#F19B0A] shadow-2xs"
+                                                                                                                    >
+                                                                                                                        {Object.entries(
+                                                                                                                            FIELD_TYPE_LABELS,
+                                                                                                                        ).map(([val, lbl]) => (
+                                                                                                                            <option key={val} value={val}>
+                                                                                                                                {lbl}
+                                                                                                                            </option>
+                                                                                                                        ))}
+                                                                                                                    </select>
 
-                                                                                                        <Tooltip content="Duplicar pergunta">
-                                                                                                            <button
-                                                                                                                type="button"
-                                                                                                                onClick={() => duplicateField(sIdx, fIdx)}
-                                                                                                                className="h-9 w-9 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors shadow-2xs"
-                                                                                                            >
-                                                                                                                <Copy className="h-4 w-4" />
-                                                                                                            </button>
-                                                                                                        </Tooltip>
+                                                                                                                    {field.type !== 'INFO_BLOCK' && (
+                                                                                                                        <label className="shrink-0 h-9 sm:h-auto inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer px-2.5 py-2 rounded-xl border border-slate-200/70 sm:border-transparent bg-slate-50/70 sm:bg-transparent hover:bg-slate-100 transition-colors">
+                                                                                                                            <input
+                                                                                                                                type="checkbox"
+                                                                                                                                checked={field.required}
+                                                                                                                                onChange={(e) =>
+                                                                                                                                    updateField(
+                                                                                                                                        sIdx,
+                                                                                                                                        fIdx,
+                                                                                                                                        {
+                                                                                                                                            required: e.target.checked,
+                                                                                                                                        },
+                                                                                                                                    )
+                                                                                                                                }
+                                                                                                                                className="rounded border-slate-300 text-[#F19B0A] focus:ring-[#F19B0A]"
+                                                                                                                            />
+                                                                                                                            <span>Obrigatória</span>
+                                                                                                                        </label>
+                                                                                                                    )}
+                                                                                                                </div>
 
-                                                                                                        <Tooltip content="Excluir pergunta">
-                                                                                                            <button
-                                                                                                                type="button"
-                                                                                                                onClick={() => removeField(sIdx, fIdx)}
-                                                                                                                className="h-9 w-9 rounded-xl border border-slate-200/90 bg-white hover:bg-red-50 hover:border-red-200 text-slate-400 hover:text-red-600 flex items-center justify-center transition-colors shadow-2xs"
-                                                                                                            >
-                                                                                                                <Trash2 className="h-4 w-4" />
-                                                                                                            </button>
-                                                                                                        </Tooltip>
-                                                                                                    </div>
-                                                                                                </div>
+                                                                                                                <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+                                                                                                                    <button
+                                                                                                                        type="button"
+                                                                                                                        onClick={() =>
+                                                                                                                            setExpandedFieldKeys((prev) => ({
+                                                                                                                                ...prev,
+                                                                                                                                [field.key]: !isExpanded,
+                                                                                                                            }))
+                                                                                                                        }
+                                                                                                                        className={`flex-1 sm:flex-none h-9 px-3 rounded-xl border text-xs font-semibold transition-all ${
+                                                                                                                            isExpanded
+                                                                                                                                ? 'border-amber-300 bg-amber-50 text-amber-900'
+                                                                                                                                : 'border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700'
+                                                                                                                        }`}
+                                                                                                                    >
+                                                                                                                        {isExpanded ? 'Menos Opções' : 'Mais Opções'}
+                                                                                                                    </button>
+
+                                                                                                                    <Tooltip content="Duplicar pergunta">
+                                                                                                                        <button
+                                                                                                                            type="button"
+                                                                                                                            onClick={() => duplicateField(sIdx, fIdx)}
+                                                                                                                            className="h-9 w-9 shrink-0 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors shadow-2xs"
+                                                                                                                        >
+                                                                                                                            <Copy className="h-4 w-4" />
+                                                                                                                        </button>
+                                                                                                                    </Tooltip>
+
+                                                                                                                    <Tooltip content="Excluir pergunta">
+                                                                                                                        <button
+                                                                                                                            type="button"
+                                                                                                                            onClick={() => removeField(sIdx, fIdx)}
+                                                                                                                            className="h-9 w-9 shrink-0 rounded-xl border border-slate-200/90 bg-white hover:bg-red-50 hover:border-red-200 text-slate-400 hover:text-red-600 flex items-center justify-center transition-colors shadow-2xs"
+                                                                                                                        >
+                                                                                                                            <Trash2 className="h-4 w-4" />
+                                                                                                                        </button>
+                                                                                                                    </Tooltip>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        </div>
 
                                                                                                 {/* Choice options editor */}
                                                                                                 {CHOICE_TYPES.includes(field.type) && (
@@ -1239,7 +1279,7 @@ export default function AdminFormEditorPage() {
                                                                                                                             });
                                                                                                                         }}
                                                                                                                         placeholder={`Opção ${optIdx + 1}`}
-                                                                                                                        className="flex-1 h-9 px-3 rounded-xl border border-slate-200/90 bg-white text-xs font-medium text-slate-800 focus:outline-none focus:border-[#F19B0A]"
+                                                                                                                        className="flex-1 min-w-0 h-9 px-3 rounded-xl border border-slate-200/90 bg-white text-xs font-medium text-slate-800 focus:outline-none focus:border-[#F19B0A]"
                                                                                                                     />
                                                                                                                     <button
                                                                                                                         type="button"
@@ -1428,7 +1468,7 @@ export default function AdminFormEditorPage() {
                 /* Settings Tab */
                 <div className="space-y-6">
                     {/* Card 1: URL & Polo */}
-                    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-7 shadow-2xs space-y-5">
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-7 shadow-2xs space-y-5">
                         <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
                             <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
                                 <Globe className="h-5 w-5" />
@@ -1449,14 +1489,14 @@ export default function AdminFormEditorPage() {
                                     Link Público (Slug)
                                 </label>
                                 <div className="flex items-center rounded-xl border border-slate-200/90 overflow-hidden bg-slate-50 focus-within:border-[#F19B0A] focus-within:bg-white transition-all shadow-2xs">
-                                    <span className="px-3.5 text-xs text-slate-400 font-mono border-r border-slate-200/80 py-2.5 bg-slate-100/60">
+                                    <span className="px-2.5 sm:px-3.5 text-xs text-slate-400 font-mono border-r border-slate-200/80 py-2.5 bg-slate-100/60 shrink-0">
                                         /inscricao/
                                     </span>
                                     <input
                                         type="text"
                                         {...register('slug')}
                                         placeholder={slugifyClient(watchedValues.title || 'meu-formulario')}
-                                        className="flex-1 h-10 px-3 text-xs font-mono text-slate-900 bg-transparent focus:outline-none"
+                                        className="flex-1 min-w-0 h-10 px-3 text-xs font-mono text-slate-900 bg-transparent focus:outline-none"
                                     />
                                 </div>
                             </div>
@@ -1487,7 +1527,7 @@ export default function AdminFormEditorPage() {
                     </div>
 
                     {/* Card 2: Schedule */}
-                    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-7 shadow-2xs space-y-5">
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-7 shadow-2xs space-y-5">
                         <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
                             <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
                                 <Calendar className="h-5 w-5" />
@@ -1528,7 +1568,7 @@ export default function AdminFormEditorPage() {
                     </div>
 
                     {/* Card 3: Rules & Confirmation */}
-                    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-7 shadow-2xs space-y-5">
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-7 shadow-2xs space-y-5">
                         <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
                             <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
                                 <Sliders className="h-5 w-5" />
@@ -1633,15 +1673,15 @@ export default function AdminFormEditorPage() {
         >
             <div className="bg-[#FAFAF9] rounded-2xl border border-zinc-200/90 shadow-2xl flex flex-col h-full overflow-hidden">
                 {/* Clean White Topbar */}
-                <div className="min-h-14 px-4 sm:px-5 py-2.5 bg-white border-b border-zinc-200/80 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                <div className="min-h-14 px-3.5 sm:px-5 py-2.5 bg-white border-b border-zinc-200/80 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shrink-0">
                     {/* Left: Title & mode pill */}
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                         <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-200/80 flex items-center justify-center text-zinc-600 shrink-0">
                             <Eye className="h-4 w-4 text-[#F19B0A]" />
                         </div>
                         <div className="flex items-center gap-2 flex-wrap min-w-0">
-                            <h3 className="text-sm font-bold tracking-tight text-zinc-900">
-                                Simulação da Ficha
+                            <h3 className="text-xs sm:text-sm font-bold tracking-tight text-zinc-900">
+                                Simulação<span className="hidden sm:inline"> da Ficha</span>
                             </h3>
                             <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full bg-zinc-100 text-[11px] font-medium text-zinc-500 border border-zinc-200/60">
                                 Respostas não são salvas
@@ -1852,9 +1892,9 @@ function ConditionEditor({
                         value: first.options?.[0] || '',
                     });
                 }}
-                className="text-xs font-semibold text-slate-500 hover:text-amber-700 inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors py-1"
+                className="text-xs font-semibold text-slate-500 hover:text-amber-700 inline-flex text-left items-start sm:items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors py-1"
             >
-                <GitBranch className="h-3.5 w-3.5 text-amber-500" />
+                <GitBranch className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5 sm:mt-0" />
                 <span>
                     {availableFields.length === 0
                         ? `${label}: Adicione perguntas de múltipla escolha para habilitar lógica condicional`
