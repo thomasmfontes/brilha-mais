@@ -34,9 +34,12 @@ model User {
   location            Location?          @relation(fields: [locationId], references: [id])
   turmas              Turma[]            @relation("UserTurmas")
   meetingAttendances  MeetingAttendance[]
-  webAuthnCredentials WebAuthnCredential[]
-  talentProfile       TalentProfile?
-  partnerCompany      PartnerCompany?
+  webAuthnCredentials     WebAuthnCredential[]
+  talentProfile           TalentProfile?
+  partnerCompany          PartnerCompany?
+  createdForms            Form[]           @relation("FormCreator")
+  reviewedFormSubmissions FormSubmission[] @relation("FormSubmissionReviewer")
+  enrolledFromSubmissions FormSubmission[] @relation("EnrolledSubmissionUser")
 }
 
 model StudentMaterial {
@@ -62,9 +65,10 @@ model Turma {
   updatedAt   DateTime    @updatedAt
   locationId  String?
   location    Location?   @relation(fields: [locationId], references: [id])
-  areas       TurmaArea[]
-  users       User[]      @relation("UserTurmas")
-  meetings    InPersonMeeting[]
+  areas               TurmaArea[]
+  users               User[]            @relation("UserTurmas")
+  meetings            InPersonMeeting[]
+  enrolledSubmissions FormSubmission[]  @relation("EnrolledSubmissionTurma")
 }
 
 model Course {
@@ -113,6 +117,7 @@ model Location {
   courses   Course[]
   turmas    Turma[]
   users     User[]
+  forms     Form[]
 }
 
 model InstructorArea {
@@ -278,6 +283,130 @@ model AuditLog {
 
   @@index([userId])
   @@index([createdAt(sort: Desc)])
+}
+
+enum FormFieldType {
+  SHORT_TEXT
+  LONG_TEXT
+  EMAIL
+  PHONE
+  CPF
+  NUMBER
+  DATE
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  SELECT
+  INFO_BLOCK
+}
+
+enum FormTriageStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  WAITLIST
+  REJECTED
+}
+
+model Form {
+  id                      String           @id @default(uuid())
+  slug                    String           @unique
+  title                   String
+  description             String?
+  coverImageUrl           String?
+  mobileCoverImageUrl     String?
+  isActive                Boolean          @default(true)
+  opensAt                 DateTime?
+  closesAt                DateTime?
+  showOnLandingPage       Boolean          @default(false)
+  enforceSingleSubmission Boolean          @default(true)
+  confirmationTitle       String?          @default("Inscrição recebida com sucesso!")
+  confirmationMessage     String?
+  locationId              String?
+  createdById             String?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+
+  location                Location?        @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  createdBy               User?            @relation("FormCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  sections                FormSection[]
+  fields                  FormField[]
+  submissions             FormSubmission[]
+
+  @@index([locationId])
+  @@index([isActive, showOnLandingPage])
+}
+
+model FormSection {
+  id          String      @id @default(uuid())
+  formId      String
+  title       String
+  description String?
+  order       Int         @default(0)
+  condition   Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  form        Form        @relation(fields: [formId], references: [id], onDelete: Cascade)
+  fields      FormField[]
+
+  @@index([formId, order])
+}
+
+model FormField {
+  id          String        @id @default(uuid())
+  formId      String
+  sectionId   String
+  key         String
+  type        FormFieldType
+  label       String
+  description String?
+  placeholder String?
+  order       Int           @default(0)
+  required    Boolean       @default(true)
+  allowOther  Boolean       @default(false)
+  semanticKey String?
+  options     Json?
+  condition   Json?
+  validation  Json?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  form        Form          @relation(fields: [formId], references: [id], onDelete: Cascade)
+  section     FormSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([formId, key])
+  @@index([formId, order])
+  @@index([sectionId, order])
+}
+
+model FormSubmission {
+  id              String           @id @default(uuid())
+  formId          String
+  answers         Json
+  respondentName  String?
+  respondentEmail String?
+  respondentPhone String?
+  respondentCpf   String?
+  ipHash          String?
+  status          FormTriageStatus @default(PENDING)
+  adminNotes      String?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  enrolledUserId  String?
+  enrolledTurmaId String?
+  enrolledAt      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  form            Form             @relation(fields: [formId], references: [id], onDelete: Cascade)
+  reviewedBy      User?            @relation("FormSubmissionReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  enrolledUser    User?            @relation("EnrolledSubmissionUser", fields: [enrolledUserId], references: [id], onDelete: SetNull)
+  enrolledTurma   Turma?           @relation("EnrolledSubmissionTurma", fields: [enrolledTurmaId], references: [id], onDelete: SetNull)
+
+  @@index([formId, createdAt(sort: Desc)])
+  @@index([formId, status])
+  @@index([formId, respondentEmail])
+  @@index([formId, respondentCpf])
 }
 
 model EssaySubmission {

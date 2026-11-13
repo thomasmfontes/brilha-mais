@@ -1,9 +1,33 @@
-import { ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, ClipboardList } from "lucide-react";
 import { Navbar } from "../components/Navbar";
 import { Link } from "react-router-dom";
+import api from "../utils/api";
 import logo from "../assets/logo.png";
 
+interface FeaturedForm {
+    id: string;
+    slug: string;
+    title: string;
+}
+
 export default function LandingPage() {
+    const [featuredForm, setFeaturedForm] = useState<FeaturedForm | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        api.get('/forms/public/featured')
+            .then((res) => {
+                if (!cancelled && Array.isArray(res.data) && res.data.length > 0) {
+                    setFeaturedForm(res.data[0]);
+                }
+            })
+            .catch(() => {});
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     return (
         <div className="min-h-screen bg-[#FAFAF9] text-zinc-900 flex flex-col justify-between selection:bg-amber-100 selection:text-amber-900">
             <Navbar />
@@ -30,7 +54,7 @@ export default function LandingPage() {
                     </p>
 
                     {/* Action Button */}
-                    <div className="flex items-center justify-center w-full sm:w-auto">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
                         <Link
                             id="btn-hero-cta"
                             to="/login"
@@ -39,6 +63,16 @@ export default function LandingPage() {
                             <span>Começar agora</span>
                             <ArrowRight className="w-4 h-4" />
                         </Link>
+
+                        {featuredForm && (
+                            <Link
+                                to={`/inscricao/${featuredForm.slug}`}
+                                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl text-sm sm:text-base font-semibold text-zinc-900 bg-white border border-zinc-200/90 hover:border-zinc-300 hover:bg-zinc-50 active:scale-[0.98] transition-all shadow-2xs"
+                            >
+                                <ClipboardList className="w-4 h-4 text-[#F19B0A]" />
+                                <span>Inscreva-se na Turma</span>
+                            </Link>
+                        )}
                     </div>
 
                 </div>

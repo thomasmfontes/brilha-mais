@@ -7,6 +7,10 @@ import CoursePage from "./pages/CoursePage";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCompaniesPage from "./pages/AdminCompaniesPage";
+import AdminFormsPage from "./pages/AdminFormsPage";
+import AdminFormEditorPage from "./pages/AdminFormEditorPage";
+import AdminFormSubmissionsPage from "./pages/AdminFormSubmissionsPage";
+import PublicFormPage from "./pages/PublicFormPage";
 import ExplorePage from "./pages/ExplorePage";
 import CertificatesPage from "./pages/CertificatesPage";
 import StudentResumePage from "./pages/StudentResumePage";
@@ -96,6 +100,7 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/termos" element={<TermosPage />} />
                 <Route path="/privacidade" element={<PrivacidadePage />} />
+                <Route path="/inscricao/:slug" element={<PublicFormPage />} />
                 <Route path="/empresa/ativar" element={<CompanyActivationPage />} />
                 <Route path="/empresa" element={<CompanyPortalPage />} />
                 <Route path="/instructor/meeting/:id/project" element={<MeetingProjection />} />
@@ -112,6 +117,10 @@ function App() {
                     <Route path="/instructor/turma/:id/meetings" element={<InstructorMeetings />} />
                     <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/admin/empresas" element={<AdminCompaniesPage />} />
+                    <Route path="/admin/formularios" element={<AdminFormsPage />} />
+                    <Route path="/admin/formularios/novo" element={<AdminFormEditorPage />} />
+                    <Route path="/admin/formularios/:id/editar" element={<AdminFormEditorPage />} />
+                    <Route path="/admin/formularios/:id/respostas" element={<AdminFormSubmissionsPage />} />
                     <Route path="/my-courses" element={<MyCoursesPage />} />
                     <Route path="/explore" element={<ExplorePage />} />
                     <Route path="/certificates" element={<CertificatesPage />} />

@@ -20,6 +20,7 @@ import { LocationModule } from './location/location.module';
 import { InPersonMeetingModule } from './in-person-meeting/in-person-meeting.module';
 import { TalentModule } from './talent/talent.module';
 import { CompanyModule } from './company/company.module';
+import { FormModule } from './form/form.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { CompanyModule } from './company/company.module';
     InPersonMeetingModule,
     TalentModule,
     CompanyModule,
+    FormModule,
   ],
   controllers: [AppController],
   providers: [AppService],

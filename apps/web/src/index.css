@@ -202,3 +202,159 @@ input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 50px white inset !important;
   -webkit-text-fill-color: #18181b !important;
 }
+
+/* Prevent horizontal scroll inside empty inputs & textareas caused by placeholder overflow */
+input {
+  text-overflow: ellipsis;
+}
+
+input:placeholder-shown {
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+input::placeholder,
+input::-webkit-input-placeholder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+textarea {
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+textarea::placeholder,
+textarea::-webkit-input-placeholder {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* Normalize WebKit / iOS native date & time inputs so they never overflow or center unexpectedly */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value,
+input[type="datetime-local"]::-webkit-date-and-time-value,
+input[type="month"]::-webkit-date-and-time-value {
+  text-align: left;
+  width: 100%;
+  margin: 0;
+}
+
+.form-date-input {
+  position: relative;
+}
+
+.form-date-input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+@keyframes form-field-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-field-reveal {
+  animation: form-field-reveal 0.16s ease-out both;
+}
+
+@keyframes check-container-pop {
+  0% {
+    transform: scale(0.92);
+  }
+  55% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes check-ring-complete {
+  0% {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    fill-opacity: 0;
+  }
+  55% {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    fill-opacity: 0.15;
+  }
+  100% {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+  }
+}
+
+@keyframes check-stroke-complete {
+  0% {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.animate-check-container {
+  animation: check-container-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.animate-check-ring {
+  stroke-dasharray: 1;
+  animation: check-ring-complete 0.24s ease-out both;
+}
+
+.animate-check-stroke {
+  stroke-dasharray: 1;
+  animation: check-stroke-complete 0.22s cubic-bezier(0.22, 1, 0.36, 1) 0.13s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-check-container,
+  .animate-check-ring,
+  .animate-check-stroke {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+}

@@ -19,7 +19,8 @@ import {
     LucideQrCode,
     LucideFingerprint,
     LucideChevronDown,
-    LucideBuilding2
+    LucideBuilding2,
+    LucideClipboardList
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
@@ -45,6 +46,7 @@ const adminItems = [
     { icon: <LucideMonitorPlay className="h-5 w-5" />, label: "Instrutor", path: "/instructor", roles: ['instructor', 'admin', 'super_admin'] },
     { icon: <LucideCheckCircle className="h-5 w-5" />, label: "Correções", path: "/instructor/submissions", roles: ['instructor', 'admin', 'super_admin'] },
     { icon: <LucideSettings2 className="h-5 w-5" />, label: "Administração", path: "/admin", roles: ['admin', 'super_admin'] },
+    { icon: <LucideClipboardList className="h-5 w-5" />, label: "Formulários", path: "/admin/formularios", roles: ['admin', 'super_admin'] },
     { icon: <LucideBuilding2 className="h-5 w-5" />, label: "Empresas", path: "/admin/empresas", roles: ['admin', 'super_admin'] },
 ];
 
@@ -198,6 +200,8 @@ export function AppLayout() {
         if (path.startsWith('/instructor/submissions')) return 'Correções';
         if (path.startsWith('/instructor/turma')) return 'Encontros';
         if (path.startsWith('/instructor')) return 'Instrutor';
+        if (path.startsWith('/admin/formularios')) return 'Formulários';
+        if (path.startsWith('/admin/empresas')) return 'Empresas';
         if (path.startsWith('/admin')) return 'Administração';
         if (path.startsWith('/course')) return 'Curso';
         if (path.startsWith('/scan')) return 'Presença';
@@ -329,7 +333,10 @@ export function AppLayout() {
                                 </AnimatePresence>
                             </div>
                             {visibleAdminItems.map((item: any) => {
-                                const isActive = location.pathname === item.path;
+                                const isActive =
+                                    item.path === '/admin' || item.path === '/instructor'
+                                        ? location.pathname === item.path
+                                        : location.pathname.startsWith(item.path);
                                 return (
                                     <Link
                                         key={`sidebar-admin-link-${item.path}`}
