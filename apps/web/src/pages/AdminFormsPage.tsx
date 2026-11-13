@@ -72,26 +72,48 @@ const StatSkeleton = () => (
 
 const FormCardSkeleton = () => (
     <div className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs overflow-hidden">
-        <div className="p-5 flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3.5 flex-1">
+        <div className="p-4 sm:p-5 space-y-3 md:space-y-0 md:flex md:items-start md:justify-between md:gap-4">
+            <div className="flex items-center justify-between gap-2.5 md:hidden">
                 <Skeleton className="h-10 w-10 shrink-0" variant="rounded" />
-                <div className="space-y-2 flex-1">
-                    <Skeleton className="h-5 w-56" variant="rectangle" />
-                    <Skeleton className="h-4 w-72" variant="rectangle" />
+                <div className="flex items-center gap-1.5">
+                    <Skeleton className="h-5 w-16" variant="rounded" />
+                    <Skeleton className="h-5 w-16" variant="rounded" />
                 </div>
             </div>
-            <Skeleton className="h-6 w-20 shrink-0" variant="rounded" />
-        </div>
-        <div className="px-5 py-3 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between gap-3">
-            <div className="flex gap-2">
-                <Skeleton className="h-8 w-28" variant="rounded" />
-                <Skeleton className="h-8 w-20" variant="rounded" />
-                <Skeleton className="h-8 w-28" variant="rounded" />
+            <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                <Skeleton className="hidden md:block h-10 w-10 shrink-0" variant="rounded" />
+                <div className="space-y-2 flex-1 min-w-0">
+                    <Skeleton className="h-5 w-3/4 sm:w-56" variant="rectangle" />
+                    <Skeleton className="h-4 w-44 md:w-72" variant="rectangle" />
+                    <Skeleton className="h-9 w-full md:hidden" variant="rounded" />
+                </div>
             </div>
-            <div className="flex gap-1.5">
-                <Skeleton className="h-8 w-8" variant="rounded" />
-                <Skeleton className="h-8 w-8" variant="rounded" />
-                <Skeleton className="h-8 w-8" variant="rounded" />
+            <Skeleton className="hidden md:block h-6 w-20 shrink-0" variant="rounded" />
+        </div>
+        <div className="px-4 py-3 md:px-5 bg-slate-50/50 border-t border-slate-100">
+            <div className="md:hidden space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                    <Skeleton className="h-9 w-full" variant="rounded" />
+                    <Skeleton className="h-9 w-full" variant="rounded" />
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <Skeleton className="h-9 flex-1" variant="rounded" />
+                    <Skeleton className="h-9 w-9 shrink-0" variant="rounded" />
+                    <Skeleton className="h-9 w-9 shrink-0" variant="rounded" />
+                    <Skeleton className="h-9 w-9 shrink-0" variant="rounded" />
+                </div>
+            </div>
+            <div className="hidden md:flex items-center justify-between gap-3">
+                <div className="flex gap-2">
+                    <Skeleton className="h-8 w-28" variant="rounded" />
+                    <Skeleton className="h-8 w-20" variant="rounded" />
+                    <Skeleton className="h-8 w-28" variant="rounded" />
+                </div>
+                <div className="flex gap-1.5">
+                    <Skeleton className="h-8 w-8" variant="rounded" />
+                    <Skeleton className="h-8 w-8" variant="rounded" />
+                    <Skeleton className="h-8 w-8" variant="rounded" />
+                </div>
             </div>
         </div>
     </div>
@@ -280,6 +302,25 @@ export default function AdminFormsPage() {
         );
     };
 
+    const renderLocationBadge = (form: FormModel) =>
+        form.location?.name ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-50 text-slate-600 border border-slate-200/60">
+                <MapPin className="h-3 w-3 text-amber-500" />
+                {form.location.name}
+            </span>
+        ) : (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-50 text-slate-500 border border-slate-200/60">
+                <Globe className="h-3 w-3 text-slate-400" />
+                Global
+            </span>
+        );
+
+    const formatStructureSummary = (form: FormModel) => {
+        const sectionsCount = form._count?.sections || 0;
+        const fieldsCount = form._count?.fields || 0;
+        return `${sectionsCount} ${sectionsCount === 1 ? 'bloco' : 'blocos'} · ${fieldsCount} ${fieldsCount === 1 ? 'pergunta' : 'perguntas'}`;
+    };
+
     return (
         <div className="space-y-8 w-full pb-10">
             {/* Header */}
@@ -367,13 +408,13 @@ export default function AdminFormsPage() {
                             )}
                         </div>
 
-                        <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/60 self-start sm:self-auto">
+                        <div className="grid grid-cols-3 sm:inline-flex w-full sm:w-auto p-1 bg-slate-100 rounded-xl border border-slate-200/60">
                             {(['ALL', 'ACTIVE', 'INACTIVE'] as const).map((st) => (
                                 <button
                                     key={st}
                                     type="button"
                                     onClick={() => setStatusFilter(st)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap cursor-pointer ${
+                                    className={`px-3 py-1.5 rounded-lg text-xs text-center flex items-center justify-center transition-all whitespace-nowrap cursor-pointer ${
                                         statusFilter === st
                                             ? 'bg-white text-slate-900 font-semibold shadow-2xs'
                                             : 'text-slate-600 hover:text-slate-900 font-medium'
@@ -443,8 +484,131 @@ export default function AdminFormsPage() {
                                     key={form.id}
                                     className="bg-white border border-slate-200/80 hover:border-slate-300 rounded-2xl shadow-2xs transition-all overflow-hidden group"
                                 >
-                                    {/* Top Content Area */}
-                                    <div className="p-5">
+                                    {/* Mobile Top Content Area */}
+                                    <div className="md:hidden p-4 space-y-3">
+                                        {/* Top Row: Icon + Status & Scope Badges */}
+                                        <div className="flex items-center justify-between gap-2.5">
+                                            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                                                <ClipboardList className="h-5 w-5" />
+                                            </div>
+
+                                            <div className="flex flex-wrap items-center justify-end gap-1.5">
+                                                {renderLocationBadge(form)}
+                                                {form.showOnLandingPage && (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200/60">
+                                                        <Sparkles className="h-3 w-3 text-amber-600" />
+                                                        Destaque
+                                                    </span>
+                                                )}
+                                                {renderAvailabilityBadge(form)}
+                                            </div>
+                                        </div>
+
+                                        {/* Full-width Title & Structure Summary */}
+                                        <div className="space-y-0.5">
+                                            <Link
+                                                to={`/admin/formularios/${form.id}/editar`}
+                                                className="block text-[15px] font-semibold text-slate-900 active:text-amber-600 transition-colors leading-snug line-clamp-2"
+                                            >
+                                                {form.title}
+                                            </Link>
+                                            <p className="text-xs text-slate-500">
+                                                {formatStructureSummary(form)}
+                                            </p>
+                                        </div>
+
+                                        {/* Full-width Public URL Copy Bar */}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleCopyPublicUrl(form.slug)}
+                                            className="w-full px-3 py-2 rounded-xl bg-slate-50 active:bg-slate-100 border border-slate-200/80 flex items-center justify-between gap-2 text-left transition-colors cursor-pointer"
+                                        >
+                                            <span className="font-mono text-xs text-slate-700 truncate">
+                                                /inscricao/{form.slug}
+                                            </span>
+                                            <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-medium text-slate-500">
+                                                {isCopied ? (
+                                                    <>
+                                                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                                                        <span className="text-emerald-700 font-semibold">Copiado</span>
+                                                    </>
+                                                ) : (
+                                                    <Copy className="h-3.5 w-3.5 text-slate-400" />
+                                                )}
+                                            </span>
+                                        </button>
+                                    </div>
+
+                                    {/* Mobile Bottom Action Toolbar */}
+                                    <div className="md:hidden px-4 py-3 bg-slate-50/60 border-t border-slate-100 space-y-2">
+                                        {/* Row 1: 50/50 Primary Workflow Actions */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <Link
+                                                to={`/admin/formularios/${form.id}/respostas`}
+                                                className="h-9 px-3 rounded-xl bg-amber-50 active:bg-amber-100/80 text-amber-900 border border-amber-200/80 text-xs font-semibold inline-flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] shadow-2xs"
+                                            >
+                                                <Users className="h-3.5 w-3.5 text-amber-600" />
+                                                <span>Respostas ({totalSubs})</span>
+                                            </Link>
+
+                                            <Link
+                                                to={`/admin/formularios/${form.id}/editar`}
+                                                className="h-9 px-3 rounded-xl border border-slate-200/80 bg-white active:bg-slate-50 text-slate-700 text-xs font-medium inline-flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] shadow-2xs"
+                                            >
+                                                <Edit3 className="h-3.5 w-3.5 text-slate-500" />
+                                                <span>Editar</span>
+                                            </Link>
+                                        </div>
+
+                                        {/* Row 2: Share + Management Utilities */}
+                                        <div className="flex items-center gap-1.5">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShareForm(form)}
+                                                className="flex-1 h-9 px-3 rounded-xl border border-slate-200/80 bg-white active:bg-slate-50 text-slate-700 text-xs font-medium inline-flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] shadow-2xs cursor-pointer"
+                                            >
+                                                <QrCode className="h-3.5 w-3.5 text-amber-600" />
+                                                <span>Compartilhar</span>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                disabled={isBusy}
+                                                onClick={() => handleDuplicate(form)}
+                                                aria-label="Duplicar formulário"
+                                                className="w-9 h-9 rounded-xl bg-white active:bg-amber-50 text-slate-500 border border-slate-200/80 flex items-center justify-center transition-all active:scale-[0.98] shadow-2xs shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <Copy className="w-4 h-4" />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                disabled={isBusy}
+                                                onClick={() => handleToggleActive(form)}
+                                                aria-label={form.isActive ? 'Desativar formulário' : 'Ativar formulário'}
+                                                className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all active:scale-[0.98] shadow-2xs shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                                                    form.isActive
+                                                        ? 'border-emerald-200/80 bg-emerald-50 text-emerald-600 active:bg-emerald-100'
+                                                        : 'border-slate-200/80 bg-white text-slate-400 active:bg-slate-50'
+                                                }`}
+                                            >
+                                                <Power className="w-4 h-4" />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                disabled={isBusy}
+                                                onClick={() => setDeleteTarget(form)}
+                                                aria-label="Excluir formulário"
+                                                className="w-9 h-9 rounded-xl bg-white active:bg-red-50 border border-slate-200/80 text-slate-500 flex items-center justify-center transition-all active:scale-[0.98] shadow-2xs shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Desktop Top Content Area */}
+                                    <div className="hidden md:block p-5">
                                         <div className="flex items-start gap-3.5">
                                             <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
                                                 <ClipboardList className="h-5 w-5" />
@@ -464,17 +628,7 @@ export default function AdminFormsPage() {
                                                     </div>
 
                                                     <div className="flex flex-wrap items-center gap-1.5 shrink-0">
-                                                        {form.location?.name ? (
-                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-50 text-slate-600 border border-slate-200/60">
-                                                                <MapPin className="h-3 w-3 text-amber-500" />
-                                                                {form.location.name}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-50 text-slate-500 border border-slate-200/60">
-                                                                <Globe className="h-3 w-3 text-slate-400" />
-                                                                Global
-                                                            </span>
-                                                        )}
+                                                        {renderLocationBadge(form)}
                                                         {form.showOnLandingPage && (
                                                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200/60">
                                                                 <Sparkles className="h-3 w-3 text-amber-600" />
@@ -503,18 +657,15 @@ export default function AdminFormsPage() {
                                                     <span className="text-slate-300">·</span>
 
                                                     <span>
-                                                        {form._count?.sections || 0}{' '}
-                                                        {form._count?.sections === 1 ? 'bloco' : 'blocos'} ·{' '}
-                                                        {form._count?.fields || 0}{' '}
-                                                        {form._count?.fields === 1 ? 'pergunta' : 'perguntas'}
+                                                        {formatStructureSummary(form)}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Bottom Action Toolbar */}
-                                    <div className="px-5 py-3 bg-slate-50/50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                                    {/* Desktop Bottom Action Toolbar */}
+                                    <div className="hidden md:flex px-5 py-3 bg-slate-50/50 border-t border-slate-100 items-center justify-between gap-3">
                                         {/* Left: Primary workflow actions */}
                                         <div className="flex flex-wrap items-center gap-2">
                                             <Link
@@ -637,8 +788,8 @@ export default function AdminFormsPage() {
                                     <Sparkles className="h-5 w-5" />
                                 )}
                             </div>
-                            <div className="space-y-1.5 flex-1">
-                                <div className="flex items-center gap-2">
+                            <div className="space-y-1.5 flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
                                     <span className="text-sm font-bold text-slate-900 group-hover:text-amber-800 transition-colors">
                                         Modelo Oficial: Inscrição Brilha Mais 2027
                                     </span>
@@ -737,7 +888,7 @@ export default function AdminFormsPage() {
                                     type="text"
                                     readOnly
                                     value={getPublicUrl(shareForm.slug)}
-                                    className="flex-1 h-10 px-3.5 rounded-xl border border-slate-200/90 bg-slate-50 text-xs font-mono text-slate-700 focus:outline-none"
+                                    className="flex-1 min-w-0 h-10 px-3.5 rounded-xl border border-slate-200/90 bg-slate-50 text-xs font-mono text-slate-700 focus:outline-none"
                                 />
                                 <button
                                     type="button"
