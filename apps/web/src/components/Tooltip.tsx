@@ -10,6 +10,15 @@ interface TooltipProps {
     delay?: number;
 }
 
+function canDisplayHoverTooltip(): boolean {
+    if (typeof window === 'undefined') return false;
+    if (window.innerWidth < 768) return false;
+    if (typeof window.matchMedia === 'function') {
+        return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    }
+    return true;
+}
+
 export function Tooltip({
     content,
     children,
@@ -59,22 +68,28 @@ export function Tooltip({
         }
     }, [isVisible, coords]);
 
-    const handleMouseEnter = () => {
+    const dismissTooltip = () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        setIsVisible(false);
+    };
+
+    const showTooltip = () => {
+        if (!canDisplayHoverTooltip()) return;
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
+            if (!canDisplayHoverTooltip()) return;
             updateCoords();
             setIsVisible(true);
         }, delay);
     };
 
-    const handleMouseLeave = () => {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        setIsVisible(false);
-    };
-
     useEffect(() => {
         if (!isVisible) return;
         const handleScrollOrResize = () => {
+            if (!canDisplayHoverTooltip()) {
+                setIsVisible(false);
+                return;
+            }
             updateCoords();
         };
         window.addEventListener('scroll', handleScrollOrResize, true);
@@ -96,10 +111,20 @@ export function Tooltip({
     return (
         <div
             ref={triggerRef}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onFocus={handleMouseEnter}
-            onBlur={handleMouseLeave}
+            onPointerEnter={(e) => {
+                if (e.pointerType === 'mouse') showTooltip();
+            }}
+            onPointerLeave={dismissTooltip}
+            onPointerDown={dismissTooltip}
+            onTouchStart={dismissTooltip}
+            onClick={dismissTooltip}
+            onFocus={(e) => {
+                const target = e.target as HTMLElement | null;
+                if (target?.matches?.(':focus-visible')) {
+                    showTooltip();
+                }
+            }}
+            onBlur={dismissTooltip}
             className={`inline-flex items-center justify-center ${className}`}
         >
             {children}
@@ -109,6 +134,7 @@ export function Tooltip({
                         {isVisible && coords && (
                             <div
                                 ref={tooltipRef}
+                                className="hidden md:block"
                                 style={{
                                     position: 'fixed',
                                     top: coords.top,
