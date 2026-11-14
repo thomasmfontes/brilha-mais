@@ -37,9 +37,10 @@ model User {
   webAuthnCredentials     WebAuthnCredential[]
   talentProfile           TalentProfile?
   partnerCompany          PartnerCompany?
-  createdForms            Form[]           @relation("FormCreator")
-  reviewedFormSubmissions FormSubmission[] @relation("FormSubmissionReviewer")
-  enrolledFromSubmissions FormSubmission[] @relation("EnrolledSubmissionUser")
+  createdForms            Form[]                @relation("FormCreator")
+  reviewedFormSubmissions FormSubmission[]      @relation("FormSubmissionReviewer")
+  enrolledFromSubmissions FormSubmission[]      @relation("EnrolledSubmissionUser")
+  updatedPortfolios       InvestmentPortfolio[] @relation("PortfolioUpdater")
 }
 
 model StudentMaterial {
@@ -618,4 +619,24 @@ model CompanyCandidateInteraction {
   @@index([companyId])
   @@index([talentId])
   @@index([stage])
+}
+
+model InvestmentPortfolio {
+  id                 String   @id @default(uuid())
+  slug               String   @unique
+  title              String
+  subtitle           String
+  description        String
+  riskLevel          String
+  recommendedHorizon String
+  expectedAnnualPct  Float    @default(11.0)
+  benchmarkNote      String?
+  order              Int      @default(0)
+  allocations        Json
+  updatedById        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  updatedBy          User?    @relation("PortfolioUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([order])
 }

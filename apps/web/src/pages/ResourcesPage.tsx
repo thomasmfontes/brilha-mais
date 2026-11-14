@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LucidePlay, LucideVideo, LucideX } from "lucide-react";
+import { LucideArrowRight, LucidePieChart, LucidePlay, LucideVideo, LucideX } from "lucide-react";
 import api from "../utils/api";
+import { hasFinanceAreaAccess } from "../utils/financeAccess";
 import Skeleton from "../components/Skeleton";
 
 const RESOURCES = [
@@ -21,6 +23,7 @@ export default function ResourcesPage() {
     const [isMounted, setIsMounted] = useState(false);
     const [userRole, setUserRole] = useState<string>('student');
     const [userTurmas, setUserTurmas] = useState<any[]>([]);
+    const [hasFinanceAccess, setHasFinanceAccess] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -33,6 +36,7 @@ export default function ResourcesPage() {
             const { data } = await api.get('/users/me');
             setUserRole(data.role?.toLowerCase() || 'student');
             setUserTurmas(data.turmas || []);
+            setHasFinanceAccess(hasFinanceAreaAccess(data));
         } catch (error) {
             console.error("Error fetching user profile:", error);
         } finally {
@@ -75,6 +79,37 @@ export default function ResourcesPage() {
                     </p>
                 </div>
             </div>
+
+            {/* Featured Finance Tool Shortcut */}
+            {!isLoading && hasFinanceAccess && (
+                <Link
+                    to="/lab/financas"
+                    className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white rounded-2xl border border-zinc-200/80 shadow-sm hover:border-amber-300/80 transition-all"
+                >
+                    <div className="flex items-start sm:items-center gap-4">
+                        <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-[#D98B08] shrink-0">
+                            <LucidePieChart className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-base font-semibold text-zinc-900 group-hover:text-[#D98B08] transition-colors">
+                                    Carteira Ideal & Calculadora de Investimentos
+                                </h2>
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200/60">
+                                    Finanças
+                                </span>
+                            </div>
+                            <p className="text-sm text-zinc-500 mt-0.5">
+                                Simule quanto investir e veja como dividir seu aporte com base na curadoria dos professores de Educação Financeira.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#D98B08] shrink-0">
+                        <span>Abrir calculadora</span>
+                        <LucideArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                </Link>
+            )}
 
             {/* Grid for 9:16 Vertical Content */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">

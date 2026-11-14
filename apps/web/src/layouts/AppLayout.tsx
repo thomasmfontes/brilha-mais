@@ -20,7 +20,8 @@ import {
     LucideFingerprint,
     LucideChevronDown,
     LucideBuilding2,
-    LucideClipboardList
+    LucideClipboardList,
+    LucidePieChart
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
@@ -31,6 +32,7 @@ import { WelcomeVideoModal } from "../components/WelcomeVideoModal";
 import { LocationPickerModal } from "../components/LocationPickerModal";
 import SettingsModal from "../components/SettingsModal";
 import api from "../utils/api";
+import { hasFinanceAreaAccess } from "../utils/financeAccess";
 import { toast } from "react-hot-toast";
 
 const menuItems = [
@@ -85,6 +87,13 @@ export function AppLayout() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isWelcomeVideoOpen, setIsWelcomeVideoOpen] = useState(false);
     const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+    const [hasFinanceAccess, setHasFinanceAccess] = useState<boolean>(() => {
+        try {
+            return localStorage.getItem('brilha_has_finance_access') === 'true';
+        } catch (e) {
+            return false;
+        }
+    });
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -142,6 +151,12 @@ export function AppLayout() {
                 if (user.avatarUrl) setUserAvatar(user.avatarUrl);
                 if (user.role) setUserRole(user.role.toLowerCase() as any);
 
+                const financeAllowed = hasFinanceAreaAccess(user);
+                setHasFinanceAccess(financeAllowed);
+                try {
+                    localStorage.setItem('brilha_has_finance_access', financeAllowed ? 'true' : 'false');
+                } catch {}
+
                 // Prioridade 1: Vídeo de Boas-vindas
                 if (user.role === 'STUDENT' && user.hasSeenWelcomeVideo === false) {
                     setIsWelcomeVideoOpen(true);
@@ -182,8 +197,20 @@ export function AppLayout() {
 
     const handleLogout = () => {
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('brilha_has_finance_access');
         navigate('/login', { replace: true });
     };
+
+    const desktopMenuItems = useMemo(() => {
+        if (!hasFinanceAccess) return menuItems;
+        const next = [...menuItems];
+        next.splice(2, 0, {
+            icon: <LucidePieChart className="h-5 w-5" />,
+            label: "Carteira Ideal",
+            path: "/lab/financas"
+        });
+        return next;
+    }, [hasFinanceAccess]);
 
     const visibleAdminItems = useMemo(() => adminItems.filter(item => item.roles.includes(userRole)), [userRole]);
 
@@ -193,6 +220,7 @@ export function AppLayout() {
         const path = location.pathname;
         if (path.startsWith('/dashboard')) return 'Dashboard';
         if (path.startsWith('/my-courses')) return 'Meus Cursos';
+        if (path.startsWith('/lab/financas')) return 'Carteira Ideal';
         if (path.startsWith('/explore')) return 'Explorar';
         if (path.startsWith('/certificates')) return 'Certificados';
         if (path.startsWith('/resources')) return 'Recursos';
@@ -270,7 +298,7 @@ export function AppLayout() {
 
                 {/* Nav items */}
                 <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto no-scrollbar">
-                    {menuItems.map((item: any) => {
+                    {desktopMenuItems.map((item: any) => {
                         const isActive = location.pathname === item.path;
                         return (
                             <Link
@@ -699,6 +727,23 @@ export function AppLayout() {
                                             Configurações
                                         </p>
                                         <div className="grid grid-cols-1 gap-2">
+                                            {hasFinanceAccess && (
+                                                <Link
+                                                    to="/lab/financas"
+                                                    onClick={() => setIsMobileMenuOpen(false)}
+                                                    className={`flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-50/80 text-slate-800 text-sm font-medium transition-all shadow-sm ${
+                                                        location.pathname.startsWith('/lab/financas') ? 'border-amber-300 bg-amber-50/50 text-amber-900' : ''
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-9 w-9 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                                                            <LucidePieChart className="h-4 w-4" />
+                                                        </div>
+                                                        <span>Carteira Ideal</span>
+                                                    </div>
+                                                    <LucideArrowRight className="h-4 w-4 text-slate-300" />
+                                                </Link>
+                                            )}
                                             {userRole === 'student' && (
                                                 <Link
                                                     to="/scan"
