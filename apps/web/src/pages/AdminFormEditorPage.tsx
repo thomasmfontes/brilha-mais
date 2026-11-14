@@ -1671,7 +1671,7 @@ export default function AdminFormEditorPage() {
             onClose={() => setIsPreviewOpen(false)}
             className="relative z-[100000] w-full max-w-5xl h-[92vh] flex flex-col"
         >
-            <div className="bg-[#FAFAF9] rounded-2xl border border-zinc-200/90 shadow-2xl flex flex-col h-full overflow-hidden">
+            <div className="bg-[#FAFAF9] rounded-2xl border border-zinc-200/90 shadow-2xl flex flex-col h-full overflow-clip">
                 {/* Clean White Topbar */}
                 <div className="min-h-14 px-3.5 sm:px-5 py-2.5 bg-white border-b border-zinc-200/80 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shrink-0">
                     {/* Left: Title & mode pill */}
@@ -1779,7 +1779,7 @@ export default function AdminFormEditorPage() {
                 {/* Canvas Area matching PublicFormPage (#FAFAF9) */}
                 <div className="flex-1 min-h-0 px-3 sm:px-8 py-4 sm:py-6 flex flex-col">
                     <div
-                        className={`mx-auto w-full flex-1 min-h-0 flex flex-col transition-[max-width] duration-200 ease-out bg-[#FAFAF9] rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden ${
+                        className={`mx-auto w-full flex-1 min-h-0 flex flex-col transition-[max-width] duration-200 ease-out bg-[#FAFAF9] rounded-2xl border border-zinc-200/80 shadow-sm overflow-clip ${
                             previewDevice === 'mobile'
                                 ? 'max-w-[400px]'
                                 : 'max-w-3xl'
@@ -1788,7 +1788,7 @@ export default function AdminFormEditorPage() {
                         <FormBrandHeader embedded linkHome={false} />
                         <div
                             ref={previewScrollRef}
-                            className={`flex-1 min-h-0 overflow-y-auto custom-scrollbar ${
+                            className={`relative flex-1 min-h-0 overflow-y-auto custom-scrollbar ${
                                 previewDevice === 'mobile'
                                     ? 'p-3.5'
                                     : 'p-5 sm:p-8'

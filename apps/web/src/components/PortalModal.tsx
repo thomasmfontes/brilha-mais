@@ -15,13 +15,14 @@ export function PortalModal({ isOpen, onClose, children, preventCloseOnOverlayCl
 
     useEffect(() => {
         setMounted(true);
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
+    }, []);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
         return () => {
-            document.body.style.overflow = 'unset';
+            document.body.style.overflow = prevOverflow;
         };
     }, [isOpen]);
 
@@ -30,7 +31,7 @@ export function PortalModal({ isOpen, onClose, children, preventCloseOnOverlayCl
     return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 md:p-6 overflow-hidden">
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 md:p-6 overflow-clip">
                     {/* Fundo suave sem flicker de GPU/blur */}
                     <motion.div
                         initial={{ opacity: 0 }}

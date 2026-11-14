@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     AlertCircle,
@@ -27,6 +27,50 @@ interface DynamicFormRendererProps {
     onSubmitAnswers: (answers: Record<string, AnswerEntry>) => Promise<void>;
     isSubmitting?: boolean;
     submitError?: string | null;
+}
+
+/** Finds the nearest vertically scrollable ancestor container (e.g. a modal scroll pane). */
+function findScrollableAncestor(el: HTMLElement | null): HTMLElement | null {
+    let current = el?.parentElement ?? null;
+    while (current && current !== document.body && current !== document.documentElement) {
+        const style = window.getComputedStyle(current);
+        if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+            return current;
+        }
+        current = current.parentElement;
+    }
+    return null;
+}
+
+/**
+ * Scrolls an invalid field into view using only its active scroll container
+ * so outer `overflow-hidden` / `overflow-clip` modal wrappers are never shifted.
+ */
+function scrollFieldIntoViewSafe(el: HTMLElement) {
+    const container = findScrollableAncestor(el);
+    if (container) {
+        const containerRect = container.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const targetTop =
+            container.scrollTop +
+            (elRect.top - containerRect.top) -
+            Math.max(24, (container.clientHeight - elRect.height) / 2);
+        container.scrollTo({
+            top: Math.max(0, targetTop),
+            behavior: 'smooth',
+        });
+        return;
+    }
+
+    const elRect = el.getBoundingClientRect();
+    const targetTop =
+        window.scrollY +
+        elRect.top -
+        Math.max(88, (window.innerHeight - elRect.height) / 2);
+    window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: 'smooth',
+    });
 }
 
 function getMaxWordLength(text: string): number {
@@ -244,6 +288,8 @@ export function DynamicFormRenderer({
     submitError = null,
 }: DynamicFormRendererProps) {
     const draftKey = `brilha_form_draft_${form.slug}`;
+    const formRef = useRef<HTMLFormElement>(null);
+    const otherInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
     const [answers, setAnswers] = useState<Record<string, AnswerEntry>>(() => {
         if (previewMode) return {};
@@ -411,7 +457,7 @@ export function DynamicFormRenderer({
         if (firstInvalidKey) {
             const el = document.getElementById(`form-field-${firstInvalidKey}`);
             if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                scrollFieldIntoViewSafe(el);
             }
             return false;
         }
@@ -434,7 +480,12 @@ export function DynamicFormRenderer({
             } catch {}
         }
         setIsClearModalOpen(false);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const container = findScrollableAncestor(formRef.current);
+        if (container) {
+            container.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -457,6 +508,7 @@ export function DynamicFormRenderer({
 
     return (
         <form
+            ref={formRef}
             onSubmit={handleSubmit}
             noValidate
             className={forceMobileLayout ? 'space-y-4' : 'space-y-4 sm:space-y-6'}
@@ -894,9 +946,9 @@ export function DynamicFormRenderer({
                                                     <option value="">
                                                         Selecione uma opção...
                                                     </option>
-                                                    {options.map((opt) => (
+                                                    {options.map((opt, optIdx) => (
                                                         <option
-                                                            key={opt}
+                                                            key={`${opt}-${optIdx}`}
                                                             value={opt}
                                                         >
                                                             {opt}
@@ -908,8 +960,16 @@ export function DynamicFormRenderer({
                                         )}
 
                                         {/* SINGLE_CHOICE */}
-                                        {field.type === 'SINGLE_CHOICE' && (
+                                        {field.type === 'SINGLE_CHOICE' && (() => {
+                                            const selectOtherOption = () => {
+                                                setFieldValue(field.key, '__OTHER__');
+                                                otherInputRefs.current[field.key]?.focus();
+                                            };
+
+                                            return (
                                             <div
+                                                role="radiogroup"
+                                                aria-label={field.label}
                                                 className={
                                                     isCompactTwoChoiceMobile
                                                         ? 'grid grid-cols-2 gap-2.5 pt-0.5'
@@ -920,13 +980,18 @@ export function DynamicFormRenderer({
                                                             : 'space-y-2.5 pt-0.5'
                                                 }
                                             >
-                                                {options.map((opt) => {
-                                                    const selected =
-                                                        entry.value === opt;
+                                                {options.map((opt, optIdx) => {
+                                                    const selected = entry.value === opt;
                                                     return (
-                                                        <label
-                                                            key={opt}
-                                                            className={`group flex items-center gap-3 px-3.5 py-2.5 ${optionMinHeightClass} rounded-xl border cursor-pointer transition-all ${
+                                                        <button
+                                                            key={`${opt}-${optIdx}`}
+                                                            type="button"
+                                                            role="radio"
+                                                            aria-checked={selected}
+                                                            onClick={() =>
+                                                                setFieldValue(field.key, opt, '')
+                                                            }
+                                                            className={`group w-full text-left flex items-center gap-3 px-3.5 py-2.5 ${optionMinHeightClass} rounded-xl border cursor-pointer active:scale-[0.99] transition-all ${
                                                                 selected
                                                                     ? 'border-[#F19B0A] bg-amber-50/60 text-zinc-950 shadow-sm'
                                                                     : error
@@ -934,141 +999,129 @@ export function DynamicFormRenderer({
                                                                       : 'border-zinc-200/80 bg-zinc-50/30 hover:border-zinc-300 hover:bg-zinc-50/80 text-zinc-700'
                                                             }`}
                                                         >
-                                                            <input
-                                                                type="radio"
-                                                                name={`field-${field.key}`}
-                                                                value={opt}
-                                                                checked={selected}
-                                                                onChange={() =>
-                                                                    setFieldValue(
-                                                                        field.key,
-                                                                        opt,
-                                                                        '',
-                                                                    )
-                                                                }
-                                                                className="sr-only"
-                                                            />
                                                             <SelectionCheckIndicator
                                                                 checked={selected}
                                                                 shape="circle"
                                                             />
-                                                            <span className="text-sm font-medium leading-snug flex-1 whitespace-normal">
+                                                            <span className="text-sm font-medium leading-snug flex-1 whitespace-normal break-words">
                                                                 {opt}
                                                             </span>
-                                                        </label>
+                                                        </button>
                                                     );
                                                 })}
 
                                                 {field.allowOther && (
                                                     <div
-                                                        className={`rounded-xl border transition-all ${
+                                                        onClick={(e) => {
+                                                            if (e.target === e.currentTarget) {
+                                                                selectOtherOption();
+                                                            }
+                                                        }}
+                                                        className={`flex items-center gap-3 px-3.5 py-2.5 ${optionMinHeightClass} rounded-xl border transition-all cursor-pointer ${
                                                             isTwoColDesktopSingleChoice
                                                                 ? 'sm:col-span-2'
                                                                 : ''
                                                         } ${
-                                                            entry.value ===
-                                                            '__OTHER__'
+                                                            entry.value === '__OTHER__'
                                                                 ? 'border-[#F19B0A] bg-amber-50/60'
                                                                 : error
                                                                   ? 'border-red-200 bg-white'
                                                                   : 'border-zinc-200/80 bg-zinc-50/30 hover:border-zinc-300'
                                                         }`}
                                                     >
-                                                        <label
-                                                            className={`group flex items-center gap-3 px-3.5 py-2.5 ${optionMinHeightClass} cursor-pointer`}
+                                                        <button
+                                                            type="button"
+                                                            role="radio"
+                                                            aria-checked={entry.value === '__OTHER__'}
+                                                            onClick={selectOtherOption}
+                                                            className="group inline-flex items-center gap-3 shrink-0 cursor-pointer text-left"
                                                         >
-                                                            <input
-                                                                type="radio"
-                                                                name={`field-${field.key}`}
-                                                                value="__OTHER__"
-                                                                checked={
-                                                                    entry.value ===
-                                                                    '__OTHER__'
-                                                                }
-                                                                onChange={() =>
-                                                                    setFieldValue(
-                                                                        field.key,
-                                                                        '__OTHER__',
-                                                                    )
-                                                                }
-                                                                className="sr-only"
-                                                            />
                                                             <SelectionCheckIndicator
                                                                 checked={
-                                                                    entry.value ===
-                                                                    '__OTHER__'
+                                                                    entry.value === '__OTHER__'
                                                                 }
                                                                 shape="circle"
                                                             />
                                                             <span className="text-sm font-medium text-zinc-700 shrink-0">
                                                                 Outro:
                                                             </span>
-                                                            <input
-                                                                type="text"
-                                                                value={
-                                                                    entry.otherText ||
-                                                                    ''
+                                                        </button>
+                                                        <input
+                                                            ref={(el) => {
+                                                                otherInputRefs.current[field.key] = el;
+                                                            }}
+                                                            type="text"
+                                                            value={entry.otherText || ''}
+                                                            onFocus={() => {
+                                                                if (entry.value !== '__OTHER__') {
+                                                                    setFieldValue(
+                                                                        field.key,
+                                                                        '__OTHER__',
+                                                                    );
                                                                 }
-                                                                onFocus={() => {
-                                                                    if (
-                                                                        entry.value !==
-                                                                        '__OTHER__'
-                                                                    ) {
-                                                                        setFieldValue(
-                                                                            field.key,
-                                                                            '__OTHER__',
-                                                                        );
-                                                                    }
-                                                                }}
-                                                                onChange={(e) => {
-                                                                    if (
-                                                                        entry.value !==
-                                                                        '__OTHER__'
-                                                                    ) {
-                                                                        setFieldValue(
-                                                                            field.key,
-                                                                            '__OTHER__',
-                                                                            e.target
-                                                                                .value,
-                                                                        );
-                                                                    } else {
-                                                                        setFieldOtherText(
-                                                                            field.key,
-                                                                            e.target
-                                                                                .value,
-                                                                        );
-                                                                    }
-                                                                }}
-                                                                placeholder="Especifique aqui..."
-                                                                className={`flex-1 min-w-0 bg-transparent border-b border-zinc-300 focus:border-[#F19B0A] focus:outline-none ${controlTextClass} text-zinc-900 py-0.5 px-1`}
-                                                            />
-                                                        </label>
+                                                            }}
+                                                            onChange={(e) => {
+                                                                if (entry.value !== '__OTHER__') {
+                                                                    setFieldValue(
+                                                                        field.key,
+                                                                        '__OTHER__',
+                                                                        e.target.value,
+                                                                    );
+                                                                } else {
+                                                                    setFieldOtherText(
+                                                                        field.key,
+                                                                        e.target.value,
+                                                                    );
+                                                                }
+                                                            }}
+                                                            placeholder="Especifique aqui..."
+                                                            className={`flex-1 min-w-0 bg-transparent border-b border-zinc-300 focus:border-[#F19B0A] focus:outline-none ${controlTextClass} text-zinc-900 py-0.5 px-1`}
+                                                        />
                                                     </div>
                                                 )}
                                             </div>
-                                        )}
+                                            );
+                                        })()}
 
                                         {/* MULTIPLE_CHOICE (Checkbox) */}
-                                        {field.type === 'MULTIPLE_CHOICE' && (
+                                        {field.type === 'MULTIPLE_CHOICE' && (() => {
+                                            const arr = Array.isArray(entry.value) ? entry.value : [];
+                                            const otherChecked = arr.includes('__OTHER__');
+                                            const toggleOtherOption = () => {
+                                                const next = otherChecked
+                                                    ? arr.filter((v) => v !== '__OTHER__')
+                                                    : [...arr, '__OTHER__'];
+                                                setFieldValue(field.key, next);
+                                                if (!otherChecked) {
+                                                    otherInputRefs.current[field.key]?.focus();
+                                                }
+                                            };
+
+                                            return (
                                             <div
+                                                role="group"
+                                                aria-label={field.label}
                                                 className={
                                                     isTwoColMultiChoice
                                                         ? 'grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5'
                                                         : 'space-y-2.5 pt-0.5'
                                                 }
                                             >
-                                                {options.map((opt) => {
-                                                    const arr = Array.isArray(
-                                                        entry.value,
-                                                    )
-                                                        ? entry.value
-                                                        : [];
-                                                    const checked =
-                                                        arr.includes(opt);
+                                                {options.map((opt, optIdx) => {
+                                                    const checked = arr.includes(opt);
                                                     return (
-                                                        <label
-                                                            key={opt}
-                                                            className={`group flex items-center gap-3 px-3.5 py-2.5 ${optionMinHeightClass} rounded-xl border cursor-pointer transition-all ${
+                                                        <button
+                                                            key={`${opt}-${optIdx}`}
+                                                            type="button"
+                                                            role="checkbox"
+                                                            aria-checked={checked}
+                                                            onClick={() => {
+                                                                const next = checked
+                                                                    ? arr.filter((v) => v !== opt)
+                                                                    : [...arr, opt];
+                                                                setFieldValue(field.key, next);
+                                                            }}
+                                                            className={`group w-full text-left flex items-center gap-3 px-3.5 py-2.5 ${optionMinHeightClass} rounded-xl border cursor-pointer active:scale-[0.99] transition-all ${
                                                                 checked
                                                                     ? 'border-[#F19B0A] bg-amber-50/60 text-zinc-950 shadow-sm'
                                                                     : error
@@ -1076,153 +1129,83 @@ export function DynamicFormRenderer({
                                                                       : 'border-zinc-200/80 bg-zinc-50/30 hover:border-zinc-300 hover:bg-zinc-50/80 text-zinc-700'
                                                             }`}
                                                         >
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={checked}
-                                                                onChange={() => {
-                                                                    const next =
-                                                                        checked
-                                                                            ? arr.filter(
-                                                                                  (
-                                                                                      v,
-                                                                                  ) =>
-                                                                                      v !==
-                                                                                      opt,
-                                                                              )
-                                                                            : [
-                                                                                  ...arr,
-                                                                                  opt,
-                                                                              ];
-                                                                    setFieldValue(
-                                                                        field.key,
-                                                                        next,
-                                                                    );
-                                                                }}
-                                                                className="sr-only"
-                                                            />
                                                             <SelectionCheckIndicator
                                                                 checked={checked}
                                                                 shape="square"
                                                             />
-                                                            <span className="text-sm font-medium leading-snug flex-1 whitespace-normal">
+                                                            <span className="text-sm font-medium leading-snug flex-1 whitespace-normal break-words">
                                                                 {opt}
                                                             </span>
-                                                        </label>
+                                                        </button>
                                                     );
                                                 })}
 
-                                                {field.allowOther &&
-                                                    (() => {
-                                                        const arr = Array.isArray(
-                                                            entry.value,
-                                                        )
-                                                            ? entry.value
-                                                            : [];
-                                                        const otherChecked =
-                                                            arr.includes(
-                                                                '__OTHER__',
-                                                            );
-                                                        return (
-                                                            <div
-                                                                className={`rounded-xl border transition-all ${
-                                                                    otherChecked
-                                                                        ? 'border-[#F19B0A] bg-amber-50/60'
-                                                                        : error
-                                                                          ? 'border-red-200 bg-white'
-                                                                          : 'border-zinc-200/80 bg-zinc-50/30 hover:border-zinc-300'
-                                                                }`}
-                                                            >
-                                                                <label
-                                                                    className={`group flex items-center gap-3 px-3.5 py-2.5 ${optionMinHeightClass} cursor-pointer`}
-                                                                >
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={
-                                                                            otherChecked
-                                                                        }
-                                                                        onChange={() => {
-                                                                            const next =
-                                                                                otherChecked
-                                                                                    ? arr.filter(
-                                                                                          (
-                                                                                              v,
-                                                                                          ) =>
-                                                                                              v !==
-                                                                                              '__OTHER__',
-                                                                                      )
-                                                                                    : [
-                                                                                          ...arr,
-                                                                                          '__OTHER__',
-                                                                                      ];
-                                                                            setFieldValue(
-                                                                                field.key,
-                                                                                next,
-                                                                            );
-                                                                        }}
-                                                                        className="sr-only"
-                                                                    />
-                                                                    <SelectionCheckIndicator
-                                                                        checked={
-                                                                            otherChecked
-                                                                        }
-                                                                        shape="square"
-                                                                    />
-                                                                    <span className="text-sm font-medium text-zinc-700 shrink-0">
-                                                                        Outro:
-                                                                    </span>
-                                                                    <input
-                                                                        type="text"
-                                                                        value={
-                                                                            entry.otherText ||
-                                                                            ''
-                                                                        }
-                                                                        onFocus={() => {
-                                                                            if (
-                                                                                !otherChecked
-                                                                            ) {
-                                                                                setFieldValue(
-                                                                                    field.key,
-                                                                                    [
-                                                                                        ...arr,
-                                                                                        '__OTHER__',
-                                                                                    ],
-                                                                                );
-                                                                            }
-                                                                        }}
-                                                                        onChange={(
-                                                                            e,
-                                                                        ) => {
-                                                                            if (
-                                                                                !otherChecked
-                                                                            ) {
-                                                                                setFieldValue(
-                                                                                    field.key,
-                                                                                    [
-                                                                                        ...arr,
-                                                                                        '__OTHER__',
-                                                                                    ],
-                                                                                    e
-                                                                                        .target
-                                                                                        .value,
-                                                                                );
-                                                                            } else {
-                                                                                setFieldOtherText(
-                                                                                    field.key,
-                                                                                    e
-                                                                                        .target
-                                                                                        .value,
-                                                                                );
-                                                                            }
-                                                                        }}
-                                                                        placeholder="Especifique aqui..."
-                                                                        className={`flex-1 min-w-0 bg-transparent border-b border-zinc-300 focus:border-[#F19B0A] focus:outline-none ${controlTextClass} text-zinc-900 py-0.5 px-1`}
-                                                                    />
-                                                                </label>
-                                                            </div>
-                                                        );
-                                                    })()}
+                                                {field.allowOther && (
+                                                    <div
+                                                        onClick={(e) => {
+                                                            if (e.target === e.currentTarget) {
+                                                                toggleOtherOption();
+                                                            }
+                                                        }}
+                                                        className={`flex items-center gap-3 px-3.5 py-2.5 ${optionMinHeightClass} rounded-xl border transition-all cursor-pointer ${
+                                                            otherChecked
+                                                                ? 'border-[#F19B0A] bg-amber-50/60'
+                                                                : error
+                                                                  ? 'border-red-200 bg-white'
+                                                                  : 'border-zinc-200/80 bg-zinc-50/30 hover:border-zinc-300'
+                                                        }`}
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            role="checkbox"
+                                                            aria-checked={otherChecked}
+                                                            onClick={toggleOtherOption}
+                                                            className="group inline-flex items-center gap-3 shrink-0 cursor-pointer text-left"
+                                                        >
+                                                            <SelectionCheckIndicator
+                                                                checked={otherChecked}
+                                                                shape="square"
+                                                            />
+                                                            <span className="text-sm font-medium text-zinc-700 shrink-0">
+                                                                Outro:
+                                                            </span>
+                                                        </button>
+                                                        <input
+                                                            ref={(el) => {
+                                                                otherInputRefs.current[field.key] = el;
+                                                            }}
+                                                            type="text"
+                                                            value={entry.otherText || ''}
+                                                            onFocus={() => {
+                                                                if (!otherChecked) {
+                                                                    setFieldValue(
+                                                                        field.key,
+                                                                        [...arr, '__OTHER__'],
+                                                                    );
+                                                                }
+                                                            }}
+                                                            onChange={(e) => {
+                                                                if (!otherChecked) {
+                                                                    setFieldValue(
+                                                                        field.key,
+                                                                        [...arr, '__OTHER__'],
+                                                                        e.target.value,
+                                                                    );
+                                                                } else {
+                                                                    setFieldOtherText(
+                                                                        field.key,
+                                                                        e.target.value,
+                                                                    );
+                                                                }
+                                                            }}
+                                                            placeholder="Especifique aqui..."
+                                                            className={`flex-1 min-w-0 bg-transparent border-b border-zinc-300 focus:border-[#F19B0A] focus:outline-none ${controlTextClass} text-zinc-900 py-0.5 px-1`}
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
+                                            );
+                                        })()}
 
                                         {error && (
                                             <p className="flex items-center gap-1.5 text-xs font-medium text-red-600 pt-0.5">
