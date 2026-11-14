@@ -20,7 +20,8 @@ import {
     LucideFingerprint,
     LucideChevronDown,
     LucideBuilding2,
-    LucideClipboardList
+    LucideClipboardList,
+    LucideGitBranch
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
@@ -31,6 +32,7 @@ import { WelcomeVideoModal } from "../components/WelcomeVideoModal";
 import { LocationPickerModal } from "../components/LocationPickerModal";
 import SettingsModal from "../components/SettingsModal";
 import api from "../utils/api";
+import { hasTechAreaAccess } from "../utils/techAccess";
 import { toast } from "react-hot-toast";
 
 const menuItems = [
@@ -85,6 +87,13 @@ export function AppLayout() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isWelcomeVideoOpen, setIsWelcomeVideoOpen] = useState(false);
     const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+    const [hasTechAccess, setHasTechAccess] = useState<boolean>(() => {
+        try {
+            return localStorage.getItem('brilha_has_tech_access') === 'true';
+        } catch (e) {
+            return false;
+        }
+    });
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -142,6 +151,12 @@ export function AppLayout() {
                 if (user.avatarUrl) setUserAvatar(user.avatarUrl);
                 if (user.role) setUserRole(user.role.toLowerCase() as any);
 
+                const techAllowed = hasTechAreaAccess(user);
+                setHasTechAccess(techAllowed);
+                try {
+                    localStorage.setItem('brilha_has_tech_access', techAllowed ? 'true' : 'false');
+                } catch {}
+
                 // Prioridade 1: Vídeo de Boas-vindas
                 if (user.role === 'STUDENT' && user.hasSeenWelcomeVideo === false) {
                     setIsWelcomeVideoOpen(true);
@@ -182,17 +197,30 @@ export function AppLayout() {
 
     const handleLogout = () => {
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('brilha_has_tech_access');
         navigate('/login', { replace: true });
     };
 
+    const visibleMenuItems = useMemo(() => {
+        if (!hasTechAccess) return menuItems;
+        const next = [...menuItems];
+        next.splice(2, 0, {
+            icon: <LucideGitBranch className="h-5 w-5" />,
+            label: "Git Lab",
+            path: "/lab/git"
+        });
+        return next;
+    }, [hasTechAccess]);
+
     const visibleAdminItems = useMemo(() => adminItems.filter(item => item.roles.includes(userRole)), [userRole]);
 
-    const activeIndex = useMemo(() => menuItems.findIndex(item => item.path === location.pathname), [location.pathname]);
+    const activeIndex = useMemo(() => visibleMenuItems.findIndex(item => item.path === location.pathname), [visibleMenuItems, location.pathname]);
 
     const currentPageTitle = useMemo(() => {
         const path = location.pathname;
         if (path.startsWith('/dashboard')) return 'Dashboard';
         if (path.startsWith('/my-courses')) return 'Meus Cursos';
+        if (path.startsWith('/lab/git')) return 'Git Lab';
         if (path.startsWith('/explore')) return 'Explorar';
         if (path.startsWith('/certificates')) return 'Certificados';
         if (path.startsWith('/resources')) return 'Recursos';
@@ -270,7 +298,7 @@ export function AppLayout() {
 
                 {/* Nav items */}
                 <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto no-scrollbar">
-                    {menuItems.map((item: any) => {
+                    {visibleMenuItems.map((item: any) => {
                         const isActive = location.pathname === item.path;
                         return (
                             <Link
@@ -699,6 +727,23 @@ export function AppLayout() {
                                             Configurações
                                         </p>
                                         <div className="grid grid-cols-1 gap-2">
+                                            {hasTechAccess && (
+                                                <Link
+                                                    to="/lab/git"
+                                                    onClick={() => setIsMobileMenuOpen(false)}
+                                                    className={`flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-50/80 text-slate-800 text-sm font-medium transition-all shadow-sm ${
+                                                        location.pathname.startsWith('/lab/git') ? 'border-amber-300 bg-amber-50/50 text-amber-900' : ''
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-9 w-9 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
+                                                            <LucideGitBranch className="h-4 w-4" />
+                                                        </div>
+                                                        <span>Git Lab</span>
+                                                    </div>
+                                                    <LucideArrowRight className="h-4 w-4 text-slate-300" />
+                                                </Link>
+                                            )}
                                             {userRole === 'student' && (
                                                 <Link
                                                     to="/scan"
@@ -797,8 +842,8 @@ export function AppLayout() {
             {/* Mobile Bottom Nav */}
             <nav className="md:hidden fixed bottom-5 left-5 right-5 z-[100]" style={{ isolation: 'isolate' }}>
                 <LayoutGroup id="mobile-pill">
-                    <div className="bg-slate-900/90 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl shadow-slate-950/20 px-2 py-1.5 max-w-sm mx-auto flex items-center justify-between relative overflow-hidden">
-                        {menuItems.map((item) => {
+                    <div className={`bg-slate-900/90 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl shadow-slate-950/20 py-1.5 max-w-sm mx-auto flex items-center justify-between relative overflow-hidden ${visibleMenuItems.length > 6 ? 'px-1' : 'px-2'}`}>
+                        {visibleMenuItems.map((item) => {
                             const isActive = location.pathname === item.path;
                             return (
                                 <Link

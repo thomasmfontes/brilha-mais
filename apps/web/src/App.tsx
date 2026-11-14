@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { Suspense, lazy, useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
@@ -26,6 +26,7 @@ import PrivacidadePage from "./pages/PrivacidadePage";
 import InstructorMeetings from "./pages/InstructorMeetings";
 import MeetingProjection from "./pages/MeetingProjection";
 import MeetingScanner from "./pages/MeetingScanner";
+const GitLabPage = lazy(() => import("./pages/GitLabPage"));
 import { AppLayout } from "./layouts/AppLayout";
 import { Toaster } from "react-hot-toast";
 import UpdateNotifier from "./components/UpdateNotifier";
@@ -126,6 +127,14 @@ function App() {
                     <Route path="/certificates" element={<CertificatesPage />} />
                     <Route path="/resources" element={<ResourcesPage />} />
                     <Route path="/curriculo" element={<StudentResumePage />} />
+                    <Route
+                        path="/lab/git"
+                        element={
+                            <Suspense fallback={<div className="p-8 text-sm font-medium text-zinc-500">Carregando Git Lab...</div>}>
+                                <GitLabPage />
+                            </Suspense>
+                        }
+                    />
                 </Route>
 
                 {/* Repositório fallback for stale service workers */}

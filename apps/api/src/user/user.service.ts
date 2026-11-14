@@ -19,6 +19,7 @@ export class UserService {
       include: {
         location: true,
         assignedAreas: { include: { category: true } },
+        studentAreas: { include: { category: true } },
         turmas: {
           include: {
             areas: { include: { category: true } },
@@ -33,6 +34,7 @@ export class UserService {
       where: { id },
       include: {
         assignedAreas: { include: { category: true } },
+        studentAreas: { include: { category: true } },
         turmas: {
           include: {
             areas: { include: { category: true } },

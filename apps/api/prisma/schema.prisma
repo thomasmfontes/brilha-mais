@@ -40,6 +40,7 @@ model User {
   createdForms            Form[]           @relation("FormCreator")
   reviewedFormSubmissions FormSubmission[] @relation("FormSubmissionReviewer")
   enrolledFromSubmissions FormSubmission[] @relation("EnrolledSubmissionUser")
+  gitExerciseProgress     GitExerciseProgress[]
 }
 
 model StudentMaterial {
@@ -618,4 +619,19 @@ model CompanyCandidateInteraction {
   @@index([companyId])
   @@index([talentId])
   @@index([stage])
+}
+
+model GitExerciseProgress {
+  id            String   @id @default(uuid())
+  userId        String
+  exerciseSlug  String
+  commandsCount Int      @default(0)
+  attempts      Int      @default(1)
+  completedAt   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, exerciseSlug])
+  @@index([userId])
+  @@index([exerciseSlug])
 }

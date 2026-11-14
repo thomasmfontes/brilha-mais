@@ -21,6 +21,7 @@ import { InPersonMeetingModule } from './in-person-meeting/in-person-meeting.mod
 import { TalentModule } from './talent/talent.module';
 import { CompanyModule } from './company/company.module';
 import { FormModule } from './form/form.module';
+import { GitLabModule } from './git-lab/git-lab.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { FormModule } from './form/form.module';
     TalentModule,
     CompanyModule,
     FormModule,
+    GitLabModule,
   ],
   controllers: [AppController],
   providers: [AppService],
